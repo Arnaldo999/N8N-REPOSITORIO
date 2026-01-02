@@ -1,0 +1,1560 @@
+{
+  "updatedAt": "2026-01-01T22:46:57.964Z",
+  "createdAt": "2025-12-30T02:43:11.945Z",
+  "id": "uGS9LKCUsD4KfPJy",
+  "name": "Registro de Nuevos Comerciantes",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "GUARDAR TRANSACCION - DE LA APP A SUPABASE",
+        "height": 272,
+        "width": 1568,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -528
+      ],
+      "id": "6ecde518-2ddc-477a-a649-9f8de6c5efca",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "1e725fb2-682b-4991-8f79-f8efbeeef623",
+      "name": "Schedule Trigger - 7 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6deaeda9-61e0-4c99-8cdc-6f74a2ab066e",
+      "name": "Loop Comercios",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        64,
+        -48
+      ],
+      "notes": "Procesa cada comercio uno por uno"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calcular fecha de AYER\nconst ayer = new Date();\nayer.setDate(ayer.getDate() - 1);\nayer.setHours(0, 0, 0, 0);\n\nconst fechaAyer = ayer.toISOString().split('T')[0]; // YYYY-MM-DD\n\nconst comercio = $input.first().json;\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    slug: comercio.slug,\n    nombre_local: comercio.nombre_local,\n    email: comercio.email,\n    fecha_ayer: fechaAyer\n  }\n}];"
+      },
+      "id": "731a6773-9312-4d81-bf30-9b659ce7e361",
+      "name": "Preparar Fechas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -112
+      ],
+      "notes": "Calcula la fecha de ayer para el reporte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const comercio = $('Preparar Fechas').first().json;\nconst transacciones = $input.first().json;\n\n// Calcular totales\nlet totalIngresos = 0;\nlet totalGastos = 0;\nlet detalleIngresos = [];\nlet detalleGastos = [];\n\nfor (const t of transacciones) {\n  if (t.tipo === 'INGRESO') {\n    totalIngresos += parseFloat(t.monto);\n    detalleIngresos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      metodo: t.metodo_pago\n    });\n  } else if (t.tipo === 'GASTO') {\n    totalGastos += parseFloat(t.monto);\n    detalleGastos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      categoria: t.categoria_gasto\n    });\n  }\n}\n\nconst balance = totalIngresos - totalGastos;\n\n// Generar HTML del reporte\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: #4CAF50; color: white; padding: 20px; border-radius: 5px; text-align: center; }\n    .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }\n    .total { font-size: 24px; font-weight: bold; }\n    .balance { font-size: 28px; font-weight: bold; color: ${balance >= 0 ? '#4CAF50' : '#f44336'}; }\n    .item { padding: 10px; border-bottom: 1px solid #eee; }\n    .item:last-child { border-bottom: none; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Reporte Diario</h1>\n    <p>${comercio.nombre_local}</p>\n    <p>${comercio.fecha_ayer}</p>\n  </div>\n  \n  <div class=\"section\">\n    <h2>Resumen</h2>\n    <p>Total Ingresos: <span class=\"total\" style=\"color: #4CAF50;\">$${totalIngresos.toFixed(2)}</span></p>\n    <p>Total Gastos: <span class=\"total\" style=\"color: #f44336;\">$${totalGastos.toFixed(2)}</span></p>\n    <p>Balance: <span class=\"balance\">$${balance.toFixed(2)}</span></p>\n  </div>\n  \n  ${detalleIngresos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Ingresos (${detalleIngresos.length})</h2>\n    ${detalleIngresos.map(i => `\n      <div class=\"item\">\n        <strong>${i.descripcion}</strong><br>\n        Monto: $${i.monto} - Método: ${i.metodo}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  ${detalleGastos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Gastos (${detalleGastos.length})</h2>\n    ${detalleGastos.map(g => `\n      <div class=\"item\">\n        <strong>${g.descripcion}</strong><br>\n        Monto: $${g.monto} - Categoría: ${g.categoria}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  <div class=\"section\" style=\"background: #f5f5f5; text-align: center;\">\n    <p>Este es tu reporte automático diario</p>\n    <p>Generado por tu sistema POS</p>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    comercio_id: comercio.comercio_id,\n    slug: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    fecha: comercio.fecha_ayer,\n    total_ingresos: totalIngresos,\n    total_gastos: totalGastos,\n    balance: balance,\n    cantidad_transacciones: transacciones.length,\n    html: html\n  }\n}];"
+      },
+      "id": "1d454056-c128-462e-b25b-7b4083fa7862",
+      "name": "Generar Reporte HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -112
+      ],
+      "notes": "Calcula totales y genera HTML del reporte"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=📊 Reporte Diario - {{ $json.nombre }} - {{ $json.fecha }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "1434a96b-da30-4cc7-ad28-fbcf8fa7dab0",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -112
+      ],
+      "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QQTzXBhgix2IhKE4",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Envía el reporte por email"
+    },
+    {
+      "parameters": {},
+      "id": "a47586c0-d5e5-45a3-a129-fbd40f492960",
+      "name": "Loop Back",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "REPORTE AUTOMATICO 7AM ",
+        "height": 352,
+        "width": 1904,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -208
+      ],
+      "id": "d8debb55-5635-4ce0-be2b-4454a86a839a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "path": "comerciante",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1944abdf-c446-4044-b800-145dd34b7833",
+      "name": "Webhook - GET Comerciante",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -752
+      ],
+      "webhookId": "obtener-comerciante-supabase"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el comercio del nodo Supabase\nconst data = $input.first().json;\n\n// Si Supabase devuelve array, tomar el primer elemento\nconst comercio = Array.isArray(data) ? data[0] : data;\n\n// Verificar si existe el comercio\nif (!comercio || !comercio.slug) {\n  return [{\n    json: {\n      error: true,\n      message: 'Comerciante no encontrado'\n    }\n  }];\n}\n\n// Formatear respuesta para la app\nreturn [{\n  json: {\n    id: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    whatsapp: comercio.whatsapp || '',\n    tipo_negocio: comercio.tipo_negocio || '',\n    activo: comercio.activo,\n    url_app: comercio.url_app || ''\n  }\n}];"
+      },
+      "id": "d3da0a68-c576-4f24-9d6f-d0d843500763",
+      "name": "Formatear Respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -752
+      ],
+      "notes": "Transforma los datos de Supabase al formato que espera la app"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "6dc47941-f070-4c07-837a-c7c5fde474c9",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        -752
+      ]
+    },
+    {
+      "parameters": {
+        "content": "OBTENER ID COMERCIANTE\n",
+        "height": 272,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -832
+      ],
+      "id": "b15bb03d-3351-432e-b89d-269ef936620b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -752
+      ],
+      "id": "c31175ff-924b-487f-bb6d-4fa81d5e28db",
+      "name": "Leer Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -48
+      ],
+      "id": "0f4fa0fd-92e6-4cc8-99a9-c729dc72c651",
+      "name": "Obtener Comercios Activos1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "transacciones"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "88b98de3-76a0-4e35-a5db-167f08475715",
+      "name": "Obtener Transacciones Ayer1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pos-guardar-venta",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        -400
+      ],
+      "id": "9ebd5e7e-4926-43a7-87df-4d1284ef7f8a",
+      "name": "Webhook Guardar Transaccion",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo === 'INGRESO' ? 'venta' : 'gasto',  // Convertir a formato Supabase\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString()\n};\n\n// Campos específicos según tipo\nif (transaccion.tipo === 'venta') {  // Cambiado de 'INGRESO' a 'venta'\n  transaccion.metodo_pago = body.metodo || null;\n  \n  // Extraer productos de la descripción\n  if (body.descripcion) {\n    const items = body.descripcion.split(',');\n    const productos = [];\n    \n    for (const item of items) {\n      const match = item.trim().match(/\\d+\\.\\s*(.+?):\\s*\\$?([\\d.]+)/);\n      if (match) {\n        productos.push({\n          nombre: match[1].trim(),\n          precio: parseFloat(match[2])\n        });\n      }\n    }\n    \n    if (productos.length > 0) {\n      transaccion.productos = productos;\n    }\n  }\n}\n\nif (transaccion.tipo === 'gasto') {  // Cambiado de 'GASTO' a 'gasto'\n  transaccion.categoria_gasto = body.categoria || null;\n}\n\nreturn { json: transaccion };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -400
+      ],
+      "id": "f79001ef-5418-4938-8685-ce265c8f8b3a",
+      "name": "Preparar Datos"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -400
+      ],
+      "id": "3d624786-9117-43c1-b8f2-26647c0b750c",
+      "name": "Buscar comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        -400
+      ],
+      "id": "dd9c6e90-7b96-4073-8507-a5ac75818665",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "tableId": "transacciones",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -400
+      ],
+      "id": "de48d98e-a1ce-4f8f-a827-f20ef8985d4c",
+      "name": "Guardar en Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "REGISTRO DE NUEVOS COMERCIANTES",
+        "height": 400,
+        "width": 2064,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        224
+      ],
+      "id": "532676e7-e1b5-462b-b7da-58c794ba162f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registro-comerciante",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "03ab4a14-e167-4a22-a5f1-d82a8d296685",
+      "name": "Webhook Registro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        368
+      ],
+      "webhookId": "registro-comerciante-v1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true
+      },
+      "id": "7c773253-45da-4b10-8713-97abd84f8699",
+      "name": "Obtener Todos los Comercios",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        368
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Datos del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// Todos los comercios existentes\nconst comercios = $input.all();\n\n// Función para generar el siguiente slug\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) {\n    return 'C001';\n  }\n  \n  // Extraer números de los slugs existentes (C001, C002, etc.)\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) {\n    return 'C001';\n  }\n  \n  // Encontrar el número más alto y sumar 1\n  const maxNumero = Math.max(...numeros);\n  const nuevoNumero = maxNumero + 1;\n  \n  // Formatear con ceros a la izquierda (C001, C002, etc.)\n  return 'C' + nuevoNumero.toString().padStart(3, '0');\n}\n\n// Generar slug automáticamente\nconst nuevoSlug = generarSiguienteSlug(comercios);\n\n// Generar URL de la app\nconst urlApp = `https://arnaldoayalaestratega.com/pos/?id=${nuevoSlug}`;\n\n// Preparar datos para Supabase\nconst nuevoComercio = {\n  slug: nuevoSlug,\n  nombre_local: body.nombre_negocio,\n  email: body.email,\n  whatsapp: body.whatsapp,\n  tipo_negocio: body.tipo_negocio,\n  direccion: body.direccion,\n  ciudad: body.ciudad,\n  activo: true,\n  url_app: urlApp\n};\n\nreturn { json: nuevoComercio };"
+      },
+      "id": "64fa2b05-e494-4417-8128-4a3f4ffc1f52",
+      "name": "Generar Slug y URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #333;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f5f5f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 10px;\n      padding: 30px;\n      box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n    }\n    h1 {\n      color: #00ff88;\n      font-size: 24px;\n      margin-bottom: 10px;\n    }\n    .greeting {\n      font-size: 18px;\n      color: #555;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 30px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 18px 40px;\n      background: linear-gradient(135deg, #00ff88, #00cc70);\n      color: #0a0e1a;\n      text-decoration: none;\n      border-radius: 12px;\n      font-size: 1.2rem;\n      font-weight: 700;\n      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);\n      transition: all 0.3s;\n    }\n    .app-button:hover {\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);\n      transform: translateY(-2px);\n    }\n    .tip {\n      background-color: #fff9e6;\n      border-left: 4px solid #ffc700;\n      padding: 12px;\n      margin: 20px 0;\n      font-style: italic;\n    }\n    .features {\n      background-color: #f8f9fa;\n      padding: 20px;\n      border-radius: 8px;\n      margin: 20px 0;\n    }\n    .features ul {\n      list-style: none;\n      padding: 0;\n    }\n    .features li {\n      padding: 8px 0;\n      padding-left: 25px;\n      position: relative;\n    }\n    .features li:before {\n      content: \"✓\";\n      position: absolute;\n      left: 0;\n      color: #00ff88;\n      font-weight: bold;\n    }\n    .highlight {\n      background-color: #fff3cd;\n      padding: 15px;\n      border-radius: 5px;\n      margin: 20px 0;\n      border-left: 4px solid #ffc107;\n    }\n    .contact {\n      background-color: #e3f2fd;\n      padding: 15px;\n      border-radius: 5px;\n      margin: 20px 0;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 30px;\n      padding-top: 20px;\n      border-top: 1px solid #ddd;\n    }\n    .signature {\n      margin-top: 30px;\n      font-weight: 600;\n      color: #555;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🎉</h1>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>, y me da mucho gusto tenerte en el sistema de registro de transacciones. Este sistema fue diseñado especialmente para hacer tu vida más fácil y ayudarte a tener control total sobre tu negocio.\n    </p>\n\n    <h2 style=\"color: #00d4ff;\">📱 Tu Acceso Personalizado</h2>\n    <p>Este es tu link único para registrar transacciones:</p>\n    \n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">🚀 Acceder a mi Sistema POS</a>\n    </div>\n\n    <div class=\"tip\">\n      <strong>💡 Tip:</strong> Guarda este link en los favoritos de tu celular para acceder rápidamente.\n    </div>\n\n    <h2 style=\"color: #00d4ff;\">✨ ¿Qué puedes hacer con este sistema?</h2>\n    \n    <div class=\"features\">\n      <ul>\n        <li><strong>Registrar tus ingresos</strong> de forma rápida y sencilla (efectivo, tarjeta, transferencia, fiado)</li>\n        <li><strong>Registrar tus gastos</strong> categorizados (proveedores, servicios, alquiler, sueldos, otros)</li>\n        <li><strong>Recibir reportes diarios automáticos</strong> todos los días a las <strong>7:00 AM</strong> con:\n          <ul style=\"margin-top: 10px;\">\n            <li>Resumen de ingresos y gastos del día anterior</li>\n            <li>Ganancias netas calculadas automáticamente</li>\n            <li>Desglose detallado por categoría</li>\n          </ul>\n        </li>\n        <li><strong>Acceso desde cualquier dispositivo</strong> (celular, tablet, computadora)</li>\n      </ul>\n    </div>\n\n    <div class=\"highlight\">\n      <strong>⏰ Importante:</strong> Revisa tu bandeja de entrada todos los días a las <strong>7:00 AM</strong>. Ahí recibirás tu reporte diario con todos los números de tu negocio del día anterior.\n    </div>\n\n    <h2 style=\"color: #00d4ff;\">💬 ¿Necesitas ayuda?</h2>\n    \n    <div class=\"contact\">\n      <p>Estoy aquí para lo que necesites. Si tienes alguna duda, problema o sugerencia, no dudes en contactarme:</p>\n      <p>\n        <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff;\">+54 9 3765 38-4843</a><br>\n        <strong>Web:</strong> <a href=\"https://arnaldoayalaestratega.com\" style=\"color: #00d4ff;\">arnaldoayalaestratega.com</a>\n      </p>\n    </div>\n\n    <p class=\"signature\">\n      ¡Que tengas mucho éxito con tu negocio! 🚀<br><br>\n      <strong>Arnaldo Ayala</strong><br>\n      <em>Estratega en IA y Marketing</em>\n    </p>\n\n    <div class=\"footer\">\n      <p>Este es un mensaje automático del sistema de gestión de transacciones.</p>\n      <p>Si recibiste este correo por error, por favor ignóralo.</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "fdea026c-4e93-48bb-a44b-5ac39342352d",
+      "name": "Enviar Email Bienvenida",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        512,
+        368
+      ],
+      "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QQTzXBhgix2IhKE4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Comerciante registrado exitosamente\", \"slug\": $json.slug, \"url_app\": $json.url_app } }}",
+        "options": {}
+      },
+      "id": "c3b85be7-28ce-471e-bf56-0ff6cfc9ff95",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "comercios",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "d48fe1d1-4876-4dae-b8f1-161bdde06a61",
+      "name": "Guardar en Supabase1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        304,
+        368
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger - 7 AM": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comercios Activos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Comercios": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fechas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fechas": {
+      "main": [
+        [
+          {
+            "node": "Obtener Transacciones Ayer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Reporte HTML": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email": {
+      "main": [
+        [
+          {
+            "node": "Loop Back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - GET Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Leer Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comercios Activos1": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Transacciones Ayer1": {
+      "main": [
+        [
+          {
+            "node": "Generar Reporte HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Guardar Transaccion": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Registro": {
+      "main": [
+        [
+          {
+            "node": "Obtener Todos los Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Todos los Comercios": {
+      "main": [
+        [
+          {
+            "node": "Generar Slug y URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Slug y URL": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Bienvenida": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase1": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger - 7 AM": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger - 8 AM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "eb8773d2-fb3e-464e-bb64-862b746b14a0",
+  "activeVersionId": "664eb81d-c43d-4dae-809c-98b3677a3ad3",
+  "triggerCount": 4,
+  "shared": [
+    {
+      "updatedAt": "2025-12-30T02:43:11.949Z",
+      "createdAt": "2025-12-30T02:43:11.949Z",
+      "role": "workflow:owner",
+      "workflowId": "uGS9LKCUsD4KfPJy",
+      "projectId": "5wyU6IQi37W80C5f"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-01T17:32:50.000Z",
+    "createdAt": "2026-01-01T17:30:03.223Z",
+    "versionId": "664eb81d-c43d-4dae-809c-98b3677a3ad3",
+    "workflowId": "uGS9LKCUsD4KfPJy",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "GUARDAR TRANSACCION - DE LA APP A SUPABASE",
+          "height": 272,
+          "width": 1568,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -480,
+          -528
+        ],
+        "id": "6ecde518-2ddc-477a-a649-9f8de6c5efca",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 7
+              }
+            ]
+          }
+        },
+        "id": "1e725fb2-682b-4991-8f79-f8efbeeef623",
+        "name": "Schedule Trigger - 7 AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -384,
+          -48
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "6deaeda9-61e0-4c99-8cdc-6f74a2ab066e",
+        "name": "Loop Comercios",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          64,
+          -48
+        ],
+        "notes": "Procesa cada comercio uno por uno"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Calcular fecha de AYER\nconst ayer = new Date();\nayer.setDate(ayer.getDate() - 1);\nayer.setHours(0, 0, 0, 0);\n\nconst fechaAyer = ayer.toISOString().split('T')[0]; // YYYY-MM-DD\n\nconst comercio = $input.first().json;\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    slug: comercio.slug,\n    nombre_local: comercio.nombre_local,\n    email: comercio.email,\n    fecha_ayer: fechaAyer\n  }\n}];"
+        },
+        "id": "731a6773-9312-4d81-bf30-9b659ce7e361",
+        "name": "Preparar Fechas",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          288,
+          -112
+        ],
+        "notes": "Calcula la fecha de ayer para el reporte"
+      },
+      {
+        "parameters": {
+          "jsCode": "const comercio = $('Preparar Fechas').first().json;\nconst transacciones = $input.first().json;\n\n// Calcular totales\nlet totalIngresos = 0;\nlet totalGastos = 0;\nlet detalleIngresos = [];\nlet detalleGastos = [];\n\nfor (const t of transacciones) {\n  if (t.tipo === 'INGRESO') {\n    totalIngresos += parseFloat(t.monto);\n    detalleIngresos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      metodo: t.metodo_pago\n    });\n  } else if (t.tipo === 'GASTO') {\n    totalGastos += parseFloat(t.monto);\n    detalleGastos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      categoria: t.categoria_gasto\n    });\n  }\n}\n\nconst balance = totalIngresos - totalGastos;\n\n// Generar HTML del reporte\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: #4CAF50; color: white; padding: 20px; border-radius: 5px; text-align: center; }\n    .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }\n    .total { font-size: 24px; font-weight: bold; }\n    .balance { font-size: 28px; font-weight: bold; color: ${balance >= 0 ? '#4CAF50' : '#f44336'}; }\n    .item { padding: 10px; border-bottom: 1px solid #eee; }\n    .item:last-child { border-bottom: none; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Reporte Diario</h1>\n    <p>${comercio.nombre_local}</p>\n    <p>${comercio.fecha_ayer}</p>\n  </div>\n  \n  <div class=\"section\">\n    <h2>Resumen</h2>\n    <p>Total Ingresos: <span class=\"total\" style=\"color: #4CAF50;\">$${totalIngresos.toFixed(2)}</span></p>\n    <p>Total Gastos: <span class=\"total\" style=\"color: #f44336;\">$${totalGastos.toFixed(2)}</span></p>\n    <p>Balance: <span class=\"balance\">$${balance.toFixed(2)}</span></p>\n  </div>\n  \n  ${detalleIngresos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Ingresos (${detalleIngresos.length})</h2>\n    ${detalleIngresos.map(i => `\n      <div class=\"item\">\n        <strong>${i.descripcion}</strong><br>\n        Monto: $${i.monto} - Método: ${i.metodo}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  ${detalleGastos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Gastos (${detalleGastos.length})</h2>\n    ${detalleGastos.map(g => `\n      <div class=\"item\">\n        <strong>${g.descripcion}</strong><br>\n        Monto: $${g.monto} - Categoría: ${g.categoria}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  <div class=\"section\" style=\"background: #f5f5f5; text-align: center;\">\n    <p>Este es tu reporte automático diario</p>\n    <p>Generado por tu sistema POS</p>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    comercio_id: comercio.comercio_id,\n    slug: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    fecha: comercio.fecha_ayer,\n    total_ingresos: totalIngresos,\n    total_gastos: totalGastos,\n    balance: balance,\n    cantidad_transacciones: transacciones.length,\n    html: html\n  }\n}];"
+        },
+        "id": "1d454056-c128-462e-b25b-7b4083fa7862",
+        "name": "Generar Reporte HTML",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          736,
+          -112
+        ],
+        "notes": "Calcula totales y genera HTML del reporte"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email }}",
+          "subject": "=📊 Reporte Diario - {{ $json.nombre }} - {{ $json.fecha }}",
+          "message": "={{ $json.html }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "1434a96b-da30-4cc7-ad28-fbcf8fa7dab0",
+        "name": "Enviar Email",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          960,
+          -112
+        ],
+        "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "QQTzXBhgix2IhKE4",
+            "name": "Gmail account"
+          }
+        },
+        "notes": "Envía el reporte por email"
+      },
+      {
+        "parameters": {},
+        "id": "a47586c0-d5e5-45a3-a129-fbd40f492960",
+        "name": "Loop Back",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          -48
+        ]
+      },
+      {
+        "parameters": {
+          "content": "REPORTE AUTOMATICO 7AM ",
+          "height": 352,
+          "width": 1904,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -496,
+          -208
+        ],
+        "id": "d8debb55-5635-4ce0-be2b-4454a86a839a",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 8
+              }
+            ]
+          }
+        },
+        "id": "bf68a287-53b6-4b18-8014-2889f7370c9c",
+        "name": "Schedule Trigger - 8 AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -432,
+          416
+        ],
+        "notes": "Ejecuta todos los días a las 8 AM"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "has-comercios",
+                "leftValue": "={{ $json.length }}",
+                "rightValue": "0",
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "db9bc329-851d-4556-9b9c-9be83fa5cac2",
+        "name": "¿Hay comercios sin URL?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          16,
+          416
+        ],
+        "notes": "Verifica si hay comercios que necesitan URL"
+      },
+      {
+        "parameters": {
+          "jsCode": "const comercio = $input.first().json;\nconst baseURL = 'https://arnaldoayalaestratega.com/pos/';\n\n// Generar URL personalizada\nconst urlApp = `${baseURL}?id=${comercio.slug}`;\n\nreturn [{\n  json: {\n    id: comercio.id,\n    slug: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    url_app: urlApp\n  }\n}];"
+        },
+        "id": "c98e5f55-bb44-4119-a17b-d31208b8e4be",
+        "name": "Generar URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          464,
+          352
+        ],
+        "notes": "Crea la URL personalizada del POS"
+      },
+      {
+        "parameters": {
+          "jsCode": "const comercio = $input.first().json[0];\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5; }\n    .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px; }\n    .welcome { font-size: 28px; margin: 0; }\n    .section { margin: 25px 0; }\n    .url-box { background: #f8f9fa; border: 2px solid #667eea; padding: 20px; border-radius: 5px; text-align: center; }\n    .url-link { font-size: 18px; color: #667eea; font-weight: bold; word-break: break-all; }\n    .instructions { background: #e7f3ff; padding: 20px; border-radius: 5px; border-left: 4px solid #2196F3; }\n    .button { display: inline-block; background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }\n    .footer { text-align: center; color: #666; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1 class=\"welcome\">¡Bienvenido a tu Sistema POS! 🎉</h1>\n    </div>\n    \n    <div class=\"section\">\n      <h2>Hola ${comercio.nombre_local},</h2>\n      <p>Tu cuenta ha sido creada exitosamente. Ya podés empezar a usar tu sistema de punto de venta personalizado.</p>\n    </div>\n    \n    <div class=\"section\">\n      <h3>Tu URL Personalizada:</h3>\n      <div class=\"url-box\">\n        <a href=\"${comercio.url_app}\" class=\"url-link\">${comercio.url_app}</a>\n      </div>\n      <p style=\"text-align: center;\">\n        <a href=\"${comercio.url_app}\" class=\"button\">Acceder a mi POS</a>\n      </p>\n    </div>\n    \n    <div class=\"instructions\">\n      <h3>📱 Cómo usar tu POS:</h3>\n      <ol>\n        <li><strong>Guardá el link:</strong> Agregá la URL a tus favoritos o pantalla de inicio</li>\n        <li><strong>Registrá ventas:</strong> Usá el formulario para ingresar cada transacción</li>\n        <li><strong>Registrá gastos:</strong> Mantené control de tus egresos</li>\n        <li><strong>Recibí reportes:</strong> Cada día a las 7 AM recibirás tu reporte automático</li>\n      </ol>\n    </div>\n    \n    <div class=\"section\">\n      <h3>💡 Beneficios:</h3>\n      <ul>\n        <li>✅ Control total de tus ingresos y gastos</li>\n        <li>✅ Reportes diarios automáticos por email</li>\n        <li>✅ Acceso desde cualquier dispositivo</li>\n        <li>✅ Información segura en la nube</li>\n      </ul>\n    </div>\n    \n    <div class=\"footer\">\n      <p>Si tenés alguna duda, respondé este email.</p>\n      <p><strong>Equipo de Soporte</strong></p>\n    </div>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    email: comercio.email,\n    nombre: comercio.nombre_local,\n    slug: comercio.slug,\n    url: comercio.url_app,\n    html: html\n  }\n}];"
+        },
+        "id": "56eaf834-9251-49c9-a01f-ebe99f9c5804",
+        "name": "Preparar Email Bienvenida",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          912,
+          352
+        ],
+        "notes": "Genera el HTML del email de bienvenida"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email }}",
+          "subject": "=🎉 ¡Bienvenido a tu Sistema POS! - {{ $json.nombre }}",
+          "message": "={{ $json.html }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "178b0138-783d-47cc-b970-ec9cc2179d4a",
+        "name": "Enviar Email Bienvenida",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          1136,
+          352
+        ],
+        "webhookId": "a224d39e-2cb3-431b-b26e-c5bca4cf03b0",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "QQTzXBhgix2IhKE4",
+            "name": "Gmail account"
+          }
+        },
+        "notes": "Envía el email con la URL y las instrucciones"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "b82ecdec-429b-4b74-bf1a-aba2803501b4",
+        "name": "Loop Comercios1",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          240,
+          416
+        ],
+        "notes": "Procesa cada comercio uno por uno"
+      },
+      {
+        "parameters": {},
+        "id": "0606b479-f2b8-4a30-8d9d-302981143e2e",
+        "name": "Loop Back1",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1360,
+          416
+        ]
+      },
+      {
+        "parameters": {
+          "content": "Detectar Nuevos Comerciantes (SUPABASE)",
+          "height": 400,
+          "width": 2064,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -480,
+          256
+        ],
+        "id": "532676e7-e1b5-462b-b7da-58c794ba162f",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "path": "comerciante",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "1944abdf-c446-4044-b800-145dd34b7833",
+        "name": "Webhook - GET Comerciante",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -384,
+          -752
+        ],
+        "webhookId": "obtener-comerciante-supabase"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener el comercio del nodo Supabase\nconst data = $input.first().json;\n\n// Si Supabase devuelve array, tomar el primer elemento\nconst comercio = Array.isArray(data) ? data[0] : data;\n\n// Verificar si existe el comercio\nif (!comercio || !comercio.slug) {\n  return [{\n    json: {\n      error: true,\n      message: 'Comerciante no encontrado'\n    }\n  }];\n}\n\n// Formatear respuesta para la app\nreturn [{\n  json: {\n    id: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    whatsapp: comercio.whatsapp || '',\n    tipo_negocio: comercio.tipo_negocio || '',\n    activo: comercio.activo,\n    url_app: comercio.url_app || ''\n  }\n}];"
+        },
+        "id": "d3da0a68-c576-4f24-9d6f-d0d843500763",
+        "name": "Formatear Respuesta",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          64,
+          -752
+        ],
+        "notes": "Transforma los datos de Supabase al formato que espera la app"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "id": "6dc47941-f070-4c07-837a-c7c5fde474c9",
+        "name": "Respond to Webhook1",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          288,
+          -752
+        ]
+      },
+      {
+        "parameters": {
+          "content": "OBTENER ID COMERCIANTE\n",
+          "height": 272,
+          "width": 1216
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -496,
+          -832
+        ],
+        "id": "b15bb03d-3351-432e-b89d-269ef936620b",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.query.id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          -752
+        ],
+        "id": "c31175ff-924b-487f-bb6d-4fa81d5e28db",
+        "name": "Leer Comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          -48
+        ],
+        "id": "0f4fa0fd-92e6-4cc8-99a9-c729dc72c651",
+        "name": "Obtener Comercios Activos1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "transacciones"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          512,
+          -112
+        ],
+        "id": "88b98de3-76a0-4e35-a5db-167f08475715",
+        "name": "Obtener Transacciones Ayer1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          416
+        ],
+        "id": "5d91140f-48d7-4169-bcfd-79aaa78287c5",
+        "name": "Detectar Comercios Sin URL1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableId": "comercios"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          688,
+          352
+        ],
+        "id": "92517fe7-bf58-48b3-bf98-a34eece4d121",
+        "name": "Actualizar URL en DB1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "pos-guardar-venta",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -384,
+          -400
+        ],
+        "id": "9ebd5e7e-4926-43a7-87df-4d1284ef7f8a",
+        "name": "Webhook Guardar Transaccion",
+        "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo === 'INGRESO' ? 'venta' : 'gasto',  // Convertir a formato Supabase\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString()\n};\n\n// Campos específicos según tipo\nif (transaccion.tipo === 'venta') {  // Cambiado de 'INGRESO' a 'venta'\n  transaccion.metodo_pago = body.metodo || null;\n  \n  // Extraer productos de la descripción\n  if (body.descripcion) {\n    const items = body.descripcion.split(',');\n    const productos = [];\n    \n    for (const item of items) {\n      const match = item.trim().match(/\\d+\\.\\s*(.+?):\\s*\\$?([\\d.]+)/);\n      if (match) {\n        productos.push({\n          nombre: match[1].trim(),\n          precio: parseFloat(match[2])\n        });\n      }\n    }\n    \n    if (productos.length > 0) {\n      transaccion.productos = productos;\n    }\n  }\n}\n\nif (transaccion.tipo === 'gasto') {  // Cambiado de 'GASTO' a 'gasto'\n  transaccion.categoria_gasto = body.categoria || null;\n}\n\nreturn { json: transaccion };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          32,
+          -400
+        ],
+        "id": "f79001ef-5418-4938-8685-ce265c8f8b3a",
+        "name": "Preparar Datos"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "limit": 1,
+          "matchType": "allFilters",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "condition": "eq",
+                "keyValue": "={{ $json.body.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -176,
+          -400
+        ],
+        "id": "3d624786-9117-43c1-b8f2-26647c0b750c",
+        "name": "Buscar comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          -400
+        ],
+        "id": "dd9c6e90-7b96-4073-8507-a5ac75818665",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "tableId": "transacciones",
+          "dataToSend": "autoMapInputData"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          256,
+          -400
+        ],
+        "id": "de48d98e-a1ce-4f8f-a827-f20ef8985d4c",
+        "name": "Guardar en Supabase",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger - 7 AM": {
+        "main": [
+          [
+            {
+              "node": "Obtener Comercios Activos1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Comercios": {
+        "main": [
+          [
+            {
+              "node": "Preparar Fechas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Fechas": {
+        "main": [
+          [
+            {
+              "node": "Obtener Transacciones Ayer1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generar Reporte HTML": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email": {
+        "main": [
+          [
+            {
+              "node": "Loop Back",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Back": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger - 8 AM": {
+        "main": [
+          [
+            {
+              "node": "Detectar Comercios Sin URL1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "¿Hay comercios sin URL?": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generar URL": {
+        "main": [
+          [
+            {
+              "node": "Actualizar URL en DB1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Email Bienvenida": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email Bienvenida": {
+        "main": [
+          [
+            {
+              "node": "Loop Back1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Comercios1": {
+        "main": [
+          [
+            {
+              "node": "Generar URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Back1": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook - GET Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Leer Comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formatear Respuesta": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Leer Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Comercios Activos1": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Transacciones Ayer1": {
+        "main": [
+          [
+            {
+              "node": "Generar Reporte HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Detectar Comercios Sin URL1": {
+        "main": [
+          [
+            {
+              "node": "¿Hay comercios sin URL?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Actualizar URL en DB1": {
+        "main": [
+          [
+            {
+              "node": "Preparar Email Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Guardar Transaccion": {
+        "main": [
+          [
+            {
+              "node": "Buscar comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar comerciante": {
+        "main": [
+          [
+            {
+              "node": "Preparar Datos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Datos": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 664eb81d",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
