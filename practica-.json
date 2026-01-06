@@ -1,0 +1,103 @@
+{
+  "updatedAt": "2026-01-02T17:33:46.870Z",
+  "createdAt": "2025-12-30T02:43:11.945Z",
+  "id": "uGS9LKCUsD4KfPJy",
+  "name": "PRACTICA",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "REGISTRO DE NUEVOS COMERCIANTES",
+        "height": 400,
+        "width": 2064,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        224
+      ],
+      "id": "532676e7-e1b5-462b-b7da-58c794ba162f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "71eda557-78b2-4dc5-ac80-cfbb9d851f35",
+              "name": "TELEFONO soporte",
+              "value": "={{ $env.TELEFONO_SOPORTE }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        784
+      ],
+      "id": "d3afc509-93dd-4146-9696-95c13b7fc4bc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -304,
+        784
+      ],
+      "id": "f587342c-47a1-492b-88f8-27bcd0546032",
+      "name": "When chat message received",
+      "webhookId": "1456c4ee-df78-4170-bb9d-39589bf5ccf7"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Schedule Trigger - 7 AM": {
+      "recurrenceRules": []
+    },
+    "node:Schedule Trigger - 8 AM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "3539f3a1-e486-4d13-a348-30aa1a443aa7",
+  "activeVersionId": null,
+  "triggerCount": 5,
+  "shared": [
+    {
+      "updatedAt": "2025-12-30T02:43:11.949Z",
+      "createdAt": "2025-12-30T02:43:11.949Z",
+      "role": "workflow:owner",
+      "workflowId": "uGS9LKCUsD4KfPJy",
+      "projectId": "5wyU6IQi37W80C5f"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
