@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-05T21:32:59.883Z",
+  "updatedAt": "2026-01-06T15:33:50.031Z",
   "createdAt": "2026-01-02T17:23:25.044Z",
   "id": "dlGejtGTxqLT2H2r",
   "name": "Editar y Eliminar Transacciones",
@@ -525,8 +525,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        272,
-        2576
+        704,
+        2592
       ]
     },
     {
@@ -540,20 +540,20 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        576,
-        2576
+        1056,
+        2592
       ]
     },
     {
       "parameters": {
-        "jsCode": "const result = $input.first().json;\n\nreturn {\n  json: {\n    success: true,\n    message: 'Transacción eliminada correctamente',\n    id_eliminado: result.id\n  }\n};"
+        "jsCode": "return {\n  json: {\n    id: $json.query.id\n  }\n};"
       },
       "id": "435af05f-b400-4479-a33d-7a0cb1aa73ec",
       "name": "Formatear Respuesta Eliminar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
+        768,
         2976
       ]
     },
@@ -568,7 +568,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        464,
+        1136,
         2976
       ]
     },
@@ -620,7 +620,7 @@
       "typeVersion": 1.1,
       "position": [
         -320,
-        2576
+        2592
       ],
       "webhookId": "transaccion-ops"
     },
@@ -660,20 +660,29 @@
     {
       "parameters": {
         "method": "PATCH",
-        "url": "=https://pczrzpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?id=eq.{{ $json.id }}",
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.id }}"
+            }
+          ]
+        },
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
-              "name": "ontent-Type",
+              "name": "Content-Type",
               "value": "application/json"
             },
             {
@@ -684,14 +693,14 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"monto\": {{ $json.body.monto }},\n  \"descripcion\": \"{{ $json.body.descripcion }}\"\n}",
+        "jsonBody": "={\n  \"monto\": {{ $json.monto }},\n  \"descripcion\": \"{{ $json.descripcion }}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        0,
-        2576
+        336,
+        2592
       ],
       "id": "d4534e5b-e1bc-4ae1-ad4e-8c40f4405cc9",
       "name": "HTTP Request1"
@@ -729,16 +738,74 @@
     },
     {
       "parameters": {
+        "method": "DELETE",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        0,
+        352,
         2976
       ],
       "id": "c58d54eb-7975-482a-b552-562a29eba18d",
       "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id,\n    monto: parseFloat(body.monto),\n    descripcion: body.descripcion\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        2592
+      ],
+      "id": "85c8399f-daba-449a-8780-4b6b8f59f4a5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        2976
+      ],
+      "id": "9a203c3a-27cd-4504-b478-ffcbade0c8bd",
+      "name": "Code in JavaScript1"
     }
   ],
   "connections": {
@@ -1010,7 +1077,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request1",
+            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
@@ -1021,7 +1088,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request2",
+            "node": "Code in JavaScript1",
             "type": "main",
             "index": 0
           }
@@ -1049,6 +1116,28 @@
           }
         ]
       ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1071,8 +1160,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "c28cd24e-91a2-4f79-aa9b-599ba9763255",
-  "activeVersionId": "a0820502-3b21-4130-9cda-9a37900132c5",
+  "versionId": "20252547-fbfc-4d76-8f5c-c67e947db337",
+  "activeVersionId": "5748d4d1-350b-480d-a773-42dc895da003",
   "triggerCount": 7,
   "shared": [
     {
@@ -1084,9 +1173,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-05T21:28:28.000Z",
-    "createdAt": "2026-01-05T21:27:17.260Z",
-    "versionId": "a0820502-3b21-4130-9cda-9a37900132c5",
+    "updatedAt": "2026-01-06T15:31:51.000Z",
+    "createdAt": "2026-01-06T15:31:32.512Z",
+    "versionId": "5748d4d1-350b-480d-a773-42dc895da003",
     "workflowId": "dlGejtGTxqLT2H2r",
     "nodes": [
       {
@@ -1608,8 +1697,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          368,
-          2432
+          704,
+          2592
         ]
       },
       {
@@ -1623,40 +1712,21 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          672,
-          2432
+          1056,
+          2592
         ]
       },
       {
         "parameters": {
-          "operation": "__CUSTOM_API_CALL__"
-        },
-        "id": "40d58f33-e454-4e12-9bfb-4749e9500589",
-        "name": "Eliminar Transacción",
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          144,
-          2640
-        ],
-        "credentials": {
-          "supabaseApi": {
-            "id": "ouVde1rrsOjUmz1c",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "const result = $input.first().json;\n\nreturn {\n  json: {\n    success: true,\n    message: 'Transacción eliminada correctamente',\n    id_eliminado: result.id\n  }\n};"
+          "jsCode": "// Obtener ID desde query o body\nconst id = $json.query?.id || $json.body?.id;\n\nreturn {\n  json: {\n    id: id\n  }\n};"
         },
         "id": "435af05f-b400-4479-a33d-7a0cb1aa73ec",
         "name": "Formatear Respuesta Eliminar",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          368,
-          2640
+          768,
+          2976
         ]
       },
       {
@@ -1670,8 +1740,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          592,
-          2640
+          1136,
+          2976
         ]
       },
       {
@@ -1721,8 +1791,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1.1,
         "position": [
-          -224,
-          2432
+          -320,
+          2592
         ],
         "webhookId": "transaccion-ops"
       },
@@ -1738,8 +1808,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1.1,
         "position": [
-          -176,
-          2640
+          -304,
+          2976
         ],
         "webhookId": "transaccion-ops"
       },
@@ -1762,20 +1832,29 @@
       {
         "parameters": {
           "method": "PATCH",
-          "url": "=https://pczrzpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?id=eq.{{ $json.id }}",
+          "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "id",
+                "value": "=eq.{{ $json.id }}"
+              }
+            ]
+          },
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
               {
                 "name": "apikey",
-                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
-                "name": "ontent-Type",
+                "name": "Content-Type",
                 "value": "application/json"
               },
               {
@@ -1786,17 +1865,119 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"monto\": {{ $json.body.monto }},\n  \"descripcion\": \"{{ $json.body.descripcion }}\"\n}",
+          "jsonBody": "={\n  \"monto\": {{ $json.monto }},\n  \"descripcion\": \"{{ $json.descripcion }}\"\n}",
           "options": {}
         },
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          96,
-          2432
+          336,
+          2592
         ],
         "id": "d4534e5b-e1bc-4ae1-ad4e-8c40f4405cc9",
         "name": "HTTP Request1"
+      },
+      {
+        "parameters": {
+          "content": "EDITAR TRANSACCION",
+          "height": 352,
+          "width": 1840,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -416,
+          2464
+        ],
+        "id": "9df47c00-131a-426b-aef7-cce6f429c14b",
+        "name": "Sticky Note5"
+      },
+      {
+        "parameters": {
+          "content": "ELIMINAR TRANSACCION",
+          "height": 352,
+          "width": 1840
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -400,
+          2896
+        ],
+        "id": "967a3523-e62d-4201-9fda-e89007fd357d",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "id",
+                "value": "=eq.{{ $json.id }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          352,
+          2976
+        ],
+        "id": "c58d54eb-7975-482a-b552-562a29eba18d",
+        "name": "HTTP Request2"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id,\n    monto: parseFloat(body.monto),\n    descripcion: body.descripcion\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -16,
+          2592
+        ],
+        "id": "85c8399f-daba-449a-8780-4b6b8f59f4a5",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          48,
+          2976
+        ],
+        "id": "9a203c3a-27cd-4504-b478-ffcbade0c8bd",
+        "name": "Code in JavaScript1"
       }
     ],
     "connections": {
@@ -2042,17 +2223,6 @@
           ]
         ]
       },
-      "Eliminar Transacción": {
-        "main": [
-          [
-            {
-              "node": "Formatear Respuesta Eliminar",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Formatear Respuesta Eliminar": {
         "main": [
           [
@@ -2079,7 +2249,7 @@
         "main": [
           [
             {
-              "node": "HTTP Request1",
+              "node": "Code in JavaScript",
               "type": "main",
               "index": 0
             }
@@ -2090,7 +2260,7 @@
         "main": [
           [
             {
-              "node": "Eliminar Transacción",
+              "node": "Code in JavaScript1",
               "type": "main",
               "index": 0
             }
@@ -2107,10 +2277,43 @@
             }
           ]
         ]
+      },
+      "HTTP Request2": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta Eliminar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version a0820502",
+    "name": "Version 5748d4d1",
     "description": "",
     "autosaved": false
   },
