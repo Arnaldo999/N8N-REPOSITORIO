@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-07T15:25:48.330Z",
+  "updatedAt": "2026-01-09T22:05:23.878Z",
   "createdAt": "2026-01-02T17:23:25.044Z",
   "id": "dlGejtGTxqLT2H2r",
   "name": "Editar y Eliminar Transacciones",
@@ -21,120 +21,6 @@
       ],
       "id": "de5c8d10-f13d-4a58-91c4-7f551f53ded3",
       "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 7
-            }
-          ]
-        }
-      },
-      "id": "73db928d-06ea-40ac-a860-9d3967bad645",
-      "name": "Schedule Trigger - 7 AM",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -304,
-        1200
-      ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "9f60eb12-ea2e-4e9d-99f5-0801a6b72b8f",
-      "name": "Loop Comercios",
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        144,
-        1200
-      ],
-      "notes": "Procesa cada comercio uno por uno"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Calcular fecha de AYER\nconst ayer = new Date();\nayer.setDate(ayer.getDate() - 1);\nayer.setHours(0, 0, 0, 0);\n\nconst fechaAyer = ayer.toISOString().split('T')[0]; // YYYY-MM-DD\n\nconst comercio = $input.first().json;\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    slug: comercio.slug,\n    nombre_local: comercio.nombre_local,\n    email: comercio.email,\n    fecha_ayer: fechaAyer\n  }\n}];"
-      },
-      "id": "7f77a98c-4b93-4ae6-a59b-0151f9f147f7",
-      "name": "Preparar Fechas",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        368,
-        1120
-      ],
-      "notes": "Calcula la fecha de ayer para el reporte"
-    },
-    {
-      "parameters": {
-        "jsCode": "const comercio = $('Preparar Fechas').first().json;\nconst transacciones = $input.first().json;\n\n// Calcular totales\nlet totalIngresos = 0;\nlet totalGastos = 0;\nlet detalleIngresos = [];\nlet detalleGastos = [];\n\nfor (const t of transacciones) {\n  if (t.tipo === 'INGRESO') {\n    totalIngresos += parseFloat(t.monto);\n    detalleIngresos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      metodo: t.metodo_pago\n    });\n  } else if (t.tipo === 'GASTO') {\n    totalGastos += parseFloat(t.monto);\n    detalleGastos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      categoria: t.categoria_gasto\n    });\n  }\n}\n\nconst balance = totalIngresos - totalGastos;\n\n// Generar HTML del reporte\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: #4CAF50; color: white; padding: 20px; border-radius: 5px; text-align: center; }\n    .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }\n    .total { font-size: 24px; font-weight: bold; }\n    .balance { font-size: 28px; font-weight: bold; color: ${balance >= 0 ? '#4CAF50' : '#f44336'}; }\n    .item { padding: 10px; border-bottom: 1px solid #eee; }\n    .item:last-child { border-bottom: none; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Reporte Diario</h1>\n    <p>${comercio.nombre_local}</p>\n    <p>${comercio.fecha_ayer}</p>\n  </div>\n  \n  <div class=\"section\">\n    <h2>Resumen</h2>\n    <p>Total Ingresos: <span class=\"total\" style=\"color: #4CAF50;\">$${totalIngresos.toFixed(2)}</span></p>\n    <p>Total Gastos: <span class=\"total\" style=\"color: #f44336;\">$${totalGastos.toFixed(2)}</span></p>\n    <p>Balance: <span class=\"balance\">$${balance.toFixed(2)}</span></p>\n  </div>\n  \n  ${detalleIngresos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Ingresos (${detalleIngresos.length})</h2>\n    ${detalleIngresos.map(i => `\n      <div class=\"item\">\n        <strong>${i.descripcion}</strong><br>\n        Monto: $${i.monto} - Método: ${i.metodo}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  ${detalleGastos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Gastos (${detalleGastos.length})</h2>\n    ${detalleGastos.map(g => `\n      <div class=\"item\">\n        <strong>${g.descripcion}</strong><br>\n        Monto: $${g.monto} - Categoría: ${g.categoria}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  <div class=\"section\" style=\"background: #f5f5f5; text-align: center;\">\n    <p>Este es tu reporte automático diario</p>\n    <p>Generado por tu sistema POS</p>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    comercio_id: comercio.comercio_id,\n    slug: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    fecha: comercio.fecha_ayer,\n    total_ingresos: totalIngresos,\n    total_gastos: totalGastos,\n    balance: balance,\n    cantidad_transacciones: transacciones.length,\n    html: html\n  }\n}];"
-      },
-      "id": "af00e3e8-d6ec-42f7-a68e-a177f41c0e36",
-      "name": "Generar Reporte HTML",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        816,
-        1120
-      ],
-      "notes": "Calcula totales y genera HTML del reporte"
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $json.email }}",
-        "subject": "=📊 Reporte Diario - {{ $json.nombre }} - {{ $json.fecha }}",
-        "message": "={{ $json.html }}",
-        "options": {
-          "appendAttribution": false
-        }
-      },
-      "id": "5b6ffb96-5f67-4612-9a0b-20c29466077d",
-      "name": "Enviar Email",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        1040,
-        1120
-      ],
-      "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "QQTzXBhgix2IhKE4",
-          "name": "Gmail account"
-        }
-      },
-      "notes": "Envía el reporte por email"
-    },
-    {
-      "parameters": {},
-      "id": "2b43204d-93ed-4b56-ba0d-099ea45803be",
-      "name": "Loop Back",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        1200
-      ]
-    },
-    {
-      "parameters": {
-        "content": "REPORTE AUTOMATICO 7AM ",
-        "height": 352,
-        "width": 1904,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -448,
-        1088
-      ],
-      "id": "bdd711c5-1695-4626-95c7-fb938bb7f00a",
-      "name": "Sticky Note1"
     },
     {
       "parameters": {
@@ -226,46 +112,6 @@
     },
     {
       "parameters": {
-        "operation": "get",
-        "tableId": "comercios"
-      },
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [
-        -80,
-        1200
-      ],
-      "id": "9ba82088-16d4-4ad7-a024-3dbca1873212",
-      "name": "Obtener Comercios Activos1",
-      "credentials": {
-        "supabaseApi": {
-          "id": "ouVde1rrsOjUmz1c",
-          "name": "Supabase account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "tableId": "transacciones"
-      },
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [
-        592,
-        1120
-      ],
-      "id": "10f27378-9adf-4c01-9594-79ff086ca83e",
-      "name": "Obtener Transacciones Ayer1",
-      "credentials": {
-        "supabaseApi": {
-          "id": "ouVde1rrsOjUmz1c",
-          "name": "Supabase account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "pos-guardar-venta",
         "responseMode": "responseNode",
@@ -283,7 +129,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción (SIN CONVERTIR EL TIPO)\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,  // ✅ CORRECTO - Mantener 'INGRESO' o 'GASTO'\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString()\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {  // ✅ CORRECTO - Comparar con 'INGRESO'\n  transaccion.metodo_pago = body.metodo_pago || null;\n  \n  // Extraer productos de la descripción\n  if (body.descripcion) {\n    const items = body.descripcion.split(',');\n    const productos = [];\n    \n    for (const item of items) {\n      const match = item.trim().match(/(.+?)\\s+x(\\d+)/);\n      if (match) {\n        productos.push({\n          nombre: match[1].trim(),\n          cantidad: parseInt(match[2])\n        });\n      }\n    }\n    \n    if (productos.length > 0) {\n      transaccion.productos = productos;\n    }\n  }\n}\n\nif (body.tipo === 'GASTO') {  // ✅ CORRECTO - Comparar con 'GASTO'\n  transaccion.categoria_gasto = body.categoria_gasto || null;\n}\n\nreturn { json: transaccion };"
+        "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local  // ✅ Ahora SIEMPRE viene de la app\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo_pago || body.metodo || null;\n}\n\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria_gasto || body.categoria || null;\n}\n\nconsole.log('✅ Transacción preparada:', transaccion);\nreturn { json: transaccion };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -738,7 +584,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Datos del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// Todos los comercios existentes\nconst comercios = $input.all();\n\n// Función para generar el siguiente slug\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) {\n    return 'C001';\n  }\n  \n  // Extraer números de los slugs existentes (C001, C002, etc.)\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) {\n    return 'C001';\n  }\n  \n  // Encontrar el número más alto y sumar 1\n  const maxNumero = Math.max(...numeros);\n  const nuevoNumero = maxNumero + 1;\n  \n  // Formatear con ceros a la izquierda (C001, C002, etc.)\n  return 'C' + nuevoNumero.toString().padStart(3, '0');\n}\n\n// Generar slug automáticamente\nconst nuevoSlug = generarSiguienteSlug(comercios);\n\n// Generar URL de la app\nconst urlApp = `https://arnaldoayalaestratega.com/pos/?id=${nuevoSlug}`;\n\n// ✅ CORREGIDO: Usar nombre_local (que viene del formulario)\nconst nuevoComercio = {\n  slug: nuevoSlug,\n  nombre_local: body.nombre_local,  // ← CAMBIO AQUÍ\n  email: body.email,\n  whatsapp: body.whatsapp,\n  tipo_negocio: body.tipo_negocio,\n  direccion: body.direccion,\n  ciudad: body.ciudad,\n  activo: true,\n  url_app: urlApp\n};\n\nreturn { json: nuevoComercio };"
+        "jsCode": "// 1. Capturamos los datos que vienen del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios actuales para saber cuál sigue\nconst comercios = $input.all();\n\n// 3. Función para calcular el siguiente ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  \n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) return 'C001';\n  \n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\n// 4. Generamos el nuevo ID y el PIN aleatorio\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 5. URL limpia para la App\nconst urlApp = `https://arnaldoayalaestratega.com/pos/`;\n\n// 6. Resultado final para Supabase y Email\nreturn {\n  json: {\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp\n  }\n};"
       },
       "id": "558b4e54-59dc-400f-a80e-df08ffcaded0",
       "name": "Generar Slug y URL",
@@ -753,7 +599,7 @@
       "parameters": {
         "sendTo": "={{ $json.email }}",
         "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
-        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📊 Reportes 7:00 AM</span>\n      Cada mañana recibirás un resumen automático con tus ganancias netas y balance del día anterior directamente en tu bandeja de entrada.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Abre el link arriba, presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Añadir a pantalla de inicio\"</strong>. Así tendrás el sistema como una App real en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
         "options": {
           "appendAttribution": false
         }
@@ -808,75 +654,614 @@
           "name": "Supabase account"
         }
       }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "e6176f48-0b60-4d82-b8ff-9b0df6829dab",
+      "name": "Schedule Trigger - 7 AM1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b8a6f09c-e1e7-4b1b-bb84-f547d9104a6c",
+      "name": "Loop Comercios1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        1184
+      ],
+      "notes": "Procesa cada comercio uno por uno"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Wait 5 s').item.json.email }}",
+        "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "14914131-2d17-4bb8-83ad-aa7adc6580ce",
+      "name": "Enviar Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        1104
+      ],
+      "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fdjizcXJ11yHz2MO",
+          "name": "Gmail account 2"
+        }
+      },
+      "notes": "Envía el reporte por email"
+    },
+    {
+      "parameters": {},
+      "id": "4d7c51c6-b61b-4f59-8019-f5ff2d2275ec",
+      "name": "Loop Back1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "content": "REPORTE AUTOMATICO 7AM ",
+        "height": 352,
+        "width": 1904,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        1072
+      ],
+      "id": "b27893d9-92bf-46e4-9cd3-176388cceaab",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1184
+      ],
+      "id": "3942a95f-bb48-4f61-9243-9d03e5e95f34",
+      "name": "Obtener Comercios Activos",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        1104
+      ],
+      "id": "1021e1f4-f6e6-4c3e-b502-447f8ba264e6",
+      "name": "Wait 5 s",
+      "webhookId": "70450871-98b4-4cb1-b6be-df5707fa63ce"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Actúa como Arnaldo Ayala, estratega en IA y Marketing. Tu misión es enviar una mentoría diaria potente.\n\nEstructura del mensaje:\n\nStorytelling (Muy breve): Una frase sobre un reto de un comercio genérico (ej: 'Vi a un colega agobiado por no saber qué publicar...').\n\nCONSEJO DE VALOR: Entrega un consejo util real de administración para comerciantes o IA aplicado a ventas (ej: un prompt específico o un tip contable). Este debe ser el corazón del mensaje.\n\nLlamado a la Acción (CTA): Finaliza invitando a seguirte en instagram.com/arnaldoestratega para más tips, visitar en los botones que estan abajo y escribirme al WhatsApp si tienen dudas o Consultas. Recalca que estás para ayudarles a profesionalizar su negocio con n8n, Web y ADS.\n\nReglas:\n\nTono: Empático, experto y motivador.\n\nExtensión: Máximo 450-500 caracteres.\n\nFormato: Texto fluido, sin negritas.\"*"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        1104
+      ],
+      "id": "ea0956e0-81d3-4e3f-a3c5-25ff77bd13b9",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zKiLUTcFJsS07lKl",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inventario",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9512a07a-8736-4793-8acd-0676e03b3161",
+      "name": "Webhook Inventario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        1568
+      ],
+      "webhookId": "inventario-v1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del formulario\nconst body = $input.first().json.body;\n\n// Validar que vengan los datos requeridos\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\n// Preparar datos\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
+      },
+      "id": "65503c5d-1fc9-4350-ae77-8247816a4ba4",
+      "name": "Validar Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.slug }}"
+            }
+          ]
+        }
+      },
+      "id": "6da09ae6-4cb1-4d75-a037-aaeeb7434001",
+      "name": "Buscar Comercio",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        1568
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el comercio encontrado\nconst comercio = $input.first().json;\n\n// Obtener los datos del producto del nodo anterior\nconst producto = $('Validar Datos').first().json;\n\n// Verificar que se encontró el comercio\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado con el ID proporcionado');\n}\n\n// Preparar datos para insertar en inventario\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
+      },
+      "id": "b137d628-9b56-43e4-83c1-aa34b9c970ca",
+      "name": "Preparar Inserción",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "inventario",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "16851aec-0eb1-4fe3-b55a-a4038fb2f1fe",
+      "name": "Guardar Producto",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3024,
+        1568
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Producto guardado exitosamente\", \"producto\": { \"id\": $json.id, \"codigo\": $json.codigo, \"nombre\": $json.nombre, \"precio\": $json.precio } } }}",
+        "options": {}
+      },
+      "id": "eb78641c-7ce8-47f0-8783-38a8a1d8aefa",
+      "name": "Responder Éxito",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3248,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "content": "CARGAR-INVENTARIO",
+        "height": 416,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        1472
+      ],
+      "id": "553bc713-dffc-4273-9583-7708f8795fe4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "CONSULTAR-INVENTARIO",
+        "height": 352,
+        "width": 1744,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        2064
+      ],
+      "id": "6296263c-0633-4676-8789-480676d72c3e",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "path": "consulta-inventario",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8364cc09-df26-424e-8c32-d63ef16b185f",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        2176
+      ],
+      "webhookId": "consulta-inventario-simple"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "id": "64298fc6-a343-435e-b87e-6283d1bf3037",
+      "name": "Buscar Comercio1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        2176
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?comercio_id=eq.{{ $('Buscar Comercio1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2608,
+        2176
+      ],
+      "id": "4658b125-adea-4516-982a-45affe9b0e99",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos para dejar solo lo que la App necesita\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio\n    }\n  };\n});"
+      },
+      "id": "3da04240-92c3-4d53-adc9-e0a434bf5c5e",
+      "name": "Formatear Respuesta1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        2176
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "c59d437a-6490-46d8-b08e-be3e754d561c",
+      "name": "Responder1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3120,
+        2176
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2064,
+        2672
+      ],
+      "id": "d2bc8e19-207d-4262-b6e4-0370f0e1ef98",
+      "name": "Webhook",
+      "webhookId": "b5f9cebe-1f41-4b7c-8eef-b9d3c7927280"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        2672
+      ],
+      "id": "31e892a6-9eb1-495b-a41e-7f30d7f0ed1c",
+      "name": "Buscar Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del webhook y de Supabase\nconst inputData = $input.first().json;\nconst pinIngresado = $('Webhook').item.json.body.pin;\n\n// Verificar si se encontró el comerciante\nif (!inputData || !inputData.id) {\n  return {\n    json: {\n      success: false,\n      message: \"ID de comerciante no encontrado\"\n    }\n  };\n}\n\n// Verificar si el comerciante tiene PIN configurado\n// CAMBIO: Buscar \"pin\" en lugar de \"pin_acceso\"\nif (!inputData.pin) {\n  return {\n    json: {\n      success: false,\n      message: \"Este comerciante no tiene PIN configurado\"\n    }\n  };\n}\n\n// Comparar PINs\nconst pinCorrecto = inputData.pin.toString();\nconst pinIntentado = pinIngresado.toString();\n\nif (pinCorrecto === pinIntentado) {\n  return {\n    json: {\n      success: true,\n      message: \"Login exitoso\",\n      comerciante: {\n        id: inputData.slug,\n        nombre: inputData.nombre_local\n      }\n    }\n  };\n} else {\n  return {\n    json: {\n      success: false,\n      message: \"PIN incorrecto\"\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        2672
+      ],
+      "id": "7030172f-89cf-4ac5-b481-fc033cc73742",
+      "name": "Verificar PIN"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2688,
+        2672
+      ],
+      "id": "199d241a-75e4-4c15-a74f-ea5c372206a1",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "content": "FLUJO DE LOGIN",
+        "height": 384,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        2480
+      ],
+      "id": "b7b60d36-3409-41f7-b242-8feeb46f625a",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "guardar-local",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        3472
+      ],
+      "id": "cff62541-293f-4812-9644-192ae997efe1",
+      "name": "Webhook Guardar Transaccion1",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el cuerpo del webhook\nconst body = $('Webhook Guardar Transaccion1').first().json.body;\nconst transacciones = body.transacciones;\n\n// 2. Datos del comerciante\nconst comerciante = $input.first().json;\n\nif (!comerciante || !comerciante.id) {\n  throw new Error('Comerciante no encontrado en la base de datos');\n}\n\n// 3. Validar si es una lista o una sola\nconst listaAProcesar = Array.isArray(transacciones) ? transacciones : [body];\n\n// 4. Procesar cada una\nreturn listaAProcesar.map(t => {\n  const registro = {\n    comercio_id: comerciante.id,\n    tipo: t.tipo, \n    monto: parseFloat(t.monto) || 0,\n    descripcion: t.descripcion || null,\n    fecha_hora: t.fecha_hora || new Date().toISOString(),\n    metodo_pago: t.metodo_pago || t.metodo || null,  // ✅ Acepta ambos\n    categoria_gasto: t.categoria_gasto || t.categoria || null,  // ✅ Acepta ambos\n    id_local: t.id || t.id_local || null\n  };\n\n  return { json: registro };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        3472
+      ],
+      "id": "9de68bfe-0754-4a81-bda6-c3e17a325034",
+      "name": "Preparar Datos1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        3472
+      ],
+      "id": "d5f7fbaa-88d2-4e2d-badd-7ede8f5ed65b",
+      "name": "Buscar comerciante1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "ouVde1rrsOjUmz1c",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        608,
+        3472
+      ],
+      "id": "6ec7f647-d084-4380-8f6c-9c811a8968ab",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "content": "GUARDAR TRANSACCION LOCAL STORAGE",
+        "height": 352,
+        "width": 1616
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        3376
+      ],
+      "id": "be431575-33c0-4b9a-904d-9e8676e336f5",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        3472
+      ],
+      "id": "18f0cb53-5e39-4609-8abf-124780bb0971",
+      "name": "Guardar en Supabase2"
     }
   ],
   "connections": {
-    "Schedule Trigger - 7 AM": {
-      "main": [
-        [
-          {
-            "node": "Obtener Comercios Activos1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Comercios": {
-      "main": [
-        [
-          {
-            "node": "Preparar Fechas",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Preparar Fechas": {
-      "main": [
-        [
-          {
-            "node": "Obtener Transacciones Ayer1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generar Reporte HTML": {
-      "main": [
-        [
-          {
-            "node": "Enviar Email",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar Email": {
-      "main": [
-        [
-          {
-            "node": "Loop Back",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Back": {
-      "main": [
-        [
-          {
-            "node": "Loop Comercios",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Webhook - GET Comerciante": {
       "main": [
         [
@@ -904,28 +1289,6 @@
         [
           {
             "node": "Formatear Respuesta",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Obtener Comercios Activos1": {
-      "main": [
-        [
-          {
-            "node": "Loop Comercios",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Obtener Transacciones Ayer1": {
-      "main": [
-        [
-          {
-            "node": "Generar Reporte HTML",
             "type": "main",
             "index": 0
           }
@@ -1140,6 +1503,260 @@
           }
         ]
       ]
+    },
+    "Schedule Trigger - 7 AM1": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comercios Activos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Comercios1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 5 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email1": {
+      "main": [
+        [
+          {
+            "node": "Loop Back1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back1": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comercios Activos": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 s": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Inventario": {
+      "main": [
+        [
+          {
+            "node": "Validar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Datos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comercio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comercio": {
+      "main": [
+        [
+          {
+            "node": "Preparar Inserción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Inserción": {
+      "main": [
+        [
+          {
+            "node": "Guardar Producto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Producto": {
+      "main": [
+        [
+          {
+            "node": "Responder Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comercio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comercio1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta1": {
+      "main": [
+        [
+          {
+            "node": "Responder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Verificar PIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar PIN": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Guardar Transaccion1": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos1": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante1": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1148,7 +1765,8 @@
     "timeSavedMode": "fixed",
     "timezone": "America/Argentina/Buenos_Aires",
     "callerPolicy": "workflowsFromSameOwner",
-    "saveDataSuccessExecution": "all"
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
   },
   "staticData": {
     "node:Schedule Trigger - 7 AM": {
@@ -1156,15 +1774,18 @@
     },
     "node:Schedule Trigger - 8 AM": {
       "recurrenceRules": []
+    },
+    "node:Schedule Trigger - 7 AM1": {
+      "recurrenceRules": []
     }
   },
   "meta": {
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "6623a6f3-19c9-4e9e-aa48-7cbf6a88f57d",
-  "activeVersionId": "685b9b1e-08fb-4037-acd1-2ce5727a3c0a",
-  "triggerCount": 8,
+  "versionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
+  "activeVersionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
+  "triggerCount": 11,
   "shared": [
     {
       "updatedAt": "2026-01-02T17:23:25.049Z",
@@ -1175,9 +1796,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-07T15:20:41.000Z",
-    "createdAt": "2026-01-07T15:20:20.348Z",
-    "versionId": "685b9b1e-08fb-4037-acd1-2ce5727a3c0a",
+    "updatedAt": "2026-01-09T22:05:32.000Z",
+    "createdAt": "2026-01-09T22:05:23.898Z",
+    "versionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
     "workflowId": "dlGejtGTxqLT2H2r",
     "nodes": [
       {
@@ -1195,120 +1816,6 @@
         ],
         "id": "de5c8d10-f13d-4a58-91c4-7f551f53ded3",
         "name": "Sticky Note"
-      },
-      {
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "triggerAtHour": 7
-              }
-            ]
-          }
-        },
-        "id": "73db928d-06ea-40ac-a860-9d3967bad645",
-        "name": "Schedule Trigger - 7 AM",
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.2,
-        "position": [
-          -304,
-          1200
-        ]
-      },
-      {
-        "parameters": {
-          "options": {}
-        },
-        "id": "9f60eb12-ea2e-4e9d-99f5-0801a6b72b8f",
-        "name": "Loop Comercios",
-        "type": "n8n-nodes-base.splitInBatches",
-        "typeVersion": 3,
-        "position": [
-          144,
-          1200
-        ],
-        "notes": "Procesa cada comercio uno por uno"
-      },
-      {
-        "parameters": {
-          "jsCode": "// Calcular fecha de AYER\nconst ayer = new Date();\nayer.setDate(ayer.getDate() - 1);\nayer.setHours(0, 0, 0, 0);\n\nconst fechaAyer = ayer.toISOString().split('T')[0]; // YYYY-MM-DD\n\nconst comercio = $input.first().json;\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    slug: comercio.slug,\n    nombre_local: comercio.nombre_local,\n    email: comercio.email,\n    fecha_ayer: fechaAyer\n  }\n}];"
-        },
-        "id": "7f77a98c-4b93-4ae6-a59b-0151f9f147f7",
-        "name": "Preparar Fechas",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          368,
-          1120
-        ],
-        "notes": "Calcula la fecha de ayer para el reporte"
-      },
-      {
-        "parameters": {
-          "jsCode": "const comercio = $('Preparar Fechas').first().json;\nconst transacciones = $input.first().json;\n\n// Calcular totales\nlet totalIngresos = 0;\nlet totalGastos = 0;\nlet detalleIngresos = [];\nlet detalleGastos = [];\n\nfor (const t of transacciones) {\n  if (t.tipo === 'INGRESO') {\n    totalIngresos += parseFloat(t.monto);\n    detalleIngresos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      metodo: t.metodo_pago\n    });\n  } else if (t.tipo === 'GASTO') {\n    totalGastos += parseFloat(t.monto);\n    detalleGastos.push({\n      descripcion: t.descripcion || 'Sin descripción',\n      monto: t.monto,\n      categoria: t.categoria_gasto\n    });\n  }\n}\n\nconst balance = totalIngresos - totalGastos;\n\n// Generar HTML del reporte\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: #4CAF50; color: white; padding: 20px; border-radius: 5px; text-align: center; }\n    .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }\n    .total { font-size: 24px; font-weight: bold; }\n    .balance { font-size: 28px; font-weight: bold; color: ${balance >= 0 ? '#4CAF50' : '#f44336'}; }\n    .item { padding: 10px; border-bottom: 1px solid #eee; }\n    .item:last-child { border-bottom: none; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>Reporte Diario</h1>\n    <p>${comercio.nombre_local}</p>\n    <p>${comercio.fecha_ayer}</p>\n  </div>\n  \n  <div class=\"section\">\n    <h2>Resumen</h2>\n    <p>Total Ingresos: <span class=\"total\" style=\"color: #4CAF50;\">$${totalIngresos.toFixed(2)}</span></p>\n    <p>Total Gastos: <span class=\"total\" style=\"color: #f44336;\">$${totalGastos.toFixed(2)}</span></p>\n    <p>Balance: <span class=\"balance\">$${balance.toFixed(2)}</span></p>\n  </div>\n  \n  ${detalleIngresos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Ingresos (${detalleIngresos.length})</h2>\n    ${detalleIngresos.map(i => `\n      <div class=\"item\">\n        <strong>${i.descripcion}</strong><br>\n        Monto: $${i.monto} - Método: ${i.metodo}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  ${detalleGastos.length > 0 ? `\n  <div class=\"section\">\n    <h2>Gastos (${detalleGastos.length})</h2>\n    ${detalleGastos.map(g => `\n      <div class=\"item\">\n        <strong>${g.descripcion}</strong><br>\n        Monto: $${g.monto} - Categoría: ${g.categoria}\n      </div>\n    `).join('')}\n  </div>\n  ` : ''}\n  \n  <div class=\"section\" style=\"background: #f5f5f5; text-align: center;\">\n    <p>Este es tu reporte automático diario</p>\n    <p>Generado por tu sistema POS</p>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    comercio_id: comercio.comercio_id,\n    slug: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    fecha: comercio.fecha_ayer,\n    total_ingresos: totalIngresos,\n    total_gastos: totalGastos,\n    balance: balance,\n    cantidad_transacciones: transacciones.length,\n    html: html\n  }\n}];"
-        },
-        "id": "af00e3e8-d6ec-42f7-a68e-a177f41c0e36",
-        "name": "Generar Reporte HTML",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          816,
-          1120
-        ],
-        "notes": "Calcula totales y genera HTML del reporte"
-      },
-      {
-        "parameters": {
-          "sendTo": "={{ $json.email }}",
-          "subject": "=📊 Reporte Diario - {{ $json.nombre }} - {{ $json.fecha }}",
-          "message": "={{ $json.html }}",
-          "options": {
-            "appendAttribution": false
-          }
-        },
-        "id": "5b6ffb96-5f67-4612-9a0b-20c29466077d",
-        "name": "Enviar Email",
-        "type": "n8n-nodes-base.gmail",
-        "typeVersion": 2.2,
-        "position": [
-          1040,
-          1120
-        ],
-        "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
-        "credentials": {
-          "gmailOAuth2": {
-            "id": "QQTzXBhgix2IhKE4",
-            "name": "Gmail account"
-          }
-        },
-        "notes": "Envía el reporte por email"
-      },
-      {
-        "parameters": {},
-        "id": "2b43204d-93ed-4b56-ba0d-099ea45803be",
-        "name": "Loop Back",
-        "type": "n8n-nodes-base.noOp",
-        "typeVersion": 1,
-        "position": [
-          1264,
-          1200
-        ]
-      },
-      {
-        "parameters": {
-          "content": "REPORTE AUTOMATICO 7AM ",
-          "height": 352,
-          "width": 1904,
-          "color": 4
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          -448,
-          1088
-        ],
-        "id": "bdd711c5-1695-4626-95c7-fb938bb7f00a",
-        "name": "Sticky Note1"
       },
       {
         "parameters": {
@@ -1400,46 +1907,6 @@
       },
       {
         "parameters": {
-          "operation": "get",
-          "tableId": "comercios"
-        },
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          -80,
-          1200
-        ],
-        "id": "9ba82088-16d4-4ad7-a024-3dbca1873212",
-        "name": "Obtener Comercios Activos1",
-        "credentials": {
-          "supabaseApi": {
-            "id": "ouVde1rrsOjUmz1c",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "operation": "get",
-          "tableId": "transacciones"
-        },
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          592,
-          1120
-        ],
-        "id": "10f27378-9adf-4c01-9594-79ff086ca83e",
-        "name": "Obtener Transacciones Ayer1",
-        "credentials": {
-          "supabaseApi": {
-            "id": "ouVde1rrsOjUmz1c",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
           "httpMethod": "POST",
           "path": "pos-guardar-venta",
           "responseMode": "responseNode",
@@ -1457,7 +1924,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción (SIN CONVERTIR EL TIPO)\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,  // ✅ CORRECTO - Mantener 'INGRESO' o 'GASTO'\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString()\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {  // ✅ CORRECTO - Comparar con 'INGRESO'\n  transaccion.metodo_pago = body.metodo_pago || null;\n  \n  // Extraer productos de la descripción\n  if (body.descripcion) {\n    const items = body.descripcion.split(',');\n    const productos = [];\n    \n    for (const item of items) {\n      const match = item.trim().match(/(.+?)\\s+x(\\d+)/);\n      if (match) {\n        productos.push({\n          nombre: match[1].trim(),\n          cantidad: parseInt(match[2])\n        });\n      }\n    }\n    \n    if (productos.length > 0) {\n      transaccion.productos = productos;\n    }\n  }\n}\n\nif (body.tipo === 'GASTO') {  // ✅ CORRECTO - Comparar con 'GASTO'\n  transaccion.categoria_gasto = body.categoria_gasto || null;\n}\n\nreturn { json: transaccion };"
+          "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local  // ✅ Ahora SIEMPRE viene de la app\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo_pago || body.metodo || null;\n}\n\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria_gasto || body.categoria || null;\n}\n\nconsole.log('✅ Transacción preparada:', transaccion);\nreturn { json: transaccion };"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1879,124 +2346,13 @@
           "responseMode": "responseNode",
           "options": {}
         },
-        "id": "bf2b4f58-7c76-45f2-ab83-b88ea376983a",
-        "name": "Webhook Registro1",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -256,
-          1616
-        ],
-        "webhookId": "registro-comerciante-v1"
-      },
-      {
-        "parameters": {
-          "operation": "getAll",
-          "tableId": "comercios",
-          "returnAll": true
-        },
-        "id": "f74ca42b-b36c-44db-9deb-e51bb37ed124",
-        "name": "Obtener Todos los Comercios1",
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          -32,
-          1616
-        ],
-        "credentials": {
-          "supabaseApi": {
-            "id": "ouVde1rrsOjUmz1c",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "// Datos del formulario\nconst body = $('Webhook Registro1').first().json.body;\n\n// Todos los comercios existentes\nconst comercios = $input.all();\n\n// Función para generar el siguiente slug\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) {\n    return 'C001';\n  }\n  \n  // Extraer números de los slugs existentes (C001, C002, etc.)\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) {\n    return 'C001';\n  }\n  \n  // Encontrar el número más alto y sumar 1\n  const maxNumero = Math.max(...numeros);\n  const nuevoNumero = maxNumero + 1;\n  \n  // Formatear con ceros a la izquierda (C001, C002, etc.)\n  return 'C' + nuevoNumero.toString().padStart(3, '0');\n}\n\n// Generar slug automáticamente\nconst nuevoSlug = generarSiguienteSlug(comercios);\n\n// Generar URL de la app\nconst urlApp = `https://arnaldoayalaestratega.com/pos/?id=${nuevoSlug}`;\n\n// ✅ CORREGIDO: Usar nombre_local (que viene del formulario)\nconst nuevoComercio = {\n  slug: nuevoSlug,\n  nombre_local: body.nombre_local,  // ← CAMBIO AQUÍ\n  email: body.email,\n  whatsapp: body.whatsapp,\n  tipo_negocio: body.tipo_negocio,\n  direccion: body.direccion,\n  ciudad: body.ciudad,\n  activo: true,\n  url_app: urlApp\n};\n\nreturn { json: nuevoComercio };"
-        },
-        "id": "e7943217-65e3-41a4-bb37-91d897b16da2",
-        "name": "Generar Slug y URL1",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          192,
-          1616
-        ]
-      },
-      {
-        "parameters": {
-          "sendTo": "={{ $json.email }}",
-          "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
-          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📊 Reportes 7:00 AM</span>\n      Cada mañana recibirás un resumen automático con tus ganancias netas y balance del día anterior directamente en tu bandeja de entrada.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Abre el link arriba, presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Añadir a pantalla de inicio\"</strong>. Así tendrás el sistema como una App real en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
-          "options": {
-            "appendAttribution": false
-          }
-        },
-        "id": "43b96e60-d6a4-4ed4-953e-490da551d85b",
-        "name": "Enviar Email Bienvenida1",
-        "type": "n8n-nodes-base.gmail",
-        "typeVersion": 2.1,
-        "position": [
-          640,
-          1616
-        ],
-        "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
-        "credentials": {
-          "gmailOAuth2": {
-            "id": "fdjizcXJ11yHz2MO",
-            "name": "Gmail account 2"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
-          "options": {}
-        },
-        "id": "1428e9dc-78f2-4b36-817d-a784cdb859bb",
-        "name": "Responder1",
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          864,
-          1616
-        ]
-      },
-      {
-        "parameters": {
-          "tableId": "comercios",
-          "dataToSend": "autoMapInputData"
-        },
-        "id": "fbf9fcb8-a501-4810-a188-113feab9ac3a",
-        "name": "Guardar en Supabase2",
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          416,
-          1616
-        ],
-        "credentials": {
-          "supabaseApi": {
-            "id": "ouVde1rrsOjUmz1c",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "registro-comerciante",
-          "responseMode": "responseNode",
-          "options": {}
-        },
         "id": "e9c8f82f-7dc7-4915-9e99-aa874fdd891b",
         "name": "Webhook Registro",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          1680,
-          1648
+          -288,
+          1632
         ],
         "webhookId": "registro-comerciante-v1"
       },
@@ -2011,8 +2367,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          1904,
-          1648
+          -80,
+          1632
         ],
         "credentials": {
           "supabaseApi": {
@@ -2023,22 +2379,22 @@
       },
       {
         "parameters": {
-          "jsCode": "// Datos del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// Todos los comercios existentes\nconst comercios = $input.all();\n\n// Función para generar el siguiente slug\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) {\n    return 'C001';\n  }\n  \n  // Extraer números de los slugs existentes (C001, C002, etc.)\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) {\n    return 'C001';\n  }\n  \n  // Encontrar el número más alto y sumar 1\n  const maxNumero = Math.max(...numeros);\n  const nuevoNumero = maxNumero + 1;\n  \n  // Formatear con ceros a la izquierda (C001, C002, etc.)\n  return 'C' + nuevoNumero.toString().padStart(3, '0');\n}\n\n// Generar slug automáticamente\nconst nuevoSlug = generarSiguienteSlug(comercios);\n\n// Generar URL de la app\nconst urlApp = `https://arnaldoayalaestratega.com/pos/?id=${nuevoSlug}`;\n\n// ✅ CORREGIDO: Usar nombre_local (que viene del formulario)\nconst nuevoComercio = {\n  slug: nuevoSlug,\n  nombre_local: body.nombre_local,  // ← CAMBIO AQUÍ\n  email: body.email,\n  whatsapp: body.whatsapp,\n  tipo_negocio: body.tipo_negocio,\n  direccion: body.direccion,\n  ciudad: body.ciudad,\n  activo: true,\n  url_app: urlApp\n};\n\nreturn { json: nuevoComercio };"
+          "jsCode": "// 1. Capturamos los datos que vienen del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios actuales para saber cuál sigue\nconst comercios = $input.all();\n\n// 3. Función para calcular el siguiente ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  \n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) return 'C001';\n  \n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\n// 4. Generamos el nuevo ID y el PIN aleatorio\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 5. URL limpia para la App\nconst urlApp = `https://arnaldoayalaestratega.com/pos/`;\n\n// 6. Resultado final para Supabase y Email\nreturn {\n  json: {\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp\n  }\n};"
         },
         "id": "558b4e54-59dc-400f-a80e-df08ffcaded0",
         "name": "Generar Slug y URL",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2128,
-          1648
+          144,
+          1632
         ]
       },
       {
         "parameters": {
           "sendTo": "={{ $json.email }}",
           "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
-          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📊 Reportes 7:00 AM</span>\n      Cada mañana recibirás un resumen automático con tus ganancias netas y balance del día anterior directamente en tu bandeja de entrada.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Abre el link arriba, presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Añadir a pantalla de inicio\"</strong>. Así tendrás el sistema como una App real en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
           "options": {
             "appendAttribution": false
           }
@@ -2048,8 +2404,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          2576,
-          1648
+          592,
+          1632
         ],
         "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
         "credentials": {
@@ -2070,8 +2426,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.1,
         "position": [
-          2800,
-          1648
+          816,
+          1632
         ]
       },
       {
@@ -2084,8 +2440,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          2352,
-          1648
+          368,
+          1632
         ],
         "credentials": {
           "supabaseApi": {
@@ -2093,75 +2449,614 @@
             "name": "Supabase account"
           }
         }
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 7
+              }
+            ]
+          }
+        },
+        "id": "e6176f48-0b60-4d82-b8ff-9b0df6829dab",
+        "name": "Schedule Trigger - 7 AM1",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -448,
+          1184
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "b8a6f09c-e1e7-4b1b-bb84-f547d9104a6c",
+        "name": "Loop Comercios1",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          0,
+          1184
+        ],
+        "notes": "Procesa cada comercio uno por uno"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $('Wait 5 s').item.json.email }}",
+          "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "14914131-2d17-4bb8-83ad-aa7adc6580ce",
+        "name": "Enviar Email1",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          976,
+          1104
+        ],
+        "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "fdjizcXJ11yHz2MO",
+            "name": "Gmail account 2"
+          }
+        },
+        "notes": "Envía el reporte por email"
+      },
+      {
+        "parameters": {},
+        "id": "4d7c51c6-b61b-4f59-8019-f5ff2d2275ec",
+        "name": "Loop Back1",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1232,
+          1184
+        ]
+      },
+      {
+        "parameters": {
+          "content": "REPORTE AUTOMATICO 7AM ",
+          "height": 352,
+          "width": 1904,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -480,
+          1072
+        ],
+        "id": "b27893d9-92bf-46e4-9cd3-176388cceaab",
+        "name": "Sticky Note7"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "returnAll": true,
+          "filterType": "none"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          1184
+        ],
+        "id": "3942a95f-bb48-4f61-9243-9d03e5e95f34",
+        "name": "Obtener Comercios Activos",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          336,
+          1104
+        ],
+        "id": "1021e1f4-f6e6-4c3e-b502-447f8ba264e6",
+        "name": "Wait 5 s",
+        "webhookId": "70450871-98b4-4cb1-b6be-df5707fa63ce"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "models/gemini-2.5-flash",
+            "mode": "list",
+            "cachedResultName": "models/gemini-2.5-flash"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "Actúa como Arnaldo Ayala, estratega en IA y Marketing. Tu misión es enviar una mentoría diaria potente.\n\nEstructura del mensaje:\n\nStorytelling (Muy breve): Una frase sobre un reto de un comercio genérico (ej: 'Vi a un colega agobiado por no saber qué publicar...').\n\nCONSEJO DE VALOR: Entrega un consejo util real de administración para comerciantes o IA aplicado a ventas (ej: un prompt específico o un tip contable). Este debe ser el corazón del mensaje.\n\nLlamado a la Acción (CTA): Finaliza invitando a seguirte en instagram.com/arnaldoestratega para más tips, visitar en los botones que estan abajo y escribirme al WhatsApp si tienen dudas o Consultas. Recalca que estás para ayudarles a profesionalizar su negocio con n8n, Web y ADS.\n\nReglas:\n\nTono: Empático, experto y motivador.\n\nExtensión: Máximo 450-500 caracteres.\n\nFormato: Texto fluido, sin negritas.\"*"
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.googleGemini",
+        "typeVersion": 1.1,
+        "position": [
+          592,
+          1104
+        ],
+        "id": "ea0956e0-81d3-4e3f-a3c5-25ff77bd13b9",
+        "name": "Message a model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "zKiLUTcFJsS07lKl",
+            "name": "Google Gemini(PaLM) Api account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inventario",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "9512a07a-8736-4793-8acd-0676e03b3161",
+        "name": "Webhook Inventario",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          2144,
+          1568
+        ],
+        "webhookId": "inventario-v1"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener datos del formulario\nconst body = $input.first().json.body;\n\n// Validar que vengan los datos requeridos\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\n// Preparar datos\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
+        },
+        "id": "65503c5d-1fc9-4350-ae77-8247816a4ba4",
+        "name": "Validar Datos",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2368,
+          1568
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.slug }}"
+              }
+            ]
+          }
+        },
+        "id": "6da09ae6-4cb1-4d75-a037-aaeeb7434001",
+        "name": "Buscar Comercio",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          2592,
+          1568
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener el comercio encontrado\nconst comercio = $input.first().json;\n\n// Obtener los datos del producto del nodo anterior\nconst producto = $('Validar Datos').first().json;\n\n// Verificar que se encontró el comercio\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado con el ID proporcionado');\n}\n\n// Preparar datos para insertar en inventario\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
+        },
+        "id": "b137d628-9b56-43e4-83c1-aa34b9c970ca",
+        "name": "Preparar Inserción",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2816,
+          1568
+        ]
+      },
+      {
+        "parameters": {
+          "tableId": "inventario",
+          "dataToSend": "autoMapInputData"
+        },
+        "id": "16851aec-0eb1-4fe3-b55a-a4038fb2f1fe",
+        "name": "Guardar Producto",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          3024,
+          1568
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"success\": true, \"message\": \"Producto guardado exitosamente\", \"producto\": { \"id\": $json.id, \"codigo\": $json.codigo, \"nombre\": $json.nombre, \"precio\": $json.precio } } }}",
+          "options": {}
+        },
+        "id": "eb78641c-7ce8-47f0-8783-38a8a1d8aefa",
+        "name": "Responder Éxito",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          3248,
+          1568
+        ]
+      },
+      {
+        "parameters": {
+          "content": "CARGAR-INVENTARIO",
+          "height": 416,
+          "width": 1728
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1984,
+          1472
+        ],
+        "id": "553bc713-dffc-4273-9583-7708f8795fe4",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "CONSULTAR-INVENTARIO",
+          "height": 352,
+          "width": 1744,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1968,
+          2064
+        ],
+        "id": "6296263c-0633-4676-8789-480676d72c3e",
+        "name": "Sticky Note8"
+      },
+      {
+        "parameters": {
+          "path": "consulta-inventario",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "8364cc09-df26-424e-8c32-d63ef16b185f",
+        "name": "Webhook1",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          2096,
+          2176
+        ],
+        "webhookId": "consulta-inventario-simple"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.query.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "id": "64298fc6-a343-435e-b87e-6283d1bf3037",
+        "name": "Buscar Comercio1",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          2352,
+          2176
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?comercio_id=eq.{{ $('Buscar Comercio1').item.json.id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2608,
+          2176
+        ],
+        "id": "4658b125-adea-4516-982a-45affe9b0e99",
+        "name": "HTTP Request4"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos para dejar solo lo que la App necesita\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio\n    }\n  };\n});"
+        },
+        "id": "3da04240-92c3-4d53-adc9-e0a434bf5c5e",
+        "name": "Formatear Respuesta1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2864,
+          2176
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "allIncomingItems",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "c59d437a-6490-46d8-b08e-be3e754d561c",
+        "name": "Responder1",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          3120,
+          2176
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "login",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          2064,
+          2672
+        ],
+        "id": "d2bc8e19-207d-4262-b6e4-0370f0e1ef98",
+        "name": "Webhook",
+        "webhookId": "b5f9cebe-1f41-4b7c-8eef-b9d3c7927280"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.body.cliente_id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          2272,
+          2672
+        ],
+        "id": "31e892a6-9eb1-495b-a41e-7f30d7f0ed1c",
+        "name": "Buscar Comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener datos del webhook y de Supabase\nconst inputData = $input.first().json;\nconst pinIngresado = $('Webhook').item.json.body.pin;\n\n// Verificar si se encontró el comerciante\nif (!inputData || !inputData.id) {\n  return {\n    json: {\n      success: false,\n      message: \"ID de comerciante no encontrado\"\n    }\n  };\n}\n\n// Verificar si el comerciante tiene PIN configurado\n// CAMBIO: Buscar \"pin\" en lugar de \"pin_acceso\"\nif (!inputData.pin) {\n  return {\n    json: {\n      success: false,\n      message: \"Este comerciante no tiene PIN configurado\"\n    }\n  };\n}\n\n// Comparar PINs\nconst pinCorrecto = inputData.pin.toString();\nconst pinIntentado = pinIngresado.toString();\n\nif (pinCorrecto === pinIntentado) {\n  return {\n    json: {\n      success: true,\n      message: \"Login exitoso\",\n      comerciante: {\n        id: inputData.slug,\n        nombre: inputData.nombre_local\n      }\n    }\n  };\n} else {\n  return {\n    json: {\n      success: false,\n      message: \"PIN incorrecto\"\n    }\n  };\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2480,
+          2672
+        ],
+        "id": "7030172f-89cf-4ac5-b481-fc033cc73742",
+        "name": "Verificar PIN"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2688,
+          2672
+        ],
+        "id": "199d241a-75e4-4c15-a74f-ea5c372206a1",
+        "name": "Respond to Webhook2"
+      },
+      {
+        "parameters": {
+          "content": "FLUJO DE LOGIN",
+          "height": 384,
+          "width": 1728
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1968,
+          2480
+        ],
+        "id": "b7b60d36-3409-41f7-b242-8feeb46f625a",
+        "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "guardar-local",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -288,
+          3472
+        ],
+        "id": "cff62541-293f-4812-9644-192ae997efe1",
+        "name": "Webhook Guardar Transaccion1",
+        "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Obtenemos el cuerpo del webhook\nconst body = $('Webhook Guardar Transaccion1').first().json.body;\nconst transacciones = body.transacciones;\n\n// 2. Datos del comerciante\nconst comerciante = $input.first().json;\n\nif (!comerciante || !comerciante.id) {\n  throw new Error('Comerciante no encontrado en la base de datos');\n}\n\n// 3. Validar si es una lista o una sola\nconst listaAProcesar = Array.isArray(transacciones) ? transacciones : [body];\n\n// 4. Procesar cada una\nreturn listaAProcesar.map(t => {\n  const registro = {\n    comercio_id: comerciante.id,\n    tipo: t.tipo, \n    monto: parseFloat(t.monto) || 0,\n    descripcion: t.descripcion || null,\n    fecha_hora: t.fecha_hora || new Date().toISOString(),\n    metodo_pago: t.metodo_pago || t.metodo || null,  // ✅ Acepta ambos\n    categoria_gasto: t.categoria_gasto || t.categoria || null,  // ✅ Acepta ambos\n    id_local: t.id || t.id_local || null\n  };\n\n  return { json: registro };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          160,
+          3472
+        ],
+        "id": "9de68bfe-0754-4a81-bda6-c3e17a325034",
+        "name": "Preparar Datos1"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.body.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          3472
+        ],
+        "id": "d5f7fbaa-88d2-4e2d-badd-7ede8f5ed65b",
+        "name": "Buscar comerciante1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "ouVde1rrsOjUmz1c",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          608,
+          3472
+        ],
+        "id": "6ec7f647-d084-4380-8f6c-9c811a8968ab",
+        "name": "Respond to Webhook3"
+      },
+      {
+        "parameters": {
+          "content": "GUARDAR TRANSACCION LOCAL STORAGE",
+          "height": 352,
+          "width": 1616
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -368,
+          3376
+        ],
+        "id": "be431575-33c0-4b9a-904d-9e8676e336f5",
+        "name": "Sticky Note10"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "resolution=merge-duplicates"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          384,
+          3472
+        ],
+        "id": "18f0cb53-5e39-4609-8abf-124780bb0971",
+        "name": "Guardar en Supabase2"
       }
     ],
     "connections": {
-      "Schedule Trigger - 7 AM": {
-        "main": [
-          [
-            {
-              "node": "Obtener Comercios Activos1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Loop Comercios": {
-        "main": [
-          [
-            {
-              "node": "Preparar Fechas",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Preparar Fechas": {
-        "main": [
-          [
-            {
-              "node": "Obtener Transacciones Ayer1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Generar Reporte HTML": {
-        "main": [
-          [
-            {
-              "node": "Enviar Email",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Enviar Email": {
-        "main": [
-          [
-            {
-              "node": "Loop Back",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Loop Back": {
-        "main": [
-          [
-            {
-              "node": "Loop Comercios",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Webhook - GET Comerciante": {
         "main": [
           [
@@ -2189,28 +3084,6 @@
           [
             {
               "node": "Formatear Respuesta",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Obtener Comercios Activos1": {
-        "main": [
-          [
-            {
-              "node": "Loop Comercios",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Obtener Transacciones Ayer1": {
-        "main": [
-          [
-            {
-              "node": "Generar Reporte HTML",
               "type": "main",
               "index": 0
             }
@@ -2371,61 +3244,6 @@
           ]
         ]
       },
-      "Webhook Registro1": {
-        "main": [
-          [
-            {
-              "node": "Obtener Todos los Comercios1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Obtener Todos los Comercios1": {
-        "main": [
-          [
-            {
-              "node": "Generar Slug y URL1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Generar Slug y URL1": {
-        "main": [
-          [
-            {
-              "node": "Guardar en Supabase2",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Enviar Email Bienvenida1": {
-        "main": [
-          [
-            {
-              "node": "Responder1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Guardar en Supabase2": {
-        "main": [
-          [
-            {
-              "node": "Enviar Email Bienvenida1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Webhook Registro": {
         "main": [
           [
@@ -2480,10 +3298,264 @@
             }
           ]
         ]
+      },
+      "Schedule Trigger - 7 AM1": {
+        "main": [
+          [
+            {
+              "node": "Obtener Comercios Activos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Comercios1": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Wait 5 s",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email1": {
+        "main": [
+          [
+            {
+              "node": "Loop Back1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Back1": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Comercios Activos": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 5 s": {
+        "main": [
+          [
+            {
+              "node": "Message a model",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message a model": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Inventario": {
+        "main": [
+          [
+            {
+              "node": "Validar Datos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validar Datos": {
+        "main": [
+          [
+            {
+              "node": "Buscar Comercio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Comercio": {
+        "main": [
+          [
+            {
+              "node": "Preparar Inserción",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Inserción": {
+        "main": [
+          [
+            {
+              "node": "Guardar Producto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar Producto": {
+        "main": [
+          [
+            {
+              "node": "Responder Éxito",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook1": {
+        "main": [
+          [
+            {
+              "node": "Buscar Comercio1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Comercio1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request4": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formatear Respuesta1": {
+        "main": [
+          [
+            {
+              "node": "Responder1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Buscar Comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Verificar PIN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar PIN": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Guardar Transaccion1": {
+        "main": [
+          [
+            {
+              "node": "Buscar comerciante1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Datos1": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Supabase2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar comerciante1": {
+        "main": [
+          [
+            {
+              "node": "Preparar Datos1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase2": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 685b9b1e",
+    "name": "Version c1206574",
     "description": "",
     "autosaved": false
   },
