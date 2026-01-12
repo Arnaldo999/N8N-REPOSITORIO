@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-09T22:05:23.878Z",
+  "updatedAt": "2026-01-11T23:44:31.074Z",
   "createdAt": "2026-01-02T17:23:25.044Z",
   "id": "dlGejtGTxqLT2H2r",
   "name": "Editar y Eliminar Transacciones",
@@ -129,7 +129,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local  // ✅ Ahora SIEMPRE viene de la app\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo_pago || body.metodo || null;\n}\n\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria_gasto || body.categoria || null;\n}\n\nconsole.log('✅ Transacción preparada:', transaccion);\nreturn { json: transaccion };"
+        "jsCode": "const body = $('Webhook Guardar Transaccion').first().json.body;\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  // ✅ NUEVO: Aquí es donde se llena la columna 'productos' de Supabase\n  productos: body.items || null, \n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local\n};\n\n// Manejo de Ventas\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo || 'Efectivo';\n  transaccion.categoria_gasto = null;\n}\n\n// Manejo de Gastos\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria || 'Otros';\n}\n\nreturn { json: transaccion };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -444,7 +444,7 @@
     },
     {
       "parameters": {
-        "content": "EDITAR TRANSACCION",
+        "content": "EDITAR TRANSACCION HISTORIAL",
         "height": 352,
         "width": 1840,
         "color": 5
@@ -460,7 +460,7 @@
     },
     {
       "parameters": {
-        "content": "ELIMINAR TRANSACCION",
+        "content": "ELIMINAR TRANSACCION HISTORIAL",
         "height": 352,
         "width": 1840
       },
@@ -820,22 +820,22 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        2144,
-        1568
+        2288,
+        544
       ],
       "webhookId": "inventario-v1"
     },
     {
       "parameters": {
-        "jsCode": "// Obtener datos del formulario\nconst body = $input.first().json.body;\n\n// Validar que vengan los datos requeridos\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\n// Preparar datos\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
+        "jsCode": "const body = $input.first().json.body;\n\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    categoria: body.categoria || 'Sin Categoría', // ✅ Agregado\n    stock: parseInt(body.stock) || 0,               // ✅ Agregado\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
       },
       "id": "65503c5d-1fc9-4350-ae77-8247816a4ba4",
       "name": "Validar Datos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2368,
-        1568
+        2512,
+        544
       ]
     },
     {
@@ -856,8 +856,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2592,
-        1568
+        2736,
+        544
       ],
       "credentials": {
         "supabaseApi": {
@@ -868,15 +868,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// Obtener el comercio encontrado\nconst comercio = $input.first().json;\n\n// Obtener los datos del producto del nodo anterior\nconst producto = $('Validar Datos').first().json;\n\n// Verificar que se encontró el comercio\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado con el ID proporcionado');\n}\n\n// Preparar datos para insertar en inventario\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
+        "jsCode": "const comercio = $input.first().json;\nconst producto = $('Validar Datos').first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado');\n}\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    categoria: producto.categoria, // ✅ Agregado\n    stock: producto.stock,         // ✅ Agregado\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
       },
       "id": "b137d628-9b56-43e4-83c1-aa34b9c970ca",
       "name": "Preparar Inserción",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2816,
-        1568
+        2960,
+        544
       ]
     },
     {
@@ -889,8 +889,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        3024,
-        1568
+        3168,
+        544
       ],
       "credentials": {
         "supabaseApi": {
@@ -910,8 +910,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        3248,
-        1568
+        3392,
+        544
       ]
     },
     {
@@ -923,8 +923,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1984,
-        1472
+        2128,
+        432
       ],
       "id": "553bc713-dffc-4273-9583-7708f8795fe4",
       "name": "Sticky Note1"
@@ -939,8 +939,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1968,
-        2064
+        2112,
+        1040
       ],
       "id": "6296263c-0633-4676-8789-480676d72c3e",
       "name": "Sticky Note8"
@@ -956,8 +956,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        2096,
-        2176
+        2240,
+        1152
       ],
       "webhookId": "consulta-inventario-simple"
     },
@@ -979,8 +979,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2352,
-        2176
+        2496,
+        1152
       ],
       "credentials": {
         "supabaseApi": {
@@ -1010,23 +1010,23 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        2608,
-        2176
+        2752,
+        1152
       ],
       "id": "4658b125-adea-4516-982a-45affe9b0e99",
       "name": "HTTP Request4"
     },
     {
       "parameters": {
-        "jsCode": "// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos para dejar solo lo que la App necesita\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio\n    }\n  };\n});"
+        "jsCode": "// Obtenemos los productos que vinieron de la base de datos\n// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos incluyendo TODOS los campos necesarios para la App\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio,\n      categoria: item.json.categoria, // ✅ Agregado\n      stock: item.json.stock           // ✅ Agregado\n    }\n  };\n});"
       },
       "id": "3da04240-92c3-4d53-adc9-e0a434bf5c5e",
       "name": "Formatear Respuesta1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2864,
-        2176
+        3008,
+        1152
       ]
     },
     {
@@ -1041,8 +1041,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        3120,
-        2176
+        3264,
+        1152
       ]
     },
     {
@@ -1055,8 +1055,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        2064,
-        2672
+        2208,
+        1648
       ],
       "id": "d2bc8e19-207d-4262-b6e4-0370f0e1ef98",
       "name": "Webhook",
@@ -1078,8 +1078,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2272,
-        2672
+        2416,
+        1648
       ],
       "id": "31e892a6-9eb1-495b-a41e-7f30d7f0ed1c",
       "name": "Buscar Comerciante",
@@ -1097,8 +1097,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2480,
-        2672
+        2624,
+        1648
       ],
       "id": "7030172f-89cf-4ac5-b481-fc033cc73742",
       "name": "Verificar PIN"
@@ -1112,8 +1112,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        2688,
-        2672
+        2832,
+        1648
       ],
       "id": "199d241a-75e4-4c15-a74f-ea5c372206a1",
       "name": "Respond to Webhook2"
@@ -1127,8 +1127,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1968,
-        2480
+        2112,
+        1456
       ],
       "id": "b7b60d36-3409-41f7-b242-8feeb46f625a",
       "name": "Sticky Note9"
@@ -1259,6 +1259,241 @@
       ],
       "id": "18f0cb53-5e39-4609-8abf-124780bb0971",
       "name": "Guardar en Supabase2"
+    },
+    {
+      "parameters": {
+        "content": "EDITAR INVENTARIO",
+        "height": 352,
+        "width": 1792
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        1968
+      ],
+      "id": "670a1c72-c52a-4d7d-b16f-a9ef825d8cb1",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "ELIMINAR INVENTARIO",
+        "height": 368,
+        "width": 1936
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        2416
+      ],
+      "id": "6da46dcc-0ad8-422c-9ce6-4e1aceac50dd",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "httpMethod": "PUT",
+        "path": "inventario-actualizar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8e019b27-1bce-4377-bea3-8736e1a03c90",
+      "name": "Webhook - Actualizar Inventario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        2208,
+        2064
+      ],
+      "webhookId": "inv-update-ops"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id,\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio: parseFloat(body.precio),\n    stock: parseInt(body.stock) || 0\n  }\n};"
+      },
+      "id": "b1e7dbd1-f5e5-4fe0-8612-7256e108ba86",
+      "name": "Preparar Datos Inventario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        2064
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?codigo=eq.{{ $json.codigo }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "codigo",
+              "value": "=eq.{{ $json.codigo }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"nombre\": \"{{ $json.nombre }}\",\n  \"categoria\": \"{{ $json.categoria }}\",\n  \"precio\": {{ $json.precio }},\n  \"stock\": {{ $json.stock }}\n}",
+        "options": {}
+      },
+      "id": "48a4162f-0bd6-4e55-a845-d7d433ff1835",
+      "name": "HTTP Request Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2864,
+        2064
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    success: true,\n    message: 'Producto actualizado correctamente'\n  }\n};"
+      },
+      "id": "62ee25fd-1858-4404-9c14-0bcb3f588a57",
+      "name": "Formatear Respuesta2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3232,
+        2064
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "cb89c2ac-585b-475a-9100-0b1a37f4a5aa",
+      "name": "Responder2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3584,
+        2064
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    id: $input.first().json.id\n  }\n};"
+      },
+      "id": "6b0e50d4-1d64-404e-946c-b1cf3fd4e216",
+      "name": "Formatear Respuesta Eliminar Inventario1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        2560
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "a9784b95-d685-4979-bf2c-b5ea339fe4da",
+      "name": "Responder Eliminar Inventario1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3616,
+        2560
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "inventario-eliminar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "295a132d-c7fc-423a-95bf-0a04341a9dd3",
+      "name": "Webhook - Eliminar Inventario1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        2176,
+        2560
+      ],
+      "webhookId": "inv-delete-ops"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "codigo",
+              "value": "=eq.{{ $json.codigo }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2832,
+        2560
+      ],
+      "id": "ba261d8f-30d9-4c0e-bd71-c2f397dc8a52",
+      "name": "HTTP Request Delete Inventario1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        2560
+      ],
+      "id": "c3f6d394-957b-4b05-864a-718725ee81c9",
+      "name": "Extract ID JavaScript1"
     }
   ],
   "connections": {
@@ -1757,6 +1992,94 @@
           }
         ]
       ]
+    },
+    "Webhook - Actualizar Inventario": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Inventario": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Supabase": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta2": {
+      "main": [
+        [
+          {
+            "node": "Responder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Eliminar Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Responder Eliminar Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Eliminar Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Extract ID JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Delete Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Eliminar Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ID JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Delete Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1783,9 +2106,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
-  "activeVersionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
-  "triggerCount": 11,
+  "versionId": "273150ea-4f2e-49be-9647-a944d00400cd",
+  "activeVersionId": "273150ea-4f2e-49be-9647-a944d00400cd",
+  "triggerCount": 13,
   "shared": [
     {
       "updatedAt": "2026-01-02T17:23:25.049Z",
@@ -1796,9 +2119,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-09T22:05:32.000Z",
-    "createdAt": "2026-01-09T22:05:23.898Z",
-    "versionId": "c1206574-ef5b-4d9c-a27e-af2215d9ecb7",
+    "updatedAt": "2026-01-11T23:47:22.000Z",
+    "createdAt": "2026-01-11T23:44:31.084Z",
+    "versionId": "273150ea-4f2e-49be-9647-a944d00400cd",
     "workflowId": "dlGejtGTxqLT2H2r",
     "nodes": [
       {
@@ -1924,7 +2247,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// Datos del webhook\nconst body = $('Webhook Guardar Transaccion').first().json.body;\n\n// Comercio de Supabase\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// Preparar transacción\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local  // ✅ Ahora SIEMPRE viene de la app\n};\n\n// Campos específicos según tipo\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo_pago || body.metodo || null;\n}\n\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria_gasto || body.categoria || null;\n}\n\nconsole.log('✅ Transacción preparada:', transaccion);\nreturn { json: transaccion };"
+          "jsCode": "const body = $('Webhook Guardar Transaccion').first().json.body;\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  descripcion: body.descripcion || null,\n  // ✅ NUEVO: Aquí es donde se llena la columna 'productos' de Supabase\n  productos: body.items || null, \n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local\n};\n\n// Manejo de Ventas\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo || 'Efectivo';\n  transaccion.categoria_gasto = null;\n}\n\n// Manejo de Gastos\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria || 'Otros';\n}\n\nreturn { json: transaccion };"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -2239,7 +2562,7 @@
       },
       {
         "parameters": {
-          "content": "EDITAR TRANSACCION",
+          "content": "EDITAR TRANSACCION HISTORIAL",
           "height": 352,
           "width": 1840,
           "color": 5
@@ -2255,7 +2578,7 @@
       },
       {
         "parameters": {
-          "content": "ELIMINAR TRANSACCION",
+          "content": "ELIMINAR TRANSACCION HISTORIAL",
           "height": 352,
           "width": 1840
         },
@@ -2615,22 +2938,22 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          2144,
-          1568
+          2288,
+          544
         ],
         "webhookId": "inventario-v1"
       },
       {
         "parameters": {
-          "jsCode": "// Obtener datos del formulario\nconst body = $input.first().json.body;\n\n// Validar que vengan los datos requeridos\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\n// Preparar datos\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
+          "jsCode": "const body = $input.first().json.body;\n\nif (!body.id_comerciante || !body.nombre || !body.precio) {\n  throw new Error('Faltan datos requeridos: id_comerciante, nombre y precio');\n}\n\nreturn [{\n  json: {\n    slug: body.id_comerciante,\n    nombre: body.nombre.trim(),\n    precio: parseFloat(body.precio),\n    categoria: body.categoria || 'Sin Categoría', // ✅ Agregado\n    stock: parseInt(body.stock) || 0,               // ✅ Agregado\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null\n  }\n}];"
         },
         "id": "65503c5d-1fc9-4350-ae77-8247816a4ba4",
         "name": "Validar Datos",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2368,
-          1568
+          2512,
+          544
         ]
       },
       {
@@ -2651,8 +2974,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          2592,
-          1568
+          2736,
+          544
         ],
         "credentials": {
           "supabaseApi": {
@@ -2663,15 +2986,15 @@
       },
       {
         "parameters": {
-          "jsCode": "// Obtener el comercio encontrado\nconst comercio = $input.first().json;\n\n// Obtener los datos del producto del nodo anterior\nconst producto = $('Validar Datos').first().json;\n\n// Verificar que se encontró el comercio\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado con el ID proporcionado');\n}\n\n// Preparar datos para insertar en inventario\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
+          "jsCode": "const comercio = $input.first().json;\nconst producto = $('Validar Datos').first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado');\n}\n\nreturn [{\n  json: {\n    comercio_id: comercio.id,\n    nombre: producto.nombre,\n    precio: producto.precio,\n    categoria: producto.categoria, // ✅ Agregado\n    stock: producto.stock,         // ✅ Agregado\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
         },
         "id": "b137d628-9b56-43e4-83c1-aa34b9c970ca",
         "name": "Preparar Inserción",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2816,
-          1568
+          2960,
+          544
         ]
       },
       {
@@ -2684,8 +3007,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          3024,
-          1568
+          3168,
+          544
         ],
         "credentials": {
           "supabaseApi": {
@@ -2705,8 +3028,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.1,
         "position": [
-          3248,
-          1568
+          3392,
+          544
         ]
       },
       {
@@ -2718,8 +3041,8 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          1984,
-          1472
+          2128,
+          432
         ],
         "id": "553bc713-dffc-4273-9583-7708f8795fe4",
         "name": "Sticky Note1"
@@ -2734,8 +3057,8 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          1968,
-          2064
+          2112,
+          1040
         ],
         "id": "6296263c-0633-4676-8789-480676d72c3e",
         "name": "Sticky Note8"
@@ -2751,8 +3074,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          2096,
-          2176
+          2240,
+          1152
         ],
         "webhookId": "consulta-inventario-simple"
       },
@@ -2774,8 +3097,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          2352,
-          2176
+          2496,
+          1152
         ],
         "credentials": {
           "supabaseApi": {
@@ -2805,23 +3128,23 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          2608,
-          2176
+          2752,
+          1152
         ],
         "id": "4658b125-adea-4516-982a-45affe9b0e99",
         "name": "HTTP Request4"
       },
       {
         "parameters": {
-          "jsCode": "// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos para dejar solo lo que la App necesita\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio\n    }\n  };\n});"
+          "jsCode": "// Obtenemos los productos que vinieron de la base de datos\n// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos incluyendo TODOS los campos necesarios para la App\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      precio: item.json.precio,\n      categoria: item.json.categoria, // ✅ Agregado\n      stock: item.json.stock           // ✅ Agregado\n    }\n  };\n});"
         },
         "id": "3da04240-92c3-4d53-adc9-e0a434bf5c5e",
         "name": "Formatear Respuesta1",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2864,
-          2176
+          3008,
+          1152
         ]
       },
       {
@@ -2836,8 +3159,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.1,
         "position": [
-          3120,
-          2176
+          3264,
+          1152
         ]
       },
       {
@@ -2850,8 +3173,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          2064,
-          2672
+          2208,
+          1648
         ],
         "id": "d2bc8e19-207d-4262-b6e4-0370f0e1ef98",
         "name": "Webhook",
@@ -2873,8 +3196,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          2272,
-          2672
+          2416,
+          1648
         ],
         "id": "31e892a6-9eb1-495b-a41e-7f30d7f0ed1c",
         "name": "Buscar Comerciante",
@@ -2892,8 +3215,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2480,
-          2672
+          2624,
+          1648
         ],
         "id": "7030172f-89cf-4ac5-b481-fc033cc73742",
         "name": "Verificar PIN"
@@ -2907,8 +3230,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          2688,
-          2672
+          2832,
+          1648
         ],
         "id": "199d241a-75e4-4c15-a74f-ea5c372206a1",
         "name": "Respond to Webhook2"
@@ -2922,8 +3245,8 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          1968,
-          2480
+          2112,
+          1456
         ],
         "id": "b7b60d36-3409-41f7-b242-8feeb46f625a",
         "name": "Sticky Note9"
@@ -3054,6 +3377,241 @@
         ],
         "id": "18f0cb53-5e39-4609-8abf-124780bb0971",
         "name": "Guardar en Supabase2"
+      },
+      {
+        "parameters": {
+          "content": "EDITAR INVENTARIO",
+          "height": 352,
+          "width": 1792
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2080,
+          1968
+        ],
+        "id": "670a1c72-c52a-4d7d-b16f-a9ef825d8cb1",
+        "name": "Sticky Note11"
+      },
+      {
+        "parameters": {
+          "content": "ELIMINAR INVENTARIO",
+          "height": 368,
+          "width": 1936
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2032,
+          2416
+        ],
+        "id": "6da46dcc-0ad8-422c-9ce6-4e1aceac50dd",
+        "name": "Sticky Note12"
+      },
+      {
+        "parameters": {
+          "httpMethod": "PUT",
+          "path": "inventario-actualizar",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "8e019b27-1bce-4377-bea3-8736e1a03c90",
+        "name": "Webhook - Actualizar Inventario",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [
+          2208,
+          2064
+        ],
+        "webhookId": "inv-update-ops"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id,\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio: parseFloat(body.precio),\n    stock: parseInt(body.stock) || 0\n  }\n};"
+        },
+        "id": "b1e7dbd1-f5e5-4fe0-8612-7256e108ba86",
+        "name": "Preparar Datos Inventario",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2512,
+          2064
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?codigo=eq.{{ $json.codigo }}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "codigo",
+                "value": "=eq.{{ $json.codigo }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"nombre\": \"{{ $json.nombre }}\",\n  \"categoria\": \"{{ $json.categoria }}\",\n  \"precio\": {{ $json.precio }},\n  \"stock\": {{ $json.stock }}\n}",
+          "options": {}
+        },
+        "id": "48a4162f-0bd6-4e55-a845-d7d433ff1835",
+        "name": "HTTP Request Supabase",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2864,
+          2064
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  json: {\n    success: true,\n    message: 'Producto actualizado correctamente'\n  }\n};"
+        },
+        "id": "62ee25fd-1858-4404-9c14-0bcb3f588a57",
+        "name": "Formatear Respuesta2",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3232,
+          2064
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "cb89c2ac-585b-475a-9100-0b1a37f4a5aa",
+        "name": "Responder2",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          3584,
+          2064
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  json: {\n    id: $input.first().json.id\n  }\n};"
+        },
+        "id": "6b0e50d4-1d64-404e-946c-b1cf3fd4e216",
+        "name": "Formatear Respuesta Eliminar Inventario1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3248,
+          2560
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "a9784b95-d685-4979-bf2c-b5ea339fe4da",
+        "name": "Responder Eliminar Inventario1",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          3616,
+          2560
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "DELETE",
+          "path": "inventario-eliminar",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "295a132d-c7fc-423a-95bf-0a04341a9dd3",
+        "name": "Webhook - Eliminar Inventario1",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [
+          2176,
+          2560
+        ],
+        "webhookId": "inv-delete-ops"
+      },
+      {
+        "parameters": {
+          "method": "DELETE",
+          "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "codigo",
+                "value": "=eq.{{ $json.codigo }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=minimal"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2832,
+          2560
+        ],
+        "id": "ba261d8f-30d9-4c0e-bd71-c2f397dc8a52",
+        "name": "HTTP Request Delete Inventario1"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2528,
+          2560
+        ],
+        "id": "c3f6d394-957b-4b05-864a-718725ee81c9",
+        "name": "Extract ID JavaScript1"
       }
     ],
     "connections": {
@@ -3552,10 +4110,98 @@
             }
           ]
         ]
+      },
+      "Webhook - Actualizar Inventario": {
+        "main": [
+          [
+            {
+              "node": "Preparar Datos Inventario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Datos Inventario": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request Supabase": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formatear Respuesta2": {
+        "main": [
+          [
+            {
+              "node": "Responder2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formatear Respuesta Eliminar Inventario1": {
+        "main": [
+          [
+            {
+              "node": "Responder Eliminar Inventario1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook - Eliminar Inventario1": {
+        "main": [
+          [
+            {
+              "node": "Extract ID JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request Delete Inventario1": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta Eliminar Inventario1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract ID JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request Delete Inventario1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version c1206574",
+    "name": "Version 273150ea",
     "description": "",
     "autosaved": false
   },
