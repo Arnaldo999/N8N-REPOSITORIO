@@ -1,0 +1,31 @@
+{
+  "updatedAt": "2026-01-10T00:10:46.889Z",
+  "createdAt": "2026-01-10T00:10:46.889Z",
+  "id": "kHpZmE38MVsjD3IbpH7uM",
+  "name": "RAG - APP COMERCIANTES",
+  "active": false,
+  "isArchived": false,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "c71d1d3a-c75d-4910-8795-2b332f47db5d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-10T00:10:46.895Z",
+      "createdAt": "2026-01-10T00:10:46.895Z",
+      "role": "workflow:owner",
+      "workflowId": "kHpZmE38MVsjD3IbpH7uM",
+      "projectId": "5wyU6IQi37W80C5f"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
