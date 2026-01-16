@@ -1,0 +1,159 @@
+{
+  "updatedAt": "2026-01-15T21:53:11.842Z",
+  "createdAt": "2026-01-15T21:53:11.842Z",
+  "id": "SxqRj3Ja2aSdynxsrmqso",
+  "name": "MisionesExport AI Assistant",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "id": "2d1c0c94-2adf-401b-b899-0627be912184",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        208
+      ],
+      "webhookId": "9f329d91-2345-4221-a456-111122223333"
+    },
+    {
+      "parameters": {
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "fca74e12-6f2c-4276-bc76-2bcfcbcb0263",
+      "name": "AI Agent (Supervisor)",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        448,
+        208
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7c538b84-5d25-4462-8808-6b307b84d4ca",
+      "name": "Vector Store Tool (Supabase)",
+      "type": "n8n-nodes-base.vectorStoreTool",
+      "typeVersion": 1,
+      "position": [
+        448,
+        432
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d5f23184-cf46-4dd6-882a-067999d51b90",
+      "name": "Supabase Vector Store",
+      "type": "n8n-nodes-base.supabaseVectorStore",
+      "typeVersion": 1,
+      "position": [
+        448,
+        608
+      ],
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "id": "40a5e9c7-da96-45f6-b0b5-a401ce3c7d6d",
+      "name": "OpenAI Embeddings",
+      "type": "n8n-nodes-base.openAiEmbedding",
+      "typeVersion": 1,
+      "position": [
+        448,
+        768
+      ],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "59cbaeec-b0a9-4d5d-adbf-32f0f551227a",
+      "name": "Responder Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        208
+      ],
+      "webhookId": "71f130b6-0faf-459b-9b4e-dc2d135fca51"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "id": "1a5ffe64-b996-4615-a1c2-343175a12d8a",
+      "name": "Google Sheets Tool",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.1,
+      "position": [
+        688,
+        432
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent (Supervisor)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent (Supervisor)": {
+      "main": [
+        [
+          {
+            "node": "Responder Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "e38b8b04-1e46-4cb9-adc5-8949aabf8805",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-15T21:53:11.847Z",
+      "createdAt": "2026-01-15T21:53:11.847Z",
+      "role": "workflow:owner",
+      "workflowId": "SxqRj3Ja2aSdynxsrmqso",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
