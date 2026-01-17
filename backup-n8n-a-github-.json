@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-15T14:27:49.037Z",
+  "updatedAt": "2026-01-16T23:44:16.282Z",
   "createdAt": "2026-01-15T13:55:13.023Z",
   "id": "yAFbFe6hcmgQi2fKOaK-r",
   "name": "BACKUP-N8N A GITHUB",
@@ -486,7 +486,11 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "OTaNh8sYwCG7cI8uiAKQR"
   },
   "staticData": null,
   "meta": {
