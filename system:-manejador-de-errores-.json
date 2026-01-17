@@ -1,0 +1,216 @@
+{
+  "updatedAt": "2026-01-17T00:55:12.108Z",
+  "createdAt": "2026-01-16T22:34:44.714Z",
+  "id": "OTaNh8sYwCG7cI8uiAKQR",
+  "name": "SYSTEM: Manejador de Errores",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "48b85803-0d33-478f-94a0-25228417b686",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "863363759",
+        "text": "=🚨 *FALLO DETECTADO* 🚨\n\n📂 *Workflow:* {{ $json.workflow.name }}\n❌ *Error:* {{ $json.execution.error.message }}\n🕒 *Hora:* {{ $now.format('HH:mm:ss') }}\n\n🔗 [Revisar ejecución]({{ $json.execution.url }})",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "879952e1-50e0-4f17-a7fb-42441794e135",
+      "name": "Telegram - Alerta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        80
+      ],
+      "webhookId": "25374e40-7ec2-4a99-beab-94325b06dac3",
+      "credentials": {
+        "telegramApi": {
+          "id": "GP3pEeqwousPhui1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "arnaldoayala222@gmail.com",
+        "subject": "=⚠️ ERROR n8n: {{ $json.workflow.name }}",
+        "message": "🚨 FALLO DETECTADO 🚨  Se ha producido un error en un flujo de n8n.  Para ver los detalles y solucionarlo, ve a la sección de \"Executions\" en tu panel: https://n8n.arnaldoayalaestratega.com/executions",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        80
+      ],
+      "id": "27f00bcb-d0cd-4103-a1e4-6b353be57308",
+      "name": "Send a message",
+      "webhookId": "0c2ab3ad-37c8-4e22-a851-dd91abf3e25f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Alerta": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "OTaNh8sYwCG7cI8uiAKQR"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "84c2ee34-c1e8-4d41-b7ce-41c5432c3cbb",
+  "activeVersionId": "84c2ee34-c1e8-4d41-b7ce-41c5432c3cbb",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-16T22:34:44.717Z",
+      "createdAt": "2026-01-16T22:34:44.717Z",
+      "role": "workflow:owner",
+      "workflowId": "OTaNh8sYwCG7cI8uiAKQR",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-17T00:54:07.000Z",
+    "createdAt": "2026-01-17T00:54:05.285Z",
+    "versionId": "84c2ee34-c1e8-4d41-b7ce-41c5432c3cbb",
+    "workflowId": "OTaNh8sYwCG7cI8uiAKQR",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "48b85803-0d33-478f-94a0-25228417b686",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "chatId": "863363759",
+          "text": "=🚨 *FALLO DETECTADO* 🚨\n\n📂 *Workflow:* {{ $json.workflow.name }}\n❌ *Error:* {{ $json.execution.error.message }}\n🕒 *Hora:* {{ $now.format('HH:mm:ss') }}\n\n🔗 [Revisar ejecución]({{ $json.execution.url }})",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "879952e1-50e0-4f17-a7fb-42441794e135",
+        "name": "Telegram - Alerta",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.1,
+        "position": [
+          192,
+          80
+        ],
+        "webhookId": "25374e40-7ec2-4a99-beab-94325b06dac3",
+        "credentials": {
+          "telegramApi": {
+            "id": "GP3pEeqwousPhui1",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "arnaldoayala222@gmail.com",
+          "subject": "=⚠️ ERROR n8n: {{ $json.workflow.name }}",
+          "message": "🚨 FALLO DETECTADO 🚨  Se ha producido un error en un flujo de n8n.  Para ver los detalles y solucionarlo, ve a la sección de \"Executions\" en tu panel: https://n8n.arnaldoayalaestratega.com/executions",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          400,
+          80
+        ],
+        "id": "27f00bcb-d0cd-4103-a1e4-6b353be57308",
+        "name": "Send a message",
+        "webhookId": "0c2ab3ad-37c8-4e22-a851-dd91abf3e25f",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "hRodmfLyiI5TNo4a",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Alerta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Alerta": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 84c2ee34",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
