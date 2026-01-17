@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-15T18:52:44.817Z",
+  "updatedAt": "2026-01-17T01:17:37.883Z",
   "createdAt": "2026-01-15T13:53:29.264Z",
   "id": "_DGhEcFyFUEWpZHnU6tYe",
   "name": "AUTOMATIZACIONES-COMERCIANTES",
@@ -316,7 +316,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('GET Historial').item.json.query.comercio_id || $node[\"GET Historial\"].json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"GET Historial\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }} 00:00:00\",\n  \"p_fecha_hasta\": \"{{ ($node[\"GET Historial\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }} 23:59:59\"\n}",
+        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $json.slug }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"GET Historial\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }} 00:00:00\",\n  \"p_fecha_hasta\": \"{{ ($node[\"GET Historial\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }} 23:59:59\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -770,7 +770,7 @@
         "messages": {
           "values": [
             {
-              "content": "Actúa como Arnaldo Ayala, estratega en IA y Marketing. Tu misión es enviar una mentoría diaria potente.\n\nEstructura del mensaje:\n\nStorytelling (Muy breve): Una frase sobre un reto de un comercio genérico (ej: 'Vi a un colega agobiado por no saber qué publicar...').\n\nCONSEJO DE VALOR: Entrega un consejo util real de administración para comerciantes o IA aplicado a ventas (ej: un prompt específico o un tip contable). Este debe ser el corazón del mensaje.\n\nLlamado a la Acción (CTA): Finaliza invitando a seguirte en instagram.com/arnaldoestratega para más tips, visitar en los botones que estan abajo y escribirme al WhatsApp si tienen dudas o Consultas. Recalca que estás para ayudarles a profesionalizar su negocio con n8n, Web y ADS.\n\nReglas:\n\nTono: Empático, experto y motivador.\n\nExtensión: Máximo 450-500 caracteres.\n\nFormato: Texto fluido, sin negritas.\"*"
+              "content": "Actúa como Arnaldo, Consultor Senior de Negocios y Experto en Automatización. Tu audiencia NO son principiantes; son comerciantes que facturan pero sufren desorden y falta de tiempo.\n\nTu objetivo: Romper una creencia limitante o entregar una táctica de negocio avanzada, pero explicada en lenguaje simple.\n\nINSTRUCCIONES ESTRICTAS:\n1. Elige UNO de estos 4 marcos mentales avanzados para el mensaje de hoy:\n   - La Ley de Pareto (80/20): (Ej: \"El 20% de tus productos te da el 80% de ganancia. ¿Sabes cuáles son o sigues reponiendo todo por igual?\").\n   - El Mito del Emprendedor: (Ej: \"Si tu negocio no funciona cuando no estás, no tienes un negocio, tienes un auto-empleo. Empieza a documentar procesos hoy\").\n   - Costo de Oportunidad: (Ej: \"Pasar 1 hora acomodando latas te cuesta dinero. Esa hora deberías usarla negociando proveedores o configurando tu IA\").\n   - Psicología de Precios: (Ej: \"No bajes precios por miedo. Sube el valor percibido. Un cliente que viene por precio, se va por precio\").\n\n2. ESTRUCTURA DEL MENSAJE (Sin saludos cursis):\n   - EL GOLPE DE REALIDAD: Una pregunta o afirmación directa que incomode constructivamente. (Ej: \"¿Tu negocio te posee a ti o tú posees a tu negocio?\").\n   - LA TÁCTICA: Explica el concepto brevemente y cómo aplicarlo YA MISMO. Nada de teoría abstracta.\n   - EL PUENTE TECNOLÓGICO: Conecta ese problema con la solución: Sistematizar.\n   - CTA: \"No te conformes con sobrevivir. Profesionalízate con n8n y Estrategia. Sígueme en instagram.com/arnaldoestratega o escríbeme abajo para escalar.\"\n\nRESTRICCIONES NEGATIVAS (Lo que NO debes hacer):\n- NO uses frases motivacionales vacías como \"Tú puedes\", \"Sigue adelante\", \"Sonríe\".\n- NO uses signos de exclamación excesivos (!!). Mantén un tono serio, sobrio y de autoridad experta.\n- NO superes los 600 caracteres.\n\nFormato: Texto plano, directo al grano."
             }
           ]
         },
@@ -1584,7 +1584,7 @@
             {
               "id": "a3ebfb04-8d05-4acf-ba2f-ee50e426f3a9",
               "name": "rango_inicio",
-              "value": "={{ $json.body.fecha_desde }} 00:00:00",
+              "value": "={{ $json.body.periodo == 'anio' ? $today.format('yyyy') + '-01-01 00:00:00' : $json.body.fecha_desde + ' 00:00:00' }}",
               "type": "string"
             },
             {
@@ -1627,7 +1627,7 @@
           "conditions": [
             {
               "keyName": "slug",
-              "keyValue": "={{ $json.query.comercio_id }}"
+              "keyValue": "={{ $json.query.id_comerciante }}"
             }
           ]
         }
@@ -1686,7 +1686,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"Webhook2\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }}\",\n  \"p_fecha_hasta\": \"{{ ($node[\"Webhook2\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }}\"\n}",
+        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ $('Preparar Fechas').item.json.rango_inicio }}\",\n  \"p_fecha_hasta\": \"{{ $('Preparar Fechas').item.json.rango_fin }}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -2364,15 +2364,19 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "OTaNh8sYwCG7cI8uiAKQR",
+    "timezone": "America/Argentina/Buenos_Aires"
   },
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "fbf440c2-6003-4671-ae8d-7a9cb7bbd0e5",
-  "activeVersionId": "fbf440c2-6003-4671-ae8d-7a9cb7bbd0e5",
+  "versionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
+  "activeVersionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
   "triggerCount": 14,
   "shared": [
     {
@@ -2384,9 +2388,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-15T18:52:50.000Z",
-    "createdAt": "2026-01-15T18:52:44.819Z",
-    "versionId": "fbf440c2-6003-4671-ae8d-7a9cb7bbd0e5",
+    "updatedAt": "2026-01-17T01:17:43.000Z",
+    "createdAt": "2026-01-17T01:17:37.884Z",
+    "versionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
     "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
     "nodes": [
       {
@@ -2699,7 +2703,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('GET Historial').item.json.query.comercio_id || $node[\"GET Historial\"].json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"GET Historial\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }} 00:00:00\",\n  \"p_fecha_hasta\": \"{{ ($node[\"GET Historial\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }} 23:59:59\"\n}",
+          "jsonBody": "={\n  \"p_comercio_id\": \"{{ $json.slug }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"GET Historial\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }} 00:00:00\",\n  \"p_fecha_hasta\": \"{{ ($node[\"GET Historial\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }} 23:59:59\"\n}",
           "options": {}
         },
         "type": "n8n-nodes-base.httpRequest",
@@ -3153,7 +3157,7 @@
           "messages": {
             "values": [
               {
-                "content": "Actúa como Arnaldo Ayala, estratega en IA y Marketing. Tu misión es enviar una mentoría diaria potente.\n\nEstructura del mensaje:\n\nStorytelling (Muy breve): Una frase sobre un reto de un comercio genérico (ej: 'Vi a un colega agobiado por no saber qué publicar...').\n\nCONSEJO DE VALOR: Entrega un consejo util real de administración para comerciantes o IA aplicado a ventas (ej: un prompt específico o un tip contable). Este debe ser el corazón del mensaje.\n\nLlamado a la Acción (CTA): Finaliza invitando a seguirte en instagram.com/arnaldoestratega para más tips, visitar en los botones que estan abajo y escribirme al WhatsApp si tienen dudas o Consultas. Recalca que estás para ayudarles a profesionalizar su negocio con n8n, Web y ADS.\n\nReglas:\n\nTono: Empático, experto y motivador.\n\nExtensión: Máximo 450-500 caracteres.\n\nFormato: Texto fluido, sin negritas.\"*"
+                "content": "Actúa como Arnaldo, Consultor Senior de Negocios y Experto en Automatización. Tu audiencia NO son principiantes; son comerciantes que facturan pero sufren desorden y falta de tiempo.\n\nTu objetivo: Romper una creencia limitante o entregar una táctica de negocio avanzada, pero explicada en lenguaje simple.\n\nINSTRUCCIONES ESTRICTAS:\n1. Elige UNO de estos 4 marcos mentales avanzados para el mensaje de hoy:\n   - La Ley de Pareto (80/20): (Ej: \"El 20% de tus productos te da el 80% de ganancia. ¿Sabes cuáles son o sigues reponiendo todo por igual?\").\n   - El Mito del Emprendedor: (Ej: \"Si tu negocio no funciona cuando no estás, no tienes un negocio, tienes un auto-empleo. Empieza a documentar procesos hoy\").\n   - Costo de Oportunidad: (Ej: \"Pasar 1 hora acomodando latas te cuesta dinero. Esa hora deberías usarla negociando proveedores o configurando tu IA\").\n   - Psicología de Precios: (Ej: \"No bajes precios por miedo. Sube el valor percibido. Un cliente que viene por precio, se va por precio\").\n\n2. ESTRUCTURA DEL MENSAJE (Sin saludos cursis):\n   - EL GOLPE DE REALIDAD: Una pregunta o afirmación directa que incomode constructivamente. (Ej: \"¿Tu negocio te posee a ti o tú posees a tu negocio?\").\n   - LA TÁCTICA: Explica el concepto brevemente y cómo aplicarlo YA MISMO. Nada de teoría abstracta.\n   - EL PUENTE TECNOLÓGICO: Conecta ese problema con la solución: Sistematizar.\n   - CTA: \"No te conformes con sobrevivir. Profesionalízate con n8n y Estrategia. Sígueme en instagram.com/arnaldoestratega o escríbeme abajo para escalar.\"\n\nRESTRICCIONES NEGATIVAS (Lo que NO debes hacer):\n- NO uses frases motivacionales vacías como \"Tú puedes\", \"Sigue adelante\", \"Sonríe\".\n- NO uses signos de exclamación excesivos (!!). Mantén un tono serio, sobrio y de autoridad experta.\n- NO superes los 600 caracteres.\n\nFormato: Texto plano, directo al grano."
               }
             ]
           },
@@ -3967,7 +3971,7 @@
               {
                 "id": "a3ebfb04-8d05-4acf-ba2f-ee50e426f3a9",
                 "name": "rango_inicio",
-                "value": "={{ $json.body.fecha_desde }} 00:00:00",
+                "value": "={{ $json.body.periodo == 'anio' ? $today.format('yyyy') + '-01-01 00:00:00' : $json.body.fecha_desde + ' 00:00:00' }}",
                 "type": "string"
               },
               {
@@ -4010,7 +4014,7 @@
             "conditions": [
               {
                 "keyName": "slug",
-                "keyValue": "={{ $json.query.comercio_id }}"
+                "keyValue": "={{ $json.query.id_comerciante }}"
               }
             ]
           }
@@ -4069,7 +4073,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"Webhook2\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }}\",\n  \"p_fecha_hasta\": \"{{ ($node[\"Webhook2\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }}\"\n}",
+          "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ $('Preparar Fechas').item.json.rango_inicio }}\",\n  \"p_fecha_hasta\": \"{{ $('Preparar Fechas').item.json.rango_fin }}\"\n}",
           "options": {}
         },
         "type": "n8n-nodes-base.httpRequest",
@@ -4746,7 +4750,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version fbf440c2",
+    "name": "Version 77c47e0f",
     "description": "",
     "autosaved": false
   },
