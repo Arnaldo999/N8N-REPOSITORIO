@@ -1,0 +1,142 @@
+{
+  "updatedAt": "2026-01-17T12:34:23.330Z",
+  "createdAt": "2026-01-17T11:40:47.311Z",
+  "id": "xsKwZlySarztS7XbS9Qb1",
+  "name": "PRUEBA",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "seleccion",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        -64
+      ],
+      "id": "a22ed2e5-b493-4415-927f-5570ec49fc75",
+      "name": "Webhook",
+      "webhookId": "d59960eb-6983-43e8-b7ff-d647a01a3de6"
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "={{ $json.query.producto }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -272,
+        -64
+      ],
+      "id": "344ffccf-adb1-4673-afb2-6f526d39ddea",
+      "name": "Create spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2QctyMFw1wVvz97x",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "c69fe37f-dd3b-44ab-9017-92d020211d49",
+  "activeVersionId": "c69fe37f-dd3b-44ab-9017-92d020211d49",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-17T11:40:47.317Z",
+      "createdAt": "2026-01-17T11:40:47.317Z",
+      "role": "workflow:owner",
+      "workflowId": "xsKwZlySarztS7XbS9Qb1",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-17T12:34:26.000Z",
+    "createdAt": "2026-01-17T12:34:23.331Z",
+    "versionId": "c69fe37f-dd3b-44ab-9017-92d020211d49",
+    "workflowId": "xsKwZlySarztS7XbS9Qb1",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "seleccion",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -480,
+          -64
+        ],
+        "id": "a22ed2e5-b493-4415-927f-5570ec49fc75",
+        "name": "Webhook",
+        "webhookId": "d59960eb-6983-43e8-b7ff-d647a01a3de6"
+      },
+      {
+        "parameters": {
+          "resource": "spreadsheet",
+          "title": "={{ $json.query.producto }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -272,
+          -64
+        ],
+        "id": "344ffccf-adb1-4673-afb2-6f526d39ddea",
+        "name": "Create spreadsheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "2QctyMFw1wVvz97x",
+            "name": "Google Sheets account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Create spreadsheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version c69fe37f",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
