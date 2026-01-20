@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-17T01:17:37.883Z",
+  "updatedAt": "2026-01-19T20:48:57.547Z",
   "createdAt": "2026-01-15T13:53:29.264Z",
   "id": "_DGhEcFyFUEWpZHnU6tYe",
   "name": "AUTOMATIZACIONES-COMERCIANTES",
@@ -26,7 +26,9 @@
       "parameters": {
         "path": "comerciante",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {
+          "allowedOrigins": "https://app.arnaldoayalaestratega.com"
+        }
       },
       "id": "b7e8c324-b173-458a-b0a4-b35e01c75237",
       "name": "Webhook - GET Comerciante",
@@ -568,7 +570,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Capturamos los datos que vienen del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios actuales para saber cuál sigue\nconst comercios = $input.all();\n\n// 3. Función para calcular el siguiente ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  \n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) return 'C001';\n  \n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\n// 4. Generamos el nuevo ID y el PIN aleatorio\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 5. URL limpia para la App\nconst urlApp = `https://arnaldoayalaestratega.com/pos/`;\n\n// 6. Resultado final para Supabase y Email\nreturn {\n  json: {\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp\n  }\n};"
+        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
       },
       "id": "55e24b65-54f2-4122-a05d-c141357ecae1",
       "name": "Generar Slug y URL",
@@ -594,7 +596,7 @@
       "typeVersion": 2.1,
       "position": [
         1280,
-        1712
+        1600
       ],
       "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
       "credentials": {
@@ -616,13 +618,56 @@
       "typeVersion": 1.1,
       "position": [
         1504,
-        1712
+        1600
       ]
     },
     {
       "parameters": {
         "tableId": "comercios",
-        "dataToSend": "autoMapInputData"
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "slug",
+              "fieldValue": "={{ $json.slug }}"
+            },
+            {
+              "fieldId": "pin",
+              "fieldValue": "={{ $json.pin }}"
+            },
+            {
+              "fieldId": "nombre_local",
+              "fieldValue": "={{ $json.nombre_local }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $json.whatsapp }}"
+            },
+            {
+              "fieldId": "tipo_negocio",
+              "fieldValue": "={{ $json.tipo_negocio }}"
+            },
+            {
+              "fieldId": "direccion",
+              "fieldValue": "={{ $json.direccion }}"
+            },
+            {
+              "fieldId": "ciudad",
+              "fieldValue": "={{ $json.ciudad }}"
+            },
+            {
+              "fieldId": "activo",
+              "fieldValue": "={{ $json.activo }}"
+            },
+            {
+              "fieldId": "url_app",
+              "fieldValue": "={{ $json.url_app }}"
+            }
+          ]
+        }
       },
       "id": "e3646843-2fc4-4ca3-830a-33ab22e7b972",
       "name": "Guardar en Supabase3",
@@ -630,7 +675,7 @@
       "typeVersion": 1,
       "position": [
         1056,
-        1712
+        1600
       ],
       "credentials": {
         "supabaseApi": {
@@ -1293,7 +1338,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id, // ID original para filtrar\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio_final: parseFloat(body.precio_final),\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    stock: parseInt(body.stock) || 0,\n    codigo_nuevo: body.codigo_nuevo // Por si el comerciante cambió el código/EAN\n  }\n};"
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    // 🔑 EL IDENTIFICADOR: Usamos 'codigo' para que Supabase encuentre el producto\n    codigo: body.codigo, \n    \n    // 📝 DATOS A ACTUALIZAR\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio_final: parseFloat(body.precio) || 0,\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    stock: parseInt(body.stock) || 0,\n    \n    // 🛡️ SEGURIDAD: Para asegurar que el producto pertenece a este comerciante\n    id_comerciante: body.id_comerciante \n  }\n};"
       },
       "id": "4a80bde4-200c-4f8d-a163-11210b63f8d6",
       "name": "Preparar Datos Inventario",
@@ -1697,6 +1742,74 @@
       ],
       "id": "a48735bc-cd73-4bb2-bb51-e3d9f2595efe",
       "name": "Obtener Reporte"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "BD APP COMERCIANTES",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "ID Comerciante|rich_text",
+              "textContent": "={{ $json.slug }}"
+            },
+            {
+              "key": "Nombre_Local|rich_text",
+              "textContent": "={{ $json.nombre_local }}"
+            },
+            {
+              "key": "Whatsapp|rich_text",
+              "textContent": "={{ $json.whatsapp }}"
+            },
+            {
+              "key": "Email|rich_text",
+              "textContent": "={{ $json.email }}"
+            },
+            {
+              "key": "Ciudad|multi_select",
+              "multiSelectValue": "={{$json.ciudad}}"
+            },
+            {
+              "key": "Tipo de Cuenta|select",
+              "selectValue": "DEMO"
+            },
+            {
+              "key": "Estado|status",
+              "statusValue": "Activo"
+            },
+            {
+              "key": "Fecha inicio|date",
+              "date": "={{ $json.fecha_inicio }}",
+              "timezone": "America/Argentina/Buenos_Aires"
+            },
+            {
+              "key": "Direccion|rich_text",
+              "textContent": "={{ $json.direccion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        1824
+      ],
+      "id": "45671ec3-4594-4193-ad38-01b2c2caf13d",
+      "name": "Guardar en Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
     }
   ],
   "connections": {
@@ -1901,6 +2014,11 @@
     "Generar Slug y URL": {
       "main": [
         [
+          {
+            "node": "Guardar en Notion",
+            "type": "main",
+            "index": 0
+          },
           {
             "node": "Guardar en Supabase3",
             "type": "main",
@@ -2375,8 +2493,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
-  "activeVersionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
+  "versionId": "0a30c91c-dc83-4189-b2e2-a30eadc96718",
+  "activeVersionId": "0a30c91c-dc83-4189-b2e2-a30eadc96718",
   "triggerCount": 14,
   "shared": [
     {
@@ -2388,9 +2506,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-17T01:17:43.000Z",
-    "createdAt": "2026-01-17T01:17:37.884Z",
-    "versionId": "77c47e0f-3c75-4095-a1e5-7edfe0e57e02",
+    "updatedAt": "2026-01-19T20:49:03.000Z",
+    "createdAt": "2026-01-19T20:48:57.549Z",
+    "versionId": "0a30c91c-dc83-4189-b2e2-a30eadc96718",
     "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
     "nodes": [
       {
@@ -2413,7 +2531,9 @@
         "parameters": {
           "path": "comerciante",
           "responseMode": "responseNode",
-          "options": {}
+          "options": {
+            "allowedOrigins": "https://app.arnaldoayalaestratega.com"
+          }
         },
         "id": "b7e8c324-b173-458a-b0a4-b35e01c75237",
         "name": "Webhook - GET Comerciante",
@@ -2955,7 +3075,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// 1. Capturamos los datos que vienen del formulario\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios actuales para saber cuál sigue\nconst comercios = $input.all();\n\n// 3. Función para calcular el siguiente ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  \n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  \n  if (numeros.length === 0) return 'C001';\n  \n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\n// 4. Generamos el nuevo ID y el PIN aleatorio\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 5. URL limpia para la App\nconst urlApp = `https://arnaldoayalaestratega.com/pos/`;\n\n// 6. Resultado final para Supabase y Email\nreturn {\n  json: {\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp\n  }\n};"
+          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
         },
         "id": "55e24b65-54f2-4122-a05d-c141357ecae1",
         "name": "Generar Slug y URL",
@@ -2981,7 +3101,7 @@
         "typeVersion": 2.1,
         "position": [
           1280,
-          1712
+          1600
         ],
         "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
         "credentials": {
@@ -3003,13 +3123,56 @@
         "typeVersion": 1.1,
         "position": [
           1504,
-          1712
+          1600
         ]
       },
       {
         "parameters": {
           "tableId": "comercios",
-          "dataToSend": "autoMapInputData"
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "slug",
+                "fieldValue": "={{ $json.slug }}"
+              },
+              {
+                "fieldId": "pin",
+                "fieldValue": "={{ $json.pin }}"
+              },
+              {
+                "fieldId": "nombre_local",
+                "fieldValue": "={{ $json.nombre_local }}"
+              },
+              {
+                "fieldId": "email",
+                "fieldValue": "={{ $json.email }}"
+              },
+              {
+                "fieldId": "whatsapp",
+                "fieldValue": "={{ $json.whatsapp }}"
+              },
+              {
+                "fieldId": "tipo_negocio",
+                "fieldValue": "={{ $json.tipo_negocio }}"
+              },
+              {
+                "fieldId": "direccion",
+                "fieldValue": "={{ $json.direccion }}"
+              },
+              {
+                "fieldId": "ciudad",
+                "fieldValue": "={{ $json.ciudad }}"
+              },
+              {
+                "fieldId": "activo",
+                "fieldValue": "={{ $json.activo }}"
+              },
+              {
+                "fieldId": "url_app",
+                "fieldValue": "={{ $json.url_app }}"
+              }
+            ]
+          }
         },
         "id": "e3646843-2fc4-4ca3-830a-33ab22e7b972",
         "name": "Guardar en Supabase3",
@@ -3017,7 +3180,7 @@
         "typeVersion": 1,
         "position": [
           1056,
-          1712
+          1600
         ],
         "credentials": {
           "supabaseApi": {
@@ -3680,7 +3843,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id, // ID original para filtrar\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio_final: parseFloat(body.precio_final),\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    stock: parseInt(body.stock) || 0,\n    codigo_nuevo: body.codigo_nuevo // Por si el comerciante cambió el código/EAN\n  }\n};"
+          "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    // 🔑 EL IDENTIFICADOR: Usamos 'codigo' para que Supabase encuentre el producto\n    codigo: body.codigo, \n    \n    // 📝 DATOS A ACTUALIZAR\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio_final: parseFloat(body.precio) || 0,\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    stock: parseInt(body.stock) || 0,\n    \n    // 🛡️ SEGURIDAD: Para asegurar que el producto pertenece a este comerciante\n    id_comerciante: body.id_comerciante \n  }\n};"
         },
         "id": "4a80bde4-200c-4f8d-a163-11210b63f8d6",
         "name": "Preparar Datos Inventario",
@@ -4084,6 +4247,74 @@
         ],
         "id": "a48735bc-cd73-4bb2-bb51-e3d9f2595efe",
         "name": "Obtener Reporte"
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "databaseId": {
+            "__rl": true,
+            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+            "mode": "list",
+            "cachedResultName": "BD APP COMERCIANTES",
+            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+          },
+          "propertiesUi": {
+            "propertyValues": [
+              {
+                "key": "ID Comerciante|rich_text",
+                "textContent": "={{ $json.slug }}"
+              },
+              {
+                "key": "Nombre_Local|rich_text",
+                "textContent": "={{ $json.nombre_local }}"
+              },
+              {
+                "key": "Whatsapp|rich_text",
+                "textContent": "={{ $json.whatsapp }}"
+              },
+              {
+                "key": "Email|rich_text",
+                "textContent": "={{ $json.email }}"
+              },
+              {
+                "key": "Ciudad|multi_select",
+                "multiSelectValue": "={{$json.ciudad}}"
+              },
+              {
+                "key": "Tipo de Cuenta|select",
+                "selectValue": "DEMO"
+              },
+              {
+                "key": "Estado|status",
+                "statusValue": "Activo"
+              },
+              {
+                "key": "Fecha inicio|date",
+                "date": "={{ $json.fecha_inicio }}",
+                "timezone": "America/Argentina/Buenos_Aires"
+              },
+              {
+                "key": "Direccion|rich_text",
+                "textContent": "={{ $json.direccion }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          1056,
+          1824
+        ],
+        "id": "45671ec3-4594-4193-ad38-01b2c2caf13d",
+        "name": "Guardar en Notion",
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
       }
     ],
     "connections": {
@@ -4288,6 +4519,11 @@
       "Generar Slug y URL": {
         "main": [
           [
+            {
+              "node": "Guardar en Notion",
+              "type": "main",
+              "index": 0
+            },
             {
               "node": "Guardar en Supabase3",
               "type": "main",
@@ -4750,7 +4986,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 77c47e0f",
+    "name": "Version 0a30c91c",
     "description": "",
     "autosaved": false
   },
