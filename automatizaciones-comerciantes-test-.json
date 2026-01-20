@@ -1,0 +1,2496 @@
+{
+  "updatedAt": "2026-01-19T20:54:13.196Z",
+  "createdAt": "2026-01-19T13:20:29.650Z",
+  "id": "VVreOLamWcvZrjj6KH1h0",
+  "name": "AUTOMATIZACIONES-COMERCIANTES-TEST",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "GUARDAR TRANSACCION - DE LA APP A SUPABASE",
+        "height": 272,
+        "width": 1568,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        896
+      ],
+      "id": "eeb67b66-2121-404f-b269-61cc12e70ad2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "path": "comerciante-test",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://app.arnaldoayalaestratega.com"
+        }
+      },
+      "id": "25c29345-0ebe-48ea-96f3-1595226c5f1b",
+      "name": "Webhook - GET Comerciante",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        128,
+        688
+      ],
+      "webhookId": "obtener-comerciante-supabase"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el comercio del nodo Supabase\nconst data = $input.first().json;\n\n// Si Supabase devuelve array, tomar el primer elemento\nconst comercio = Array.isArray(data) ? data[0] : data;\n\n// Verificar si existe el comercio\nif (!comercio || !comercio.slug) {\n  return [{\n    json: {\n      error: true,\n      message: 'Comerciante no encontrado'\n    }\n  }];\n}\n\n// Formatear respuesta para la app\nreturn [{\n  json: {\n    id: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    whatsapp: comercio.whatsapp || '',\n    tipo_negocio: comercio.tipo_negocio || '',\n    activo: comercio.activo,\n    url_app: comercio.url_app || ''\n  }\n}];"
+      },
+      "id": "f82263c0-7641-497c-aaec-3c6919e2f305",
+      "name": "Formatear Respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        688
+      ],
+      "notes": "Transforma los datos de Supabase al formato que espera la app"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "3bd2e331-0fce-464e-97a9-c79bd6c0a423",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "content": "OBTENER ID COMERCIANTE\n",
+        "height": 272,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        592
+      ],
+      "id": "89f89e75-2de3-47b4-b9f4-99bb9ca1c1d8",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        352,
+        688
+      ],
+      "id": "fd46c3d4-26ff-48eb-881d-8e1fd1837130",
+      "name": "Leer Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pos-guardar-venta-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        960
+      ],
+      "id": "c67eb55d-7b59-48d7-8a8c-afc44a5594ff",
+      "name": "Webhook Guardar Transaccion",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook Guardar Transaccion').first().json.body;\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// ✅ Calculamos el costo total sumando el costo de cada ítem enviado por la App\nconst items = body.items || [];\nconst costoTotal = items.reduce((sum, item) => sum + (parseFloat(item.costo) || 0), 0);\n\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  costo_total: costoTotal, // ✅ NUEVO: Guardamos cuánto nos costó lo que vendimos\n  descripcion: body.descripcion || null,\n  productos: body.items || null, \n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local\n};\n\n// Manejo de Ventas\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo || 'Efectivo';\n  transaccion.categoria_gasto = null;\n}\n\n// Manejo de Gastos\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria || 'Otros';\n  // En un gasto, el costo es el mismo monto\n  transaccion.costo_total = transaccion.monto; \n}\n\nreturn { json: transaccion };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        960
+      ],
+      "id": "bde85779-52cc-439c-9436-92362aced6fb",
+      "name": "Preparar Datos"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        320,
+        960
+      ],
+      "id": "cb0f648e-a09a-4312-a76b-4a74605f96cd",
+      "name": "Buscar comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        992,
+        960
+      ],
+      "id": "39dffc43-8179-424e-8248-f9abb49dfdcb",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "tableId": "transacciones",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        768,
+        960
+      ],
+      "id": "4780ef20-1277-4080-ab86-ccbe8ff6d83c",
+      "name": "Guardar en Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "REGISTRO DE NUEVOS COMERCIANTES",
+        "height": 400,
+        "width": 2064,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        1632
+      ],
+      "id": "a5143a38-a4df-4d12-88ae-e78194f4f931",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "b24ab6eb-c1da-4e56-be51-928b13e0fc9f",
+      "name": "Responder Historial",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        928,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    success: true,\n    message: 'Transacción actualizada correctamente'\n  }\n};"
+      },
+      "id": "a9ad4005-c1a1-474b-a8d0-318e99a0a140",
+      "name": "Formatear Respuesta Editar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        2736
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "bfbea650-3c7c-42d6-9838-79e10e4ac65f",
+      "name": "Responder Editar",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        2736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    id: $json.query.id\n  }\n};"
+      },
+      "id": "ef70bd9a-489d-45ba-b30d-69b075c6b0fe",
+      "name": "Formatear Respuesta Eliminar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "404410bd-991a-45d6-ba51-20d3e7763421",
+      "name": "Responder Eliminar",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $json.slug }}\",\n  \"p_fecha_desde\": \"{{ ($node[\"GET Historial\"].json.body.fecha_desde || $node[\"GET Historial\"].json.query.fecha_desde) }} 00:00:00\",\n  \"p_fecha_hasta\": \"{{ ($node[\"GET Historial\"].json.body.fecha_hasta || $node[\"GET Historial\"].json.query.fecha_hasta) }} 23:59:59\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        2240
+      ],
+      "id": "90de1291-7d04-400b-8177-ef322aeb26eb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "=PUT",
+        "path": "transaccion-actualizar-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "804b7c5f-7c3f-4ffd-bf0f-a6c40efd9634",
+      "name": "Webhook - Actualizar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        2736
+      ],
+      "webhookId": "transaccion-ops"
+    },
+    {
+      "parameters": {
+        "httpMethod": "=DELETE",
+        "path": "transaccion-eliminar-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5af190f9-f942-4690-abb0-7ee1c24a890c",
+      "name": "Webhook - Eliminar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        3120
+      ],
+      "webhookId": "transaccion-ops"
+    },
+    {
+      "parameters": {
+        "content": "WORKFLOW-OBTENER HISTORIAL",
+        "height": 304,
+        "width": 2064,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        2144
+      ],
+      "id": "f0dc8eda-b632-44af-9623-e4cd49d798ca",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"monto\": {{ $json.monto }},\n  \"descripcion\": \"{{ $json.descripcion }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        768,
+        2736
+      ],
+      "id": "abeeff28-c96d-4934-8698-5198850bec97",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "content": "EDITAR TRANSACCION HISTORIAL",
+        "height": 352,
+        "width": 1840,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        2608
+      ],
+      "id": "3f3cd31a-9e90-4b0e-8fcf-9d1f37687e1f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "ELIMINAR TRANSACCION HISTORIAL",
+        "height": 352,
+        "width": 1840
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        3040
+      ],
+      "id": "d4db9205-f359-4fbd-9f1a-121f8069fccf",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        3120
+      ],
+      "id": "6715d767-b62b-4379-9569-53bb40726053",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id,\n    monto: parseFloat(body.monto),\n    descripcion: body.descripcion\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        2736
+      ],
+      "id": "d8157f54-cc56-41ea-9508-a22767e048dc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    id: body.id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        3120
+      ],
+      "id": "c7e2696c-ba67-44a8-8d79-f1613c20a852",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a9c31c4f-7a32-4315-bd33-4032e00ef47c",
+      "name": "Loop Comercios1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        432,
+        1360
+      ],
+      "notes": "Procesa cada comercio uno por uno"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Wait 5 s').item.json.email }}",
+        "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "4dd351b0-67dd-47fe-8d9b-2dce15f49797",
+      "name": "Enviar Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        1280
+      ],
+      "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Envía el reporte por email"
+    },
+    {
+      "parameters": {},
+      "id": "9e1e42db-0ccb-4bc0-ab1a-23ecda30485f",
+      "name": "Loop Back1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1360
+      ]
+    },
+    {
+      "parameters": {
+        "content": "REPORTE AUTOMATICO 7AM ",
+        "height": 352,
+        "width": 1904,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        1216
+      ],
+      "id": "e34d564c-d020-4b28-9202-ae7042c58dce",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        192,
+        1360
+      ],
+      "id": "a1e99a42-a5da-4885-a8b3-437884092201",
+      "name": "Obtener Comercios Activos",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        1280
+      ],
+      "id": "c39e2ee7-bff9-4a30-82c0-bed5d2cc9369",
+      "name": "Wait 5 s",
+      "webhookId": "70450871-98b4-4cb1-b6be-df5707fa63ce"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Actúa como Arnaldo, Consultor Senior de Negocios y Experto en Automatización. Tu audiencia NO son principiantes; son comerciantes que facturan pero sufren desorden y falta de tiempo.\n\nTu objetivo: Romper una creencia limitante o entregar una táctica de negocio avanzada, pero explicada en lenguaje simple.\n\nINSTRUCCIONES ESTRICTAS:\n1. Elige UNO de estos 4 marcos mentales avanzados para el mensaje de hoy:\n   - La Ley de Pareto (80/20): (Ej: \"El 20% de tus productos te da el 80% de ganancia. ¿Sabes cuáles son o sigues reponiendo todo por igual?\").\n   - El Mito del Emprendedor: (Ej: \"Si tu negocio no funciona cuando no estás, no tienes un negocio, tienes un auto-empleo. Empieza a documentar procesos hoy\").\n   - Costo de Oportunidad: (Ej: \"Pasar 1 hora acomodando latas te cuesta dinero. Esa hora deberías usarla negociando proveedores o configurando tu IA\").\n   - Psicología de Precios: (Ej: \"No bajes precios por miedo. Sube el valor percibido. Un cliente que viene por precio, se va por precio\").\n\n2. ESTRUCTURA DEL MENSAJE (Sin saludos cursis):\n   - EL GOLPE DE REALIDAD: Una pregunta o afirmación directa que incomode constructivamente. (Ej: \"¿Tu negocio te posee a ti o tú posees a tu negocio?\").\n   - LA TÁCTICA: Explica el concepto brevemente y cómo aplicarlo YA MISMO. Nada de teoría abstracta.\n   - EL PUENTE TECNOLÓGICO: Conecta ese problema con la solución: Sistematizar.\n   - CTA: \"No te conformes con sobrevivir. Profesionalízate con n8n y Estrategia. Sígueme en instagram.com/arnaldoestratega o escríbeme abajo para escalar.\"\n\nRESTRICCIONES NEGATIVAS (Lo que NO debes hacer):\n- NO uses frases motivacionales vacías como \"Tú puedes\", \"Sigue adelante\", \"Sonríe\".\n- NO uses signos de exclamación excesivos (!!). Mantén un tono serio, sobrio y de autoridad experta.\n- NO superes los 600 caracteres.\n\nFormato: Texto plano, directo al grano."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1024,
+        1280
+      ],
+      "id": "88b8f3a5-79c7-416e-9af3-eb5ca0457354",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "u86n2rwNcUBwKUCi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inventario-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1eb064e2-1f56-4a6a-b7ad-605532c53fde",
+      "name": "Webhook Inventario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        688
+      ],
+      "webhookId": "inventario-v1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\n\nreturn [{\n  json: {\n    comercio_id: body.id_comerciante, // Unificamos a comercio_id\n    nombre: body.nombre ? body.nombre.trim() : \"Sin Nombre\",\n    precio_final: parseFloat(body.precio_final) || 0,\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    ganancia_porcentaje: parseFloat(body.ganancia_porcentaje) || 0,\n    categoria: body.categoria || 'Sin Categoría',\n    stock: parseInt(body.stock) || 0,\n    codigo_barra: body.codigo_barra ? body.codigo_barra.trim() : null,\n    codigo: body.codigo || null \n  }\n}];"
+      },
+      "id": "ff36c73b-bad2-475b-a387-3d22212453e9",
+      "name": "Validar Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.comercio_id }}"
+            }
+          ]
+        }
+      },
+      "id": "73c4ceb6-6c1d-44b4-828e-507e8965c2b4",
+      "name": "Buscar Comercio",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        688
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const comercio = $input.first().json;\nconst producto = $('Validar Datos').first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comercio no encontrado');\n}\n\nreturn [{\n  json: {\n    comercio_id: comercio.id, // Unificamos a comercio_id\n    nombre: producto.nombre,\n    precio_final: producto.precio_final,\n    precio_costo: producto.precio_costo,\n    ganancia_porcentaje: producto.ganancia_porcentaje,\n    categoria: producto.categoria,\n    stock: producto.stock,\n    codigo_barra: producto.codigo_barra,\n    activo: true\n  }\n}];"
+      },
+      "id": "445cc050-1140-40bf-9491-504084109c7f",
+      "name": "Preparar Inserción",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "inventario",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "b70afadb-b086-44bc-9a7a-0699201bd070",
+      "name": "Guardar Producto",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        688
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Producto guardado exitosamente\", \"producto\": { \"id\": $json.id, \"codigo\": $json.codigo, \"nombre\": $json.nombre, \"precio\": $json.precio } } }}",
+        "options": {}
+      },
+      "id": "f81ae4fd-691e-40eb-873b-078165091fe8",
+      "name": "Responder Éxito",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3824,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "content": "CARGAR-INVENTARIO",
+        "height": 416,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        576
+      ],
+      "id": "484072a4-6f59-41cd-9c36-7621330b36d8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "CONSULTAR-INVENTARIO",
+        "height": 352,
+        "width": 1744,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2544,
+        1088
+      ],
+      "id": "7885ee11-3317-4cd6-b57a-4636d646a786",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "path": "consulta-inventario-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "dd8965c8-0714-4c37-896b-568b0318735c",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        1200
+      ],
+      "webhookId": "consulta-inventario-simple"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "id": "a047cdaf-b4ce-46d8-9dd8-4b8a1a4d0d0d",
+      "name": "Buscar Comercio1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2928,
+        1200
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?comercio_id=eq.{{ $('Buscar Comercio1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3184,
+        1200
+      ],
+      "id": "26785a84-487c-4a66-a873-64859225ca41",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos los productos que vinieron de la base de datos\nconst items = $input.all();\n\n// Los transformamos incluyendo TODOS los campos necesarios para la App\nreturn items.map(item => {\n  return {\n    json: {\n      id: item.json.id,\n      codigo: item.json.codigo,\n      nombre: item.json.nombre,\n      // Mapeamos 'precio_final' pero también enviamos 'precio' como respaldo\n      precio_final: item.json.precio_final, \n      precio: item.json.precio_final, // Para compatibilidad\n      precio_costo: item.json.precio_costo || 0, // ✅ Nuevo\n      ganancia_porcentaje: item.json.ganancia_porcentaje || 0, // ✅ Nuevo\n      categoria: item.json.categoria || 'Sin Categoría',\n      stock: item.json.stock || 0,\n      codigo_barra: item.json.codigo_barra || null // ✅ Muy importante para el escáner\n    }\n  };\n});"
+      },
+      "id": "26580cbf-7519-4568-af6c-2b73f4d48030",
+      "name": "Formatear Respuesta1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3440,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "3efc128f-826a-444d-9db5-c13f7500282b",
+      "name": "Responder1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3696,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        304
+      ],
+      "id": "199111f0-2733-4ecc-b5ce-4fc73da52b91",
+      "name": "Webhook",
+      "webhookId": "b5f9cebe-1f41-4b7c-8eef-b9d3c7927280"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        272,
+        304
+      ],
+      "id": "aa9d8975-9c23-4d84-94c7-98e96cccf4a4",
+      "name": "Buscar Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del webhook y de Supabase\nconst inputData = $input.first().json;\nconst pinIngresado = $('Webhook').item.json.body.pin;\n\n// Verificar si se encontró el comerciante\nif (!inputData || !inputData.id) {\n  return {\n    json: {\n      success: false,\n      message: \"ID de comerciante no encontrado\"\n    }\n  };\n}\n\n// Verificar si el comerciante tiene PIN configurado\n// CAMBIO: Buscar \"pin\" en lugar de \"pin_acceso\"\nif (!inputData.pin) {\n  return {\n    json: {\n      success: false,\n      message: \"Este comerciante no tiene PIN configurado\"\n    }\n  };\n}\n\n// Comparar PINs\nconst pinCorrecto = inputData.pin.toString();\nconst pinIntentado = pinIngresado.toString();\n\nif (pinCorrecto === pinIntentado) {\n  return {\n    json: {\n      success: true,\n      message: \"Login exitoso\",\n      comerciante: {\n        id: inputData.slug,\n        nombre: inputData.nombre_local\n      }\n    }\n  };\n} else {\n  return {\n    json: {\n      success: false,\n      message: \"PIN incorrecto\"\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        304
+      ],
+      "id": "a754f8e7-4f8c-4ebc-b0c1-cef4910f7572",
+      "name": "Verificar PIN"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        304
+      ],
+      "id": "6233cd1c-d09a-4649-86e9-33d3db260e60",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "content": "FLUJO DE LOGIN",
+        "height": 384,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        112
+      ],
+      "id": "d1f067a9-34c2-4819-b47e-5650348676c4",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "guardar-local-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        3616
+      ],
+      "id": "6b62fda2-9d69-40cc-9485-ea76a8ab31dc",
+      "name": "Webhook Guardar Transaccion1",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el cuerpo del webhook\nconst body = $('Webhook Guardar Transaccion1').first().json.body;\nconst transacciones = body.transacciones;\n\n// 2. Datos del comerciante\nconst comerciante = $input.first().json;\n\nif (!comerciante || !comerciante.id) {\n  throw new Error('Comerciante no encontrado en la base de datos');\n}\n\n// 3. Validar si es una lista o una sola\nconst listaAProcesar = Array.isArray(transacciones) ? transacciones : [body];\n\n// 4. Procesar cada una\nreturn listaAProcesar.map(t => {\n  const registro = {\n    comercio_id: comerciante.id,\n    tipo: t.tipo, \n    monto: parseFloat(t.monto) || 0,\n    descripcion: t.descripcion || null,\n    fecha_hora: t.fecha_hora || new Date().toISOString(),\n    metodo_pago: t.metodo_pago || t.metodo || null,  // ✅ Acepta ambos\n    categoria_gasto: t.categoria_gasto || t.categoria || null,  // ✅ Acepta ambos\n    id_local: t.id || t.id_local || null\n  };\n\n  return { json: registro };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        3616
+      ],
+      "id": "d70770ac-3938-4cc6-a2d3-f7e11524f08f",
+      "name": "Preparar Datos1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        368,
+        3616
+      ],
+      "id": "0691e5ec-cf81-494b-8ab3-0a9259c510bb",
+      "name": "Buscar comerciante1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        3616
+      ],
+      "id": "780e58e1-e51d-40f1-9f05-9e7447195c35",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "content": "GUARDAR TRANSACCION LOCAL STORAGE",
+        "height": 352,
+        "width": 1616
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        3520
+      ],
+      "id": "23a3c996-72ec-4f8b-9d7c-80d60e907b52",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        816,
+        3616
+      ],
+      "id": "5591414b-38d8-4d3c-9331-facba0183329",
+      "name": "Guardar en Supabase2"
+    },
+    {
+      "parameters": {
+        "content": "EDITAR INVENTARIO",
+        "height": 352,
+        "width": 1792
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        1568
+      ],
+      "id": "82bdb267-3e6d-4e7b-8f87-92927fa3105b",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "ELIMINAR INVENTARIO",
+        "height": 368,
+        "width": 1936
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2544,
+        2016
+      ],
+      "id": "665c224e-8d1e-4191-8796-5ff52d76c389",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "httpMethod": "PUT",
+        "path": "inventario-actualizar-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "432d6c65-aae3-4903-8f0d-c1d55f44f2ec",
+      "name": "Webhook - Actualizar Inventario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        2720,
+        1664
+      ],
+      "webhookId": "inv-update-ops"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    // 🔑 EL IDENTIFICADOR: Usamos 'codigo' para que Supabase encuentre el producto\n    codigo: body.codigo, \n    \n    // 📝 DATOS A ACTUALIZAR\n    nombre: body.nombre,\n    categoria: body.categoria,\n    precio_final: parseFloat(body.precio) || 0,\n    precio_costo: parseFloat(body.precio_costo) || 0,\n    stock: parseInt(body.stock) || 0,\n    \n    // 🛡️ SEGURIDAD: Para asegurar que el producto pertenece a este comerciante\n    id_comerciante: body.id_comerciante \n  }\n};"
+      },
+      "id": "e2121a8f-6f6e-4a39-82b2-12254377aa3f",
+      "name": "Preparar Datos Inventario",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?codigo=eq.{{ $json.codigo }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "codigo",
+              "value": "=eq.{{ $json.codigo }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"nombre\": \"{{ $json.nombre }}\",\n  \"categoria\": \"{{ $json.categoria }}\",\n  \"precio_final\": {{ $json.precio_final }},\n  \"precio_costo\": {{ $json.precio_costo }},\n  \"stock\": {{ $json.stock }}\n}",
+        "options": {}
+      },
+      "id": "017b4e5e-8b05-482b-bf30-67a885d1309a",
+      "name": "HTTP Request Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3376,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    success: true,\n    message: 'Producto actualizado correctamente'\n  }\n};"
+      },
+      "id": "dd4675ca-bf92-4c55-a78d-c28a55e1c303",
+      "name": "Formatear Respuesta2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "f3ab9681-1eaa-4fe0-ad83-846343720ae3",
+      "name": "Responder2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        4096,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    id: $input.first().json.id\n  }\n};"
+      },
+      "id": "fe7d1489-0ce2-4f1a-b0aa-54bbc40a7ff4",
+      "name": "Formatear Respuesta Eliminar Inventario1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        2160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "9109e6b2-ee95-4e30-b579-87cdddd235a1",
+      "name": "Responder Eliminar Inventario1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        4128,
+        2160
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "inventario-eliminar-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "dd7c0ec1-48e6-48d8-9bd1-cc9aba61dd4a",
+      "name": "Webhook - Eliminar Inventario1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        2688,
+        2160
+      ],
+      "webhookId": "inv-delete-ops"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "codigo",
+              "value": "=eq.{{ $json.codigo }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3344,
+        2160
+      ],
+      "id": "a3b6d755-a6be-43e6-9763-bd2f5c970aa5",
+      "name": "HTTP Request Delete Inventario1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body;\n\nreturn {\n  json: {\n    codigo: body.id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        2160
+      ],
+      "id": "b1963107-4a78-4d7f-a174-ad0d46530b40",
+      "name": "Extract ID JavaScript1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generar-reporte-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2768,
+        208
+      ],
+      "id": "56784e50-f9a0-4dec-9c16-e726f6ec94b2",
+      "name": "Webhook2",
+      "webhookId": "ebff26f8-e0d9-42b1-a51d-3b2f72b8d885"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $('Webhook2').item.json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        208
+      ],
+      "id": "8597400c-645e-4e61-a202-48011f527589",
+      "name": "Obtener Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.destinatario }}",
+        "subject": "Aquí Tu Reporte ",
+        "message": "={{ $json.html_email }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3808,
+        208
+      ],
+      "id": "ee4d8bd3-5df2-4e23-bc46-d253d1845d6f",
+      "name": "Enviar Reporte",
+      "webhookId": "7ba3c000-aecf-4f76-8e6c-e9b8b36cf2c7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3984,
+        208
+      ],
+      "id": "4dc7988f-3cdd-4c07-85f2-9c17e892c68b",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "content": "GENERAR REPORTE ",
+        "height": 336,
+        "width": 1648
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        112
+      ],
+      "id": "b12c1418-ab88-4fe4-8e13-9537e0686a57",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3ebfb04-8d05-4acf-ba2f-ee50e426f3a9",
+              "name": "rango_inicio",
+              "value": "={{ $json.body.periodo == 'anio' ? $today.format('yyyy') + '-01-01 00:00:00' : $json.body.fecha_desde + ' 00:00:00' }}",
+              "type": "string"
+            },
+            {
+              "id": "367b9152-0ef8-4945-955e-728b4b14c930",
+              "name": "rango_fin",
+              "value": "={{ $json.body.fecha_hasta }} 23:59:59",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2976,
+        208
+      ],
+      "id": "86afb848-9aa7-43b1-851d-b1711e46d3b5",
+      "name": "Preparar Fechas"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ CÓDIGO ACTUALIZADO PARA \"Preparar Reporte\"\n\n// 1. Capturar datos de la función RPC\nconst respuestaRPC = $input.first().json;\n\n// Verificar si la RPC respondió correctamente\nif (!respuestaRPC.success) {\n  throw new Error(respuestaRPC.error || 'Error obteniendo transacciones');\n}\n\n// Extraer array de transacciones\nconst transaccionesArray = respuestaRPC.transacciones || [];\n\n// 2. Datos del comerciante y webhook\nconst comerciante = $('Obtener Comerciante').first()?.json || {};\nconst webhookData = $('Webhook2').first()?.json?.body || {};\n\nconst emailFinal = webhookData.email_destinacion || comerciante.email || \"soporte@arnaldoayala.com\";\nconst nombreNegocio = comerciante.nombre_local || \"tu negocio\";\nconst periodoReporte = (webhookData.periodo || \"periodo solicitado\").toUpperCase();\n\n// 3. Variables para cálculos\nlet totalVentas = 0;\nlet totalGastos = 0;\nlet filasTabla = \"\";\n\n// 4. Procesar cada transacción\nfor (const tx of transaccionesArray) {\n  const monto = parseFloat(tx.monto || 0);\n  \n  const fechaRaw = tx.fecha_hora;\n  const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-AR', {\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric'\n  }) : \"S/F\";\n\n  const concepto = tx.descripcion || (tx.tipo === 'INGRESO' ? 'Venta de productos' : 'Gasto general');\n\n  if (tx.tipo === 'INGRESO') {\n    totalVentas += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #2f855a; font-weight: bold; text-align: right;\">+$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  } else {\n    totalGastos += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #c53030; font-weight: bold; text-align: right;\">-$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  }\n}\n\n// 5. Análisis de Consultoría\nconst balanceNeto = totalVentas - totalGastos;\nlet mensajeConsultor = \"\";\nlet colorPrincipal = \"#3182ce\"; \n\nif (balanceNeto > 0) {\n  colorPrincipal = \"#2f855a\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #f0fff4; border-left: 4px solid #38a169; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #276749;\">¡Excelente trabajo! 👏</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2f855a; font-size: 14px;\">\n        Tu negocio está dando frutos. Estas ganancias son el resultado de tu esfuerzo y buena gestión. \n        ¡A seguir por este camino para escalar al siguiente nivel!\n      </p>\n    </div>`;\n} else if (balanceNeto < 0) {\n  colorPrincipal = \"#c53030\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #fff5f5; border-left: 4px solid #e53e3e; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #9b2c2c;\">¡A no bajar los brazos! 💪</h4>\n      <p style=\"margin: 5px 0 0 0; color: #c53030; font-size: 14px;\">\n        Este periodo cerró en negativo, pero cada número es una lección. Revisa los gastos y \n        ajusta la estrategia. ¡Tú tienes la capacidad de revertir esto y volver a crecer!\n      </p>\n    </div>`;\n} else {\n  mensajeConsultor = `\n    <div style=\"background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #2c5282;\">Periodo en equilibrio</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2b6cb0; font-size: 14px;\">\n        Tus ingresos cubrieron exactamente tus gastos. Es un buen momento para analizar \n        cómo aumentar el margen de beneficio en el próximo periodo.\n      </p>\n    </div>`;\n}\n\n// 6. Construcción del HTML (igual que antes)\nconst htmlReporte = `\n<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7fafc; padding: 20px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: ${colorPrincipal}; padding: 30px; text-align: center;\">\n      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;\">Reporte de Resultados</h1>\n      <p style=\"color: rgba(255,255,255,0.8); margin: 5px 0 0 0;\">${nombreNegocio} | Periodo: ${periodoReporte}</p>\n    </div>\n\n    <div style=\"padding: 30px;\">\n      <table style=\"width: 100%; margin-bottom: 30px; border-collapse: collapse;\">\n        <tr>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Ingresos</span>\n            <strong style=\"font-size: 18px; color: #2f855a;\">$${totalVentas.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px; border-left: 1px solid #edf2f7; border-right: 1px solid #edf2f7;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Gastos</span>\n            <strong style=\"font-size: 18px; color: #c53030;\">$${totalGastos.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Balance</span>\n            <strong style=\"font-size: 18px; color: ${colorPrincipal};\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n        </tr>\n      </table>\n\n      <h3 style=\"color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;\">Detalle de Movimientos</h3>\n      <table style=\"width: 100%; border-collapse: collapse;\">\n        <thead>\n          <tr style=\"background-color: #f8fafc;\">\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Fecha</th>\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Concepto</th>\n            <th style=\"padding: 12px; text-align: right; font-size: 11px; color: #718096; text-transform: uppercase;\">Monto</th>\n          </tr>\n        </thead>\n        <tbody>\n          ${filasTabla}\n        </tbody>\n        <tfoot>\n          <tr style=\"background-color: #f8fafc; font-weight: bold;\">\n            <td colspan=\"2\" style=\"padding: 12px; border-top: 2px solid #edf2f7; color: #2d3748; font-size: 14px;\">RESULTADO TOTAL FINAL</td>\n            <td style=\"padding: 12px; border-top: 2px solid #edf2f7; text-align: right; color: ${colorPrincipal}; font-size: 18px;\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n          </tr>\n        </tfoot>\n      </table>\n\n      ${mensajeConsultor}\n\n      <div style=\"margin-top: 40px; padding-top: 20px; border-top: 1px solid #edf2f7; color: #4a5568;\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: bold;\">Arnaldo Ayala</p>\n        <p style=\"margin: 2px 0; font-size: 13px; color: #718096;\">Estratega en IA y Marketing</p>\n        <p style=\"margin: 10px 0 0 0; font-size: 12px; color: #3182ce;\">\n          📞 WhatsApp Soporte: <a href=\"https://wa.me/543765384843\" style=\"color: #3182ce; text-decoration: none;\">3765384843</a>\n        </p>\n      </div>\n    </div>\n\n    <div style=\"background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #edf2f7;\">\n      <p style=\"margin: 0; font-size: 11px; color: #a0aec0;\">Reporte generado automáticamente por la Agencia Arnaldo Ayala.</p>\n    </div>\n  </div>\n</div>\n`;\n\n// 7. Retorno\nreturn {\n  json: {\n    asunto: `📊 Reporte ${periodoReporte} - ${nombreNegocio}`,\n    destinatario: emailFinal,\n    resumen_ventas: totalVentas,\n    resumen_gastos: totalGastos,\n    balance: balanceNeto,\n    html_email: htmlReporte\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        208
+      ],
+      "id": "ab5293d3-8692-4fa8-88c7-bb85374872e1",
+      "name": "Preparar Reporte"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        464,
+        2240
+      ],
+      "id": "01dbbee6-d41b-465d-bff4-c1fa9fd1cc54",
+      "name": "Obtener Comerciante1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "historial-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "dd722a4d-97e5-4795-acea-42219f50bf82",
+      "name": "GET Historial",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        2240
+      ],
+      "webhookId": "historial-transacciones"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ $('Preparar Fechas').item.json.rango_inicio }}\",\n  \"p_fecha_hasta\": \"{{ $('Preparar Fechas').item.json.rango_fin }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3408,
+        208
+      ],
+      "id": "393028da-ee31-4d24-a48d-9ad7aa23b4cd",
+      "name": "Obtener Reporte"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        1360
+      ],
+      "id": "dc05699a-867c-4751-8894-8c82be810740",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registro-comerciante-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4f6de585-43bb-433a-9886-ed47da2bb7aa",
+      "name": "Webhook Registro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        112,
+        1808
+      ],
+      "webhookId": "registro-comerciante-v1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true
+      },
+      "id": "cb6fdd06-7358-4abd-a62a-dadaf7207c46",
+      "name": "Obtener Todos los Comercios",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1808
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+      },
+      "id": "8070ef40-6daf-44b5-8acd-cd2c80a127fd",
+      "name": "Generar Slug y URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        1808
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "04158eb9-879a-4f66-a932-799183aa22cd",
+      "name": "Enviar Email Bienvenida",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        1696
+      ],
+      "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
+        "options": {}
+      },
+      "id": "99d87bc6-ff74-4ea5-8c32-d35dedbbe296",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        1696
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "comercios",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "slug",
+              "fieldValue": "={{ $json.slug }}"
+            },
+            {
+              "fieldId": "pin",
+              "fieldValue": "={{ $json.pin }}"
+            },
+            {
+              "fieldId": "nombre_local",
+              "fieldValue": "={{ $json.nombre_local }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $json.whatsapp }}"
+            },
+            {
+              "fieldId": "tipo_negocio",
+              "fieldValue": "={{ $json.tipo_negocio }}"
+            },
+            {
+              "fieldId": "direccion",
+              "fieldValue": "={{ $json.direccion }}"
+            },
+            {
+              "fieldId": "ciudad",
+              "fieldValue": "={{ $json.ciudad }}"
+            },
+            {
+              "fieldId": "activo",
+              "fieldValue": "={{ $json.activo }}"
+            },
+            {
+              "fieldId": "url_app",
+              "fieldValue": "={{ $json.url_app }}"
+            }
+          ]
+        }
+      },
+      "id": "7ad8327f-0e43-4258-897c-9554e41addbf",
+      "name": "Guardar en Supabase3",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        768,
+        1696
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "BD APP COMERCIANTES",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "ID Comerciante|rich_text",
+              "textContent": "={{ $json.slug }}"
+            },
+            {
+              "key": "Nombre_Local|rich_text",
+              "textContent": "={{ $json.nombre_local }}"
+            },
+            {
+              "key": "Whatsapp|rich_text",
+              "textContent": "={{ $json.whatsapp }}"
+            },
+            {
+              "key": "Email|rich_text",
+              "textContent": "={{ $json.email }}"
+            },
+            {
+              "key": "Ciudad|multi_select",
+              "multiSelectValue": "={{$json.ciudad}}"
+            },
+            {
+              "key": "Tipo de Cuenta|select",
+              "selectValue": "DEMO"
+            },
+            {
+              "key": "Estado|status",
+              "statusValue": "Activo"
+            },
+            {
+              "key": "Fecha inicio|date",
+              "date": "={{ $json.fecha_inicio }}",
+              "timezone": "America/Argentina/Buenos_Aires"
+            },
+            {
+              "key": "Direccion|rich_text",
+              "textContent": "={{ $json.direccion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        1888
+      ],
+      "id": "5e6705f0-710b-46fa-8632-7bfa7321a588",
+      "name": "Guardar en Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - GET Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Leer Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Guardar Transaccion": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Editar": {
+      "main": [
+        [
+          {
+            "node": "Responder Editar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Eliminar": {
+      "main": [
+        [
+          {
+            "node": "Responder Eliminar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Responder Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Actualizar": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Eliminar": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Editar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Eliminar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Comercios1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 5 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email1": {
+      "main": [
+        [
+          {
+            "node": "Loop Back1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back1": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comercios Activos": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 s": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Inventario": {
+      "main": [
+        [
+          {
+            "node": "Validar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Datos": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comercio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comercio": {
+      "main": [
+        [
+          {
+            "node": "Preparar Inserción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Inserción": {
+      "main": [
+        [
+          {
+            "node": "Guardar Producto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Producto": {
+      "main": [
+        [
+          {
+            "node": "Responder Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comercio1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comercio1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta1": {
+      "main": [
+        [
+          {
+            "node": "Responder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Verificar PIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar PIN": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Guardar Transaccion1": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos1": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante1": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Actualizar Inventario": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Inventario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Inventario": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Supabase": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta2": {
+      "main": [
+        [
+          {
+            "node": "Responder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta Eliminar Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Responder Eliminar Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Eliminar Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Extract ID JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Delete Inventario1": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta Eliminar Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ID JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Delete Inventario1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fechas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Obtener Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Reporte": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fechas": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comerciante1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Historial": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comerciante1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Reporte": {
+      "main": [
+        [
+          {
+            "node": "Preparar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comercios Activos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Registro": {
+      "main": [
+        [
+          {
+            "node": "Obtener Todos los Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Todos los Comercios": {
+      "main": [
+        [
+          {
+            "node": "Generar Slug y URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Slug y URL": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Notion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar en Supabase3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Bienvenida": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase3": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "dd024dfc-130f-4aba-b791-a28da172c5a2",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-19T13:20:29.653Z",
+      "createdAt": "2026-01-19T13:20:29.653Z",
+      "role": "workflow:owner",
+      "workflowId": "VVreOLamWcvZrjj6KH1h0",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
