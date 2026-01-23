@@ -1,0 +1,541 @@
+{
+  "updatedAt": "2026-01-23T14:02:36.230Z",
+  "createdAt": "2026-01-23T13:30:03.211Z",
+  "id": "i5EuVsH4nTcfqxiyup9Sb",
+  "name": "[App 360] - Admin-Login",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "comerciante",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://app.arnaldoayalaestratega.com"
+        }
+      },
+      "id": "f8ac7b2a-72f9-4635-9ad1-8b9908d1f454",
+      "name": "Webhook - GET Comerciante",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        368,
+        864
+      ],
+      "webhookId": "obtener-comerciante-supabase"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el comercio del nodo Supabase\nconst data = $input.first().json;\n\n// Si Supabase devuelve array, tomar el primer elemento\nconst comercio = Array.isArray(data) ? data[0] : data;\n\n// Verificar si existe el comercio\nif (!comercio || !comercio.slug) {\n  return [{\n    json: {\n      error: true,\n      message: 'Comerciante no encontrado'\n    }\n  }];\n}\n\n// Formatear respuesta para la app\nreturn [{\n  json: {\n    id: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    whatsapp: comercio.whatsapp || '',\n    tipo_negocio: comercio.tipo_negocio || '',\n    activo: comercio.activo,\n    url_app: comercio.url_app || ''\n  }\n}];"
+      },
+      "id": "80126600-f0ca-4fe0-abdb-7e8aea21ebca",
+      "name": "Formatear Respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        864
+      ],
+      "notes": "Transforma los datos de Supabase al formato que espera la app"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "26ff5fa9-2a02-4fa6-bc66-f133d0dbd909",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "content": "OBTENER ID COMERCIANTE\n",
+        "height": 272,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        768
+      ],
+      "id": "239af426-0db8-46fa-abaa-582669d21f01",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.query.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        592,
+        864
+      ],
+      "id": "87cb5fa6-6498-4c84-8e10-e54d92a46154",
+      "name": "Leer Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        480
+      ],
+      "id": "b47c49b5-1fcc-4c4c-beae-40bf801c715e",
+      "name": "Webhook",
+      "webhookId": "b5f9cebe-1f41-4b7c-8eef-b9d3c7927280"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        512,
+        480
+      ],
+      "id": "367d2b3f-a034-4238-a539-e61a12e0d84d",
+      "name": "Buscar Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del webhook y de Supabase\nconst inputData = $input.first().json;\nconst pinIngresado = $('Webhook').item.json.body.pin;\n\n// Verificar si se encontró el comerciante\nif (!inputData || !inputData.id) {\n  return {\n    json: {\n      success: false,\n      message: \"ID de comerciante no encontrado\"\n    }\n  };\n}\n\n// Verificar si el comerciante tiene PIN configurado\n// CAMBIO: Buscar \"pin\" en lugar de \"pin_acceso\"\nif (!inputData.pin) {\n  return {\n    json: {\n      success: false,\n      message: \"Este comerciante no tiene PIN configurado\"\n    }\n  };\n}\n\n// Comparar PINs\nconst pinCorrecto = inputData.pin.toString();\nconst pinIntentado = pinIngresado.toString();\n\nif (pinCorrecto === pinIntentado) {\n  return {\n    json: {\n      success: true,\n      message: \"Login exitoso\",\n      comerciante: {\n        id: inputData.slug,\n        nombre: inputData.nombre_local\n      }\n    }\n  };\n} else {\n  return {\n    json: {\n      success: false,\n      message: \"PIN incorrecto\"\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        480
+      ],
+      "id": "5992b81c-00e9-4af1-83f8-b13680d30df8",
+      "name": "Verificar PIN"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        928,
+        480
+      ],
+      "id": "85eeffcc-59e8-484b-b3de-42407f3d28c0",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "content": "FLUJO DE LOGIN",
+        "height": 384,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        320
+      ],
+      "id": "e771c950-17ae-44a0-8a8b-7e7eb94f2ecd",
+      "name": "Sticky Note9"
+    }
+  ],
+  "connections": {
+    "Webhook - GET Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Leer Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Formatear Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Verificar PIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar PIN": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
+  "activeVersionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T13:30:03.212Z",
+      "createdAt": "2026-01-23T13:30:03.212Z",
+      "role": "workflow:owner",
+      "workflowId": "i5EuVsH4nTcfqxiyup9Sb",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-23T14:07:44.000Z",
+    "createdAt": "2026-01-23T13:47:49.485Z",
+    "versionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
+    "workflowId": "i5EuVsH4nTcfqxiyup9Sb",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "comerciante",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "https://app.arnaldoayalaestratega.com"
+          }
+        },
+        "id": "f8ac7b2a-72f9-4635-9ad1-8b9908d1f454",
+        "name": "Webhook - GET Comerciante",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          368,
+          864
+        ],
+        "webhookId": "obtener-comerciante-supabase"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener el comercio del nodo Supabase\nconst data = $input.first().json;\n\n// Si Supabase devuelve array, tomar el primer elemento\nconst comercio = Array.isArray(data) ? data[0] : data;\n\n// Verificar si existe el comercio\nif (!comercio || !comercio.slug) {\n  return [{\n    json: {\n      error: true,\n      message: 'Comerciante no encontrado'\n    }\n  }];\n}\n\n// Formatear respuesta para la app\nreturn [{\n  json: {\n    id: comercio.slug,\n    nombre: comercio.nombre_local,\n    email: comercio.email,\n    whatsapp: comercio.whatsapp || '',\n    tipo_negocio: comercio.tipo_negocio || '',\n    activo: comercio.activo,\n    url_app: comercio.url_app || ''\n  }\n}];"
+        },
+        "id": "80126600-f0ca-4fe0-abdb-7e8aea21ebca",
+        "name": "Formatear Respuesta",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          816,
+          864
+        ],
+        "notes": "Transforma los datos de Supabase al formato que espera la app"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "id": "26ff5fa9-2a02-4fa6-bc66-f133d0dbd909",
+        "name": "Respond to Webhook1",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1040,
+          864
+        ]
+      },
+      {
+        "parameters": {
+          "content": "OBTENER ID COMERCIANTE\n",
+          "height": 272,
+          "width": 1216
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          192,
+          768
+        ],
+        "id": "239af426-0db8-46fa-abaa-582669d21f01",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.query.id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          592,
+          864
+        ],
+        "id": "87cb5fa6-6498-4c84-8e10-e54d92a46154",
+        "name": "Leer Comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "login",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          304,
+          480
+        ],
+        "id": "b47c49b5-1fcc-4c4c-beae-40bf801c715e",
+        "name": "Webhook",
+        "webhookId": "b5f9cebe-1f41-4b7c-8eef-b9d3c7927280"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.body.cliente_id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          512,
+          480
+        ],
+        "id": "367d2b3f-a034-4238-a539-e61a12e0d84d",
+        "name": "Buscar Comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Obtener datos del webhook y de Supabase\nconst inputData = $input.first().json;\nconst pinIngresado = $('Webhook').item.json.body.pin;\n\n// Verificar si se encontró el comerciante\nif (!inputData || !inputData.id) {\n  return {\n    json: {\n      success: false,\n      message: \"ID de comerciante no encontrado\"\n    }\n  };\n}\n\n// Verificar si el comerciante tiene PIN configurado\n// CAMBIO: Buscar \"pin\" en lugar de \"pin_acceso\"\nif (!inputData.pin) {\n  return {\n    json: {\n      success: false,\n      message: \"Este comerciante no tiene PIN configurado\"\n    }\n  };\n}\n\n// Comparar PINs\nconst pinCorrecto = inputData.pin.toString();\nconst pinIntentado = pinIngresado.toString();\n\nif (pinCorrecto === pinIntentado) {\n  return {\n    json: {\n      success: true,\n      message: \"Login exitoso\",\n      comerciante: {\n        id: inputData.slug,\n        nombre: inputData.nombre_local\n      }\n    }\n  };\n} else {\n  return {\n    json: {\n      success: false,\n      message: \"PIN incorrecto\"\n    }\n  };\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          480
+        ],
+        "id": "5992b81c-00e9-4af1-83f8-b13680d30df8",
+        "name": "Verificar PIN"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          928,
+          480
+        ],
+        "id": "85eeffcc-59e8-484b-b3de-42407f3d28c0",
+        "name": "Respond to Webhook2"
+      },
+      {
+        "parameters": {
+          "content": "FLUJO DE LOGIN",
+          "height": 384,
+          "width": 1728
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          208,
+          320
+        ],
+        "id": "e771c950-17ae-44a0-8a8b-7e7eb94f2ecd",
+        "name": "Sticky Note9"
+      }
+    ],
+    "connections": {
+      "Webhook - GET Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Leer Comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Formatear Respuesta": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Leer Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Formatear Respuesta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Buscar Comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Verificar PIN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verificar PIN": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 70db7c43",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-23T14:01:22.970Z",
+      "createdAt": "2026-01-23T14:01:22.970Z",
+      "id": "gy1rAhYFoAQXIZ9u",
+      "name": "App 360"
+    }
+  ]
+}
