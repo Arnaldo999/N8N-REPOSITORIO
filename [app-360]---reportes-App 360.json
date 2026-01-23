@@ -1,0 +1,1593 @@
+{
+  "updatedAt": "2026-01-23T14:01:47.850Z",
+  "createdAt": "2026-01-23T13:30:30.892Z",
+  "id": "CgBb94Jif_sUJbd4XOk_b",
+  "name": "[App 360] - Reportes",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "60cc8114-34c5-4261-b001-7830294b8664",
+      "name": "Schedule Trigger - 7 AM1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e04c6754-699c-4fbb-8843-005c65d1135a",
+      "name": "Loop Comercios1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        576,
+        320
+      ],
+      "notes": "Procesa cada comercio uno por uno"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Wait 5 s').item.json.email }}",
+        "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "9c72174c-075d-463d-bbfe-f3662d1f46df",
+      "name": "Enviar Email1",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        240
+      ],
+      "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bhcg3bKbJJpDmkCY",
+          "name": "Gmail account 2"
+        }
+      },
+      "notes": "Envía el reporte por email"
+    },
+    {
+      "parameters": {},
+      "id": "4b454391-a713-47cd-aaba-38ceab5a714d",
+      "name": "Loop Back1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "REPORTE AUTOMATICO 7AM ",
+        "height": 352,
+        "width": 1904,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "79a7a532-3433-4c13-9658-453d5d8fc546",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        336,
+        320
+      ],
+      "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
+      "name": "Obtener Comercios Activos",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        240
+      ],
+      "id": "85626aec-f854-45ba-9e44-1f934bd55196",
+      "name": "Wait 5 s",
+      "webhookId": "70450871-98b4-4cb1-b6be-df5707fa63ce"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Actúa como Arnaldo, Consultor Senior de Negocios y Experto en Automatización. Tu audiencia NO son principiantes; son comerciantes que facturan pero sufren desorden y falta de tiempo.\n\nTu objetivo: Romper una creencia limitante o entregar una táctica de negocio avanzada, pero explicada en lenguaje simple.\n\nINSTRUCCIONES ESTRICTAS:\n1. Elige UNO de estos 4 marcos mentales avanzados para el mensaje de hoy:\n   - La Ley de Pareto (80/20): (Ej: \"El 20% de tus productos te da el 80% de ganancia. ¿Sabes cuáles son o sigues reponiendo todo por igual?\").\n   - El Mito del Emprendedor: (Ej: \"Si tu negocio no funciona cuando no estás, no tienes un negocio, tienes un auto-empleo. Empieza a documentar procesos hoy\").\n   - Costo de Oportunidad: (Ej: \"Pasar 1 hora acomodando latas te cuesta dinero. Esa hora deberías usarla negociando proveedores o configurando tu IA\").\n   - Psicología de Precios: (Ej: \"No bajes precios por miedo. Sube el valor percibido. Un cliente que viene por precio, se va por precio\").\n\n2. ESTRUCTURA DEL MENSAJE (Sin saludos cursis):\n   - EL GOLPE DE REALIDAD: Una pregunta o afirmación directa que incomode constructivamente. (Ej: \"¿Tu negocio te posee a ti o tú posees a tu negocio?\").\n   - LA TÁCTICA: Explica el concepto brevemente y cómo aplicarlo YA MISMO. Nada de teoría abstracta.\n   - EL PUENTE TECNOLÓGICO: Conecta ese problema con la solución: Sistematizar.\n   - CTA: \"No te conformes con sobrevivir. Profesionalízate con n8n y Estrategia. Sígueme en instagram.com/arnaldoestratega o escríbeme abajo para escalar.\"\n\nRESTRICCIONES NEGATIVAS (Lo que NO debes hacer):\n- NO uses frases motivacionales vacías como \"Tú puedes\", \"Sigue adelante\", \"Sonríe\".\n- NO uses signos de exclamación excesivos (!!). Mantén un tono serio, sobrio y de autoridad experta.\n- NO superes los 600 caracteres.\n\nFormato: Texto plano, directo al grano."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        240
+      ],
+      "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "u86n2rwNcUBwKUCi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generar-reporte",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        -128
+      ],
+      "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
+      "name": "Webhook2",
+      "webhookId": "ebff26f8-e0d9-42b1-a51d-3b2f72b8d885"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $('Webhook2').item.json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -128
+      ],
+      "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
+      "name": "Obtener Comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.destinatario }}",
+        "subject": "Aquí Tu Reporte ",
+        "message": "={{ $json.html_email }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1296,
+        -128
+      ],
+      "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
+      "name": "Enviar Reporte",
+      "webhookId": "7ba3c000-aecf-4f76-8e6c-e9b8b36cf2c7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1472,
+        -128
+      ],
+      "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "content": "GENERAR REPORTE ",
+        "height": 336,
+        "width": 1648
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -224
+      ],
+      "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3ebfb04-8d05-4acf-ba2f-ee50e426f3a9",
+              "name": "rango_inicio",
+              "value": "={{ $json.body.periodo == 'anio' ? $today.format('yyyy') + '-01-01 00:00:00' : $json.body.fecha_desde + ' 00:00:00' }}",
+              "type": "string"
+            },
+            {
+              "id": "367b9152-0ef8-4945-955e-728b4b14c930",
+              "name": "rango_fin",
+              "value": "={{ $json.body.fecha_hasta }} 23:59:59",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -128
+      ],
+      "id": "9468b9de-7661-4365-affd-b9e30997293b",
+      "name": "Preparar Fechas"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ CÓDIGO ACTUALIZADO PARA \"Preparar Reporte\"\n\n// 1. Capturar datos de la función RPC\nconst respuestaRPC = $input.first().json;\n\n// Verificar si la RPC respondió correctamente\nif (!respuestaRPC.success) {\n  throw new Error(respuestaRPC.error || 'Error obteniendo transacciones');\n}\n\n// Extraer array de transacciones\nconst transaccionesArray = respuestaRPC.transacciones || [];\n\n// 2. Datos del comerciante y webhook\nconst comerciante = $('Obtener Comerciante').first()?.json || {};\nconst webhookData = $('Webhook2').first()?.json?.body || {};\n\nconst emailFinal = webhookData.email_destinacion || comerciante.email || \"soporte@arnaldoayala.com\";\nconst nombreNegocio = comerciante.nombre_local || \"tu negocio\";\nconst periodoReporte = (webhookData.periodo || \"periodo solicitado\").toUpperCase();\n\n// 3. Variables para cálculos\nlet totalVentas = 0;\nlet totalGastos = 0;\nlet filasTabla = \"\";\n\n// 4. Procesar cada transacción\nfor (const tx of transaccionesArray) {\n  const monto = parseFloat(tx.monto || 0);\n  \n  const fechaRaw = tx.fecha_hora;\n  const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-AR', {\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric'\n  }) : \"S/F\";\n\n  const concepto = tx.descripcion || (tx.tipo === 'INGRESO' ? 'Venta de productos' : 'Gasto general');\n\n  if (tx.tipo === 'INGRESO') {\n    totalVentas += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #2f855a; font-weight: bold; text-align: right;\">+$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  } else {\n    totalGastos += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #c53030; font-weight: bold; text-align: right;\">-$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  }\n}\n\n// 5. Análisis de Consultoría\nconst balanceNeto = totalVentas - totalGastos;\nlet mensajeConsultor = \"\";\nlet colorPrincipal = \"#3182ce\"; \n\nif (balanceNeto > 0) {\n  colorPrincipal = \"#2f855a\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #f0fff4; border-left: 4px solid #38a169; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #276749;\">¡Excelente trabajo! 👏</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2f855a; font-size: 14px;\">\n        Tu negocio está dando frutos. Estas ganancias son el resultado de tu esfuerzo y buena gestión. \n        ¡A seguir por este camino para escalar al siguiente nivel!\n      </p>\n    </div>`;\n} else if (balanceNeto < 0) {\n  colorPrincipal = \"#c53030\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #fff5f5; border-left: 4px solid #e53e3e; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #9b2c2c;\">¡A no bajar los brazos! 💪</h4>\n      <p style=\"margin: 5px 0 0 0; color: #c53030; font-size: 14px;\">\n        Este periodo cerró en negativo, pero cada número es una lección. Revisa los gastos y \n        ajusta la estrategia. ¡Tú tienes la capacidad de revertir esto y volver a crecer!\n      </p>\n    </div>`;\n} else {\n  mensajeConsultor = `\n    <div style=\"background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #2c5282;\">Periodo en equilibrio</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2b6cb0; font-size: 14px;\">\n        Tus ingresos cubrieron exactamente tus gastos. Es un buen momento para analizar \n        cómo aumentar el margen de beneficio en el próximo periodo.\n      </p>\n    </div>`;\n}\n\n// 6. Construcción del HTML (igual que antes)\nconst htmlReporte = `\n<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7fafc; padding: 20px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: ${colorPrincipal}; padding: 30px; text-align: center;\">\n      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;\">Reporte de Resultados</h1>\n      <p style=\"color: rgba(255,255,255,0.8); margin: 5px 0 0 0;\">${nombreNegocio} | Periodo: ${periodoReporte}</p>\n    </div>\n\n    <div style=\"padding: 30px;\">\n      <table style=\"width: 100%; margin-bottom: 30px; border-collapse: collapse;\">\n        <tr>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Ingresos</span>\n            <strong style=\"font-size: 18px; color: #2f855a;\">$${totalVentas.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px; border-left: 1px solid #edf2f7; border-right: 1px solid #edf2f7;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Gastos</span>\n            <strong style=\"font-size: 18px; color: #c53030;\">$${totalGastos.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Balance</span>\n            <strong style=\"font-size: 18px; color: ${colorPrincipal};\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n        </tr>\n      </table>\n\n      <h3 style=\"color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;\">Detalle de Movimientos</h3>\n      <table style=\"width: 100%; border-collapse: collapse;\">\n        <thead>\n          <tr style=\"background-color: #f8fafc;\">\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Fecha</th>\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Concepto</th>\n            <th style=\"padding: 12px; text-align: right; font-size: 11px; color: #718096; text-transform: uppercase;\">Monto</th>\n          </tr>\n        </thead>\n        <tbody>\n          ${filasTabla}\n        </tbody>\n        <tfoot>\n          <tr style=\"background-color: #f8fafc; font-weight: bold;\">\n            <td colspan=\"2\" style=\"padding: 12px; border-top: 2px solid #edf2f7; color: #2d3748; font-size: 14px;\">RESULTADO TOTAL FINAL</td>\n            <td style=\"padding: 12px; border-top: 2px solid #edf2f7; text-align: right; color: ${colorPrincipal}; font-size: 18px;\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n          </tr>\n        </tfoot>\n      </table>\n\n      ${mensajeConsultor}\n\n      <div style=\"margin-top: 40px; padding-top: 20px; border-top: 1px solid #edf2f7; color: #4a5568;\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: bold;\">Arnaldo Ayala</p>\n        <p style=\"margin: 2px 0; font-size: 13px; color: #718096;\">Estratega en IA y Marketing</p>\n        <p style=\"margin: 10px 0 0 0; font-size: 12px; color: #3182ce;\">\n          📞 WhatsApp Soporte: <a href=\"https://wa.me/543765384843\" style=\"color: #3182ce; text-decoration: none;\">3765384843</a>\n        </p>\n      </div>\n    </div>\n\n    <div style=\"background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #edf2f7;\">\n      <p style=\"margin: 0; font-size: 11px; color: #a0aec0;\">Reporte generado automáticamente por la Agencia Arnaldo Ayala.</p>\n    </div>\n  </div>\n</div>\n`;\n\n// 7. Retorno\nreturn {\n  json: {\n    asunto: `📊 Reporte ${periodoReporte} - ${nombreNegocio}`,\n    destinatario: emailFinal,\n    resumen_ventas: totalVentas,\n    resumen_gastos: totalGastos,\n    balance: balanceNeto,\n    html_email: htmlReporte\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -128
+      ],
+      "id": "97330213-f5aa-4dba-917c-7def06e38011",
+      "name": "Preparar Reporte"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ $('Preparar Fechas').item.json.rango_inicio }}\",\n  \"p_fecha_hasta\": \"{{ $('Preparar Fechas').item.json.rango_fin }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
+      "name": "Obtener Reporte"
+    },
+    {
+      "parameters": {
+        "content": "REGISTRO DE NUEVOS COMERCIANTES",
+        "height": 352,
+        "width": 2096,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -736
+      ],
+      "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registro-comerciante",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bea64729-5314-4cde-b4d4-f68659f2f39e",
+      "name": "Webhook Registro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        256,
+        -608
+      ],
+      "webhookId": "registro-comerciante-v1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true
+      },
+      "id": "2be1858d-89c2-4f32-9470-044c98de5840",
+      "name": "Obtener Todos los Comercios",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -608
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+      },
+      "id": "faecd98b-a8bc-49c8-98d0-d544d541e415",
+      "name": "Generar Slug y URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a1cf0260-79a6-4787-9f0b-6ee5e120e764",
+      "name": "Enviar Email Bienvenida",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        -720
+      ],
+      "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
+        "options": {}
+      },
+      "id": "af9c5b6b-fe43-4f91-8a46-3cee1dd24c7b",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "comercios",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "slug",
+              "fieldValue": "={{ $json.slug }}"
+            },
+            {
+              "fieldId": "pin",
+              "fieldValue": "={{ $json.pin }}"
+            },
+            {
+              "fieldId": "nombre_local",
+              "fieldValue": "={{ $json.nombre_local }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $json.whatsapp }}"
+            },
+            {
+              "fieldId": "tipo_negocio",
+              "fieldValue": "={{ $json.tipo_negocio }}"
+            },
+            {
+              "fieldId": "direccion",
+              "fieldValue": "={{ $json.direccion }}"
+            },
+            {
+              "fieldId": "ciudad",
+              "fieldValue": "={{ $json.ciudad }}"
+            },
+            {
+              "fieldId": "activo",
+              "fieldValue": "={{ $json.activo }}"
+            },
+            {
+              "fieldId": "url_app",
+              "fieldValue": "={{ $json.url_app }}"
+            }
+          ]
+        }
+      },
+      "id": "159c989f-d31b-49d0-9264-ea3a524f9464",
+      "name": "Guardar en Supabase3",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        912,
+        -720
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "BD APP COMERCIANTES",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "ID Comerciante|rich_text",
+              "textContent": "={{ $json.slug }}"
+            },
+            {
+              "key": "Nombre_Local|rich_text",
+              "textContent": "={{ $json.nombre_local }}"
+            },
+            {
+              "key": "Whatsapp|rich_text",
+              "textContent": "={{ $json.whatsapp }}"
+            },
+            {
+              "key": "Email|rich_text",
+              "textContent": "={{ $json.email }}"
+            },
+            {
+              "key": "Ciudad|multi_select",
+              "multiSelectValue": "={{$json.ciudad}}"
+            },
+            {
+              "key": "Tipo de Cuenta|select",
+              "selectValue": "DEMO"
+            },
+            {
+              "key": "Estado|status",
+              "statusValue": "Activo"
+            },
+            {
+              "key": "Fecha inicio|date",
+              "date": "={{ $json.fecha_inicio }}",
+              "timezone": "America/Argentina/Buenos_Aires"
+            },
+            {
+              "key": "Direccion|rich_text",
+              "textContent": "={{ $json.direccion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        -496
+      ],
+      "id": "8957f8cb-9870-4b2e-a09b-20bdec633eae",
+      "name": "Guardar en Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger - 7 AM1": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comercios Activos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Comercios1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 5 s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email1": {
+      "main": [
+        [
+          {
+            "node": "Loop Back1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back1": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comercios Activos": {
+      "main": [
+        [
+          {
+            "node": "Loop Comercios1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 s": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Preparar Fechas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Comerciante": {
+      "main": [
+        [
+          {
+            "node": "Obtener Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Reporte": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Fechas": {
+      "main": [
+        [
+          {
+            "node": "Obtener Comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Reporte": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Reporte": {
+      "main": [
+        [
+          {
+            "node": "Preparar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Registro": {
+      "main": [
+        [
+          {
+            "node": "Obtener Todos los Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Todos los Comercios": {
+      "main": [
+        [
+          {
+            "node": "Generar Slug y URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Slug y URL": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Notion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar en Supabase3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Bienvenida": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase3": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
+  "activeVersionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T13:30:30.893Z",
+      "createdAt": "2026-01-23T13:30:30.893Z",
+      "role": "workflow:owner",
+      "workflowId": "CgBb94Jif_sUJbd4XOk_b",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-23T14:08:22.000Z",
+    "createdAt": "2026-01-23T13:54:52.206Z",
+    "versionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
+    "workflowId": "CgBb94Jif_sUJbd4XOk_b",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 7
+              }
+            ]
+          }
+        },
+        "id": "60cc8114-34c5-4261-b001-7830294b8664",
+        "name": "Schedule Trigger - 7 AM1",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          128,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "e04c6754-699c-4fbb-8843-005c65d1135a",
+        "name": "Loop Comercios1",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          576,
+          320
+        ],
+        "notes": "Procesa cada comercio uno por uno"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $('Wait 5 s').item.json.email }}",
+          "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "9c72174c-075d-463d-bbfe-f3662d1f46df",
+        "name": "Enviar Email1",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          1552,
+          240
+        ],
+        "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "bhcg3bKbJJpDmkCY",
+            "name": "Gmail account 2"
+          }
+        },
+        "notes": "Envía el reporte por email"
+      },
+      {
+        "parameters": {},
+        "id": "4b454391-a713-47cd-aaba-38ceab5a714d",
+        "name": "Loop Back1",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1808,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "content": "REPORTE AUTOMATICO 7AM ",
+          "height": 352,
+          "width": 1904,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          96,
+          208
+        ],
+        "id": "79a7a532-3433-4c13-9658-453d5d8fc546",
+        "name": "Sticky Note7"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "returnAll": true,
+          "filterType": "none"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          336,
+          320
+        ],
+        "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
+        "name": "Obtener Comercios Activos",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          912,
+          240
+        ],
+        "id": "85626aec-f854-45ba-9e44-1f934bd55196",
+        "name": "Wait 5 s",
+        "webhookId": "70450871-98b4-4cb1-b6be-df5707fa63ce"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "models/gemini-2.5-flash",
+            "mode": "list",
+            "cachedResultName": "models/gemini-2.5-flash"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "Actúa como Arnaldo, Consultor Senior de Negocios y Experto en Automatización. Tu audiencia NO son principiantes; son comerciantes que facturan pero sufren desorden y falta de tiempo.\n\nTu objetivo: Romper una creencia limitante o entregar una táctica de negocio avanzada, pero explicada en lenguaje simple.\n\nINSTRUCCIONES ESTRICTAS:\n1. Elige UNO de estos 4 marcos mentales avanzados para el mensaje de hoy:\n   - La Ley de Pareto (80/20): (Ej: \"El 20% de tus productos te da el 80% de ganancia. ¿Sabes cuáles son o sigues reponiendo todo por igual?\").\n   - El Mito del Emprendedor: (Ej: \"Si tu negocio no funciona cuando no estás, no tienes un negocio, tienes un auto-empleo. Empieza a documentar procesos hoy\").\n   - Costo de Oportunidad: (Ej: \"Pasar 1 hora acomodando latas te cuesta dinero. Esa hora deberías usarla negociando proveedores o configurando tu IA\").\n   - Psicología de Precios: (Ej: \"No bajes precios por miedo. Sube el valor percibido. Un cliente que viene por precio, se va por precio\").\n\n2. ESTRUCTURA DEL MENSAJE (Sin saludos cursis):\n   - EL GOLPE DE REALIDAD: Una pregunta o afirmación directa que incomode constructivamente. (Ej: \"¿Tu negocio te posee a ti o tú posees a tu negocio?\").\n   - LA TÁCTICA: Explica el concepto brevemente y cómo aplicarlo YA MISMO. Nada de teoría abstracta.\n   - EL PUENTE TECNOLÓGICO: Conecta ese problema con la solución: Sistematizar.\n   - CTA: \"No te conformes con sobrevivir. Profesionalízate con n8n y Estrategia. Sígueme en instagram.com/arnaldoestratega o escríbeme abajo para escalar.\"\n\nRESTRICCIONES NEGATIVAS (Lo que NO debes hacer):\n- NO uses frases motivacionales vacías como \"Tú puedes\", \"Sigue adelante\", \"Sonríe\".\n- NO uses signos de exclamación excesivos (!!). Mantén un tono serio, sobrio y de autoridad experta.\n- NO superes los 600 caracteres.\n\nFormato: Texto plano, directo al grano."
+              }
+            ]
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.googleGemini",
+        "typeVersion": 1.1,
+        "position": [
+          1168,
+          240
+        ],
+        "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
+        "name": "Message a model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "u86n2rwNcUBwKUCi",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "generar-reporte",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          256,
+          -128
+        ],
+        "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
+        "name": "Webhook2",
+        "webhookId": "ebff26f8-e0d9-42b1-a51d-3b2f72b8d885"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $('Webhook2').item.json.body.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          688,
+          -128
+        ],
+        "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
+        "name": "Obtener Comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.destinatario }}",
+          "subject": "Aquí Tu Reporte ",
+          "message": "={{ $json.html_email }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          1296,
+          -128
+        ],
+        "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
+        "name": "Enviar Reporte",
+        "webhookId": "7ba3c000-aecf-4f76-8e6c-e9b8b36cf2c7",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "hRodmfLyiI5TNo4a",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1472,
+          -128
+        ],
+        "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
+        "name": "Respond to Webhook4"
+      },
+      {
+        "parameters": {
+          "content": "GENERAR REPORTE ",
+          "height": 336,
+          "width": 1648
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          96,
+          -224
+        ],
+        "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
+        "name": "Sticky Note13"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a3ebfb04-8d05-4acf-ba2f-ee50e426f3a9",
+                "name": "rango_inicio",
+                "value": "={{ $json.body.periodo == 'anio' ? $today.format('yyyy') + '-01-01 00:00:00' : $json.body.fecha_desde + ' 00:00:00' }}",
+                "type": "string"
+              },
+              {
+                "id": "367b9152-0ef8-4945-955e-728b4b14c930",
+                "name": "rango_fin",
+                "value": "={{ $json.body.fecha_hasta }} 23:59:59",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          464,
+          -128
+        ],
+        "id": "9468b9de-7661-4365-affd-b9e30997293b",
+        "name": "Preparar Fechas"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ✅ CÓDIGO ACTUALIZADO PARA \"Preparar Reporte\"\n\n// 1. Capturar datos de la función RPC\nconst respuestaRPC = $input.first().json;\n\n// Verificar si la RPC respondió correctamente\nif (!respuestaRPC.success) {\n  throw new Error(respuestaRPC.error || 'Error obteniendo transacciones');\n}\n\n// Extraer array de transacciones\nconst transaccionesArray = respuestaRPC.transacciones || [];\n\n// 2. Datos del comerciante y webhook\nconst comerciante = $('Obtener Comerciante').first()?.json || {};\nconst webhookData = $('Webhook2').first()?.json?.body || {};\n\nconst emailFinal = webhookData.email_destinacion || comerciante.email || \"soporte@arnaldoayala.com\";\nconst nombreNegocio = comerciante.nombre_local || \"tu negocio\";\nconst periodoReporte = (webhookData.periodo || \"periodo solicitado\").toUpperCase();\n\n// 3. Variables para cálculos\nlet totalVentas = 0;\nlet totalGastos = 0;\nlet filasTabla = \"\";\n\n// 4. Procesar cada transacción\nfor (const tx of transaccionesArray) {\n  const monto = parseFloat(tx.monto || 0);\n  \n  const fechaRaw = tx.fecha_hora;\n  const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-AR', {\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric'\n  }) : \"S/F\";\n\n  const concepto = tx.descripcion || (tx.tipo === 'INGRESO' ? 'Venta de productos' : 'Gasto general');\n\n  if (tx.tipo === 'INGRESO') {\n    totalVentas += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #2f855a; font-weight: bold; text-align: right;\">+$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  } else {\n    totalGastos += monto;\n    filasTabla += `\n      <tr>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${fecha}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #4a5568;\">${concepto}</td>\n        <td style=\"padding: 12px; border-bottom: 1px solid #edf2f7; color: #c53030; font-weight: bold; text-align: right;\">-$${monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n      </tr>`;\n  }\n}\n\n// 5. Análisis de Consultoría\nconst balanceNeto = totalVentas - totalGastos;\nlet mensajeConsultor = \"\";\nlet colorPrincipal = \"#3182ce\"; \n\nif (balanceNeto > 0) {\n  colorPrincipal = \"#2f855a\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #f0fff4; border-left: 4px solid #38a169; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #276749;\">¡Excelente trabajo! 👏</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2f855a; font-size: 14px;\">\n        Tu negocio está dando frutos. Estas ganancias son el resultado de tu esfuerzo y buena gestión. \n        ¡A seguir por este camino para escalar al siguiente nivel!\n      </p>\n    </div>`;\n} else if (balanceNeto < 0) {\n  colorPrincipal = \"#c53030\"; \n  mensajeConsultor = `\n    <div style=\"background-color: #fff5f5; border-left: 4px solid #e53e3e; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #9b2c2c;\">¡A no bajar los brazos! 💪</h4>\n      <p style=\"margin: 5px 0 0 0; color: #c53030; font-size: 14px;\">\n        Este periodo cerró en negativo, pero cada número es una lección. Revisa los gastos y \n        ajusta la estrategia. ¡Tú tienes la capacidad de revertir esto y volver a crecer!\n      </p>\n    </div>`;\n} else {\n  mensajeConsultor = `\n    <div style=\"background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin-top: 20px;\">\n      <h4 style=\"margin: 0; color: #2c5282;\">Periodo en equilibrio</h4>\n      <p style=\"margin: 5px 0 0 0; color: #2b6cb0; font-size: 14px;\">\n        Tus ingresos cubrieron exactamente tus gastos. Es un buen momento para analizar \n        cómo aumentar el margen de beneficio en el próximo periodo.\n      </p>\n    </div>`;\n}\n\n// 6. Construcción del HTML (igual que antes)\nconst htmlReporte = `\n<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7fafc; padding: 20px;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: ${colorPrincipal}; padding: 30px; text-align: center;\">\n      <h1 style=\"color: #ffffff; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;\">Reporte de Resultados</h1>\n      <p style=\"color: rgba(255,255,255,0.8); margin: 5px 0 0 0;\">${nombreNegocio} | Periodo: ${periodoReporte}</p>\n    </div>\n\n    <div style=\"padding: 30px;\">\n      <table style=\"width: 100%; margin-bottom: 30px; border-collapse: collapse;\">\n        <tr>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Ingresos</span>\n            <strong style=\"font-size: 18px; color: #2f855a;\">$${totalVentas.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px; border-left: 1px solid #edf2f7; border-right: 1px solid #edf2f7;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Gastos</span>\n            <strong style=\"font-size: 18px; color: #c53030;\">$${totalGastos.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n          <td style=\"width: 33.33%; text-align: center; padding: 10px;\">\n            <span style=\"display: block; font-size: 11px; color: #718096; text-transform: uppercase; margin-bottom: 5px;\">Balance</span>\n            <strong style=\"font-size: 18px; color: ${colorPrincipal};\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</strong>\n          </td>\n        </tr>\n      </table>\n\n      <h3 style=\"color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px;\">Detalle de Movimientos</h3>\n      <table style=\"width: 100%; border-collapse: collapse;\">\n        <thead>\n          <tr style=\"background-color: #f8fafc;\">\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Fecha</th>\n            <th style=\"padding: 12px; text-align: left; font-size: 11px; color: #718096; text-transform: uppercase;\">Concepto</th>\n            <th style=\"padding: 12px; text-align: right; font-size: 11px; color: #718096; text-transform: uppercase;\">Monto</th>\n          </tr>\n        </thead>\n        <tbody>\n          ${filasTabla}\n        </tbody>\n        <tfoot>\n          <tr style=\"background-color: #f8fafc; font-weight: bold;\">\n            <td colspan=\"2\" style=\"padding: 12px; border-top: 2px solid #edf2f7; color: #2d3748; font-size: 14px;\">RESULTADO TOTAL FINAL</td>\n            <td style=\"padding: 12px; border-top: 2px solid #edf2f7; text-align: right; color: ${colorPrincipal}; font-size: 18px;\">$${balanceNeto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>\n          </tr>\n        </tfoot>\n      </table>\n\n      ${mensajeConsultor}\n\n      <div style=\"margin-top: 40px; padding-top: 20px; border-top: 1px solid #edf2f7; color: #4a5568;\">\n        <p style=\"margin: 0; font-size: 14px; font-weight: bold;\">Arnaldo Ayala</p>\n        <p style=\"margin: 2px 0; font-size: 13px; color: #718096;\">Estratega en IA y Marketing</p>\n        <p style=\"margin: 10px 0 0 0; font-size: 12px; color: #3182ce;\">\n          📞 WhatsApp Soporte: <a href=\"https://wa.me/543765384843\" style=\"color: #3182ce; text-decoration: none;\">3765384843</a>\n        </p>\n      </div>\n    </div>\n\n    <div style=\"background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #edf2f7;\">\n      <p style=\"margin: 0; font-size: 11px; color: #a0aec0;\">Reporte generado automáticamente por la Agencia Arnaldo Ayala.</p>\n    </div>\n  </div>\n</div>\n`;\n\n// 7. Retorno\nreturn {\n  json: {\n    asunto: `📊 Reporte ${periodoReporte} - ${nombreNegocio}`,\n    destinatario: emailFinal,\n    resumen_ventas: totalVentas,\n    resumen_gastos: totalGastos,\n    balance: balanceNeto,\n    html_email: htmlReporte\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1104,
+          -128
+        ],
+        "id": "97330213-f5aa-4dba-917c-7def06e38011",
+        "name": "Preparar Reporte"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzAzNjg5NCwiZXhwIjoyMDgyNjEyODk0fQ.DoRhW9e10ACffio4erVzDwy1Uxa47VxUNXffLVdC49k"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"p_comercio_id\": \"{{ $('Webhook2').item.json.body.id_comerciante }}\",\n  \"p_fecha_desde\": \"{{ $('Preparar Fechas').item.json.rango_inicio }}\",\n  \"p_fecha_hasta\": \"{{ $('Preparar Fechas').item.json.rango_fin }}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          896,
+          -128
+        ],
+        "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
+        "name": "Obtener Reporte"
+      },
+      {
+        "parameters": {
+          "content": "REGISTRO DE NUEVOS COMERCIANTES",
+          "height": 352,
+          "width": 2096,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          48,
+          -736
+        ],
+        "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "registro-comerciante",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "bea64729-5314-4cde-b4d4-f68659f2f39e",
+        "name": "Webhook Registro",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          256,
+          -608
+        ],
+        "webhookId": "registro-comerciante-v1"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "returnAll": true
+        },
+        "id": "2be1858d-89c2-4f32-9470-044c98de5840",
+        "name": "Obtener Todos los Comercios",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          464,
+          -608
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+        },
+        "id": "faecd98b-a8bc-49c8-98d0-d544d541e415",
+        "name": "Generar Slug y URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          688,
+          -608
+        ]
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email }}",
+          "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "a1cf0260-79a6-4787-9f0b-6ee5e120e764",
+        "name": "Enviar Email Bienvenida",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          1136,
+          -720
+        ],
+        "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "hRodmfLyiI5TNo4a",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
+          "options": {}
+        },
+        "id": "af9c5b6b-fe43-4f91-8a46-3cee1dd24c7b",
+        "name": "Responder",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1360,
+          -720
+        ]
+      },
+      {
+        "parameters": {
+          "tableId": "comercios",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "slug",
+                "fieldValue": "={{ $json.slug }}"
+              },
+              {
+                "fieldId": "pin",
+                "fieldValue": "={{ $json.pin }}"
+              },
+              {
+                "fieldId": "nombre_local",
+                "fieldValue": "={{ $json.nombre_local }}"
+              },
+              {
+                "fieldId": "email",
+                "fieldValue": "={{ $json.email }}"
+              },
+              {
+                "fieldId": "whatsapp",
+                "fieldValue": "={{ $json.whatsapp }}"
+              },
+              {
+                "fieldId": "tipo_negocio",
+                "fieldValue": "={{ $json.tipo_negocio }}"
+              },
+              {
+                "fieldId": "direccion",
+                "fieldValue": "={{ $json.direccion }}"
+              },
+              {
+                "fieldId": "ciudad",
+                "fieldValue": "={{ $json.ciudad }}"
+              },
+              {
+                "fieldId": "activo",
+                "fieldValue": "={{ $json.activo }}"
+              },
+              {
+                "fieldId": "url_app",
+                "fieldValue": "={{ $json.url_app }}"
+              }
+            ]
+          }
+        },
+        "id": "159c989f-d31b-49d0-9264-ea3a524f9464",
+        "name": "Guardar en Supabase3",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          912,
+          -720
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "databaseId": {
+            "__rl": true,
+            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+            "mode": "list",
+            "cachedResultName": "BD APP COMERCIANTES",
+            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+          },
+          "propertiesUi": {
+            "propertyValues": [
+              {
+                "key": "ID Comerciante|rich_text",
+                "textContent": "={{ $json.slug }}"
+              },
+              {
+                "key": "Nombre_Local|rich_text",
+                "textContent": "={{ $json.nombre_local }}"
+              },
+              {
+                "key": "Whatsapp|rich_text",
+                "textContent": "={{ $json.whatsapp }}"
+              },
+              {
+                "key": "Email|rich_text",
+                "textContent": "={{ $json.email }}"
+              },
+              {
+                "key": "Ciudad|multi_select",
+                "multiSelectValue": "={{$json.ciudad}}"
+              },
+              {
+                "key": "Tipo de Cuenta|select",
+                "selectValue": "DEMO"
+              },
+              {
+                "key": "Estado|status",
+                "statusValue": "Activo"
+              },
+              {
+                "key": "Fecha inicio|date",
+                "date": "={{ $json.fecha_inicio }}",
+                "timezone": "America/Argentina/Buenos_Aires"
+              },
+              {
+                "key": "Direccion|rich_text",
+                "textContent": "={{ $json.direccion }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          912,
+          -496
+        ],
+        "id": "8957f8cb-9870-4b2e-a09b-20bdec633eae",
+        "name": "Guardar en Notion",
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger - 7 AM1": {
+        "main": [
+          [
+            {
+              "node": "Obtener Comercios Activos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Comercios1": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Wait 5 s",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email1": {
+        "main": [
+          [
+            {
+              "node": "Loop Back1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Back1": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Comercios Activos": {
+        "main": [
+          [
+            {
+              "node": "Loop Comercios1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait 5 s": {
+        "main": [
+          [
+            {
+              "node": "Message a model",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message a model": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook2": {
+        "main": [
+          [
+            {
+              "node": "Preparar Fechas",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Comerciante": {
+        "main": [
+          [
+            {
+              "node": "Obtener Reporte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Reporte": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Fechas": {
+        "main": [
+          [
+            {
+              "node": "Obtener Comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Reporte": {
+        "main": [
+          [
+            {
+              "node": "Enviar Reporte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Reporte": {
+        "main": [
+          [
+            {
+              "node": "Preparar Reporte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Registro": {
+        "main": [
+          [
+            {
+              "node": "Obtener Todos los Comercios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Todos los Comercios": {
+        "main": [
+          [
+            {
+              "node": "Generar Slug y URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generar Slug y URL": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Notion",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Guardar en Supabase3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email Bienvenida": {
+        "main": [
+          [
+            {
+              "node": "Responder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase3": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 9ef245e4",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-23T14:01:22.970Z",
+      "createdAt": "2026-01-23T14:01:22.970Z",
+      "id": "gy1rAhYFoAQXIZ9u",
+      "name": "App 360"
+    }
+  ]
+}
