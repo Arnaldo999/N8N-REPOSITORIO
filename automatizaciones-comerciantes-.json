@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-19T20:48:57.547Z",
+  "updatedAt": "2026-01-22T14:58:54.977Z",
   "createdAt": "2026-01-15T13:53:29.264Z",
   "id": "_DGhEcFyFUEWpZHnU6tYe",
   "name": "AUTOMATIZACIONES-COMERCIANTES",
@@ -211,15 +211,15 @@
     {
       "parameters": {
         "content": "REGISTRO DE NUEVOS COMERCIANTES",
-        "height": 400,
-        "width": 2064,
+        "height": 352,
+        "width": 2096,
         "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        224,
-        1568
+        192,
+        1584
       ],
       "id": "04cbb29d-5315-4be5-9207-c45bfc16272e",
       "name": "Sticky Note2"
@@ -431,7 +431,7 @@
     {
       "parameters": {
         "content": "EDITAR TRANSACCION HISTORIAL",
-        "height": 352,
+        "height": 384,
         "width": 1840,
         "color": 5
       },
@@ -439,7 +439,7 @@
       "typeVersion": 1,
       "position": [
         272,
-        2544
+        2512
       ],
       "id": "b9cc3a4b-9af7-4560-97ed-b5e529e4ad19",
       "name": "Sticky Note5"
@@ -1157,7 +1157,7 @@
       "typeVersion": 1,
       "position": [
         224,
-        48
+        80
       ],
       "id": "7ec1d669-dcb0-4e9c-a16c-aa7d64a60fd8",
       "name": "Sticky Note9"
@@ -1238,14 +1238,14 @@
     {
       "parameters": {
         "content": "GUARDAR TRANSACCION LOCAL STORAGE",
-        "height": 352,
+        "height": 256,
         "width": 1616
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        320,
-        3456
+        304,
+        3504
       ],
       "id": "0265c84d-096a-42cd-874b-bec8cd52a216",
       "name": "Sticky Note10"
@@ -1680,8 +1680,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        720,
-        2176
+        704,
+        2192
       ],
       "id": "b562be39-b9da-4089-8a36-8bbd239af506",
       "name": "Obtener Comerciante1",
@@ -2493,7 +2493,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "0a30c91c-dc83-4189-b2e2-a30eadc96718",
+  "versionId": "696c2c97-272c-4254-a996-564cb8496a41",
   "activeVersionId": "0a30c91c-dc83-4189-b2e2-a30eadc96718",
   "triggerCount": 14,
   "shared": [
