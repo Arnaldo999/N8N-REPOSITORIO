@@ -1,0 +1,711 @@
+{
+  "updatedAt": "2026-01-23T14:03:11.504Z",
+  "createdAt": "2026-01-15T13:53:29.264Z",
+  "id": "_DGhEcFyFUEWpZHnU6tYe",
+  "name": "[App 360] - Ventas y Gastos",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pos-guardar-venta",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3776,
+        912
+      ],
+      "id": "4c77afa0-3744-45c0-a8d3-24e82ead4963",
+      "name": "Webhook Guardar Transaccion",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook Guardar Transaccion').first().json.body;\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// ✅ Calculamos el costo total sumando el costo de cada ítem enviado por la App\nconst items = body.items || [];\nconst costoTotal = items.reduce((sum, item) => sum + (parseFloat(item.costo) || 0), 0);\n\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  costo_total: costoTotal, // ✅ NUEVO: Guardamos cuánto nos costó lo que vendimos\n  descripcion: body.descripcion || null,\n  productos: body.items || null, \n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local\n};\n\n// Manejo de Ventas\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo || 'Efectivo';\n  transaccion.categoria_gasto = null;\n}\n\n// Manejo de Gastos\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria || 'Otros';\n  // En un gasto, el costo es el mismo monto\n  transaccion.costo_total = transaccion.monto; \n}\n\nreturn { json: transaccion };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3328,
+        912
+      ],
+      "id": "7a9f1acf-a471-4923-98de-63c4b5a88576",
+      "name": "Preparar Datos"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3552,
+        912
+      ],
+      "id": "dbf224dc-5baf-4c38-a261-0a07922b636a",
+      "name": "Buscar comerciante",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -2880,
+        912
+      ],
+      "id": "f250da21-13c0-4330-9e43-b9757bdd326e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "tableId": "transacciones",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3104,
+        912
+      ],
+      "id": "28247a1e-2c5b-4a92-a6ca-bc4d06c7d3d7",
+      "name": "Guardar en Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "guardar-local",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3760,
+        1184
+      ],
+      "id": "d538ca41-8df5-4ae9-a2d3-7fe10058f644",
+      "name": "Webhook Guardar Transaccion1",
+      "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el cuerpo del webhook\nconst body = $('Webhook Guardar Transaccion1').first().json.body;\nconst transacciones = body.transacciones;\n\n// 2. Datos del comerciante\nconst comerciante = $input.first().json;\n\nif (!comerciante || !comerciante.id) {\n  throw new Error('Comerciante no encontrado en la base de datos');\n}\n\n// 3. Validar si es una lista o una sola\nconst listaAProcesar = Array.isArray(transacciones) ? transacciones : [body];\n\n// 4. Procesar cada una\nreturn listaAProcesar.map(t => {\n  const registro = {\n    comercio_id: comerciante.id,\n    tipo: t.tipo, \n    monto: parseFloat(t.monto) || 0,\n    descripcion: t.descripcion || null,\n    fecha_hora: t.fecha_hora || new Date().toISOString(),\n    metodo_pago: t.metodo_pago || t.metodo || null,  // ✅ Acepta ambos\n    categoria_gasto: t.categoria_gasto || t.categoria || null,  // ✅ Acepta ambos\n    id_local: t.id || t.id_local || null\n  };\n\n  return { json: registro };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3312,
+        1184
+      ],
+      "id": "bb2f5c3a-9f0f-4ac4-ad5f-5d0762332616",
+      "name": "Preparar Datos1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "keyValue": "={{ $json.body.id_comerciante }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3536,
+        1184
+      ],
+      "id": "e2b77fb7-e57f-4477-a58a-0efc4c071687",
+      "name": "Buscar comerciante1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -2864,
+        1184
+      ],
+      "id": "e1b7546e-8862-4f41-9121-044a6ef23d5b",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3088,
+        1184
+      ],
+      "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
+      "name": "Guardar en Supabase2"
+    },
+    {
+      "parameters": {
+        "content": "WEBHOOK ",
+        "height": 880,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3872,
+        576
+      ],
+      "id": "8471d12c-cdfb-4761-a537-f51b31d68df1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "LOGICA Y BASE DE DATOS:",
+        "height": 880,
+        "width": 992
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        576
+      ],
+      "id": "6a0d9113-2a01-4e1b-8a1d-393e412fc5c4",
+      "name": "Sticky Note10"
+    }
+  ],
+  "connections": {
+    "Webhook Guardar Transaccion": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Guardar Transaccion1": {
+      "main": [
+        [
+          {
+            "node": "Buscar comerciante1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos1": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar comerciante1": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "OTaNh8sYwCG7cI8uiAKQR",
+    "timezone": "America/Argentina/Buenos_Aires"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
+  "activeVersionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-01-15T13:53:29.270Z",
+      "createdAt": "2026-01-15T13:53:29.270Z",
+      "role": "workflow:owner",
+      "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-23T14:03:14.000Z",
+    "createdAt": "2026-01-23T14:03:11.505Z",
+    "versionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
+    "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "pos-guardar-venta",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -3776,
+          912
+        ],
+        "id": "4c77afa0-3744-45c0-a8d3-24e82ead4963",
+        "name": "Webhook Guardar Transaccion",
+        "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $('Webhook Guardar Transaccion').first().json.body;\nconst comercio = $input.first().json;\n\nif (!comercio || !comercio.id) {\n  throw new Error('Comerciante no encontrado');\n}\n\n// ✅ Calculamos el costo total sumando el costo de cada ítem enviado por la App\nconst items = body.items || [];\nconst costoTotal = items.reduce((sum, item) => sum + (parseFloat(item.costo) || 0), 0);\n\nconst transaccion = {\n  comercio_id: comercio.id,\n  tipo: body.tipo,\n  monto: parseFloat(body.monto),\n  costo_total: costoTotal, // ✅ NUEVO: Guardamos cuánto nos costó lo que vendimos\n  descripcion: body.descripcion || null,\n  productos: body.items || null, \n  fecha_hora: body.fecha_hora || new Date().toISOString(),\n  id_local: body.id_local\n};\n\n// Manejo de Ventas\nif (body.tipo === 'INGRESO') {\n  transaccion.metodo_pago = body.metodo || 'Efectivo';\n  transaccion.categoria_gasto = null;\n}\n\n// Manejo de Gastos\nif (body.tipo === 'GASTO') {\n  transaccion.categoria_gasto = body.categoria || 'Otros';\n  // En un gasto, el costo es el mismo monto\n  transaccion.costo_total = transaccion.monto; \n}\n\nreturn { json: transaccion };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -3328,
+          912
+        ],
+        "id": "7a9f1acf-a471-4923-98de-63c4b5a88576",
+        "name": "Preparar Datos"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "limit": 1,
+          "matchType": "allFilters",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "condition": "eq",
+                "keyValue": "={{ $json.body.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -3552,
+          912
+        ],
+        "id": "dbf224dc-5baf-4c38-a261-0a07922b636a",
+        "name": "Buscar comerciante",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          -2880,
+          912
+        ],
+        "id": "f250da21-13c0-4330-9e43-b9757bdd326e",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "tableId": "transacciones",
+          "dataToSend": "autoMapInputData"
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -3104,
+          912
+        ],
+        "id": "28247a1e-2c5b-4a92-a6ca-bc4d06c7d3d7",
+        "name": "Guardar en Supabase",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "guardar-local",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -3760,
+          1184
+        ],
+        "id": "d538ca41-8df5-4ae9-a2d3-7fe10058f644",
+        "name": "Webhook Guardar Transaccion1",
+        "webhookId": "a20c8ec7-8506-4a53-af0b-5b9a4cbd1900"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Obtenemos el cuerpo del webhook\nconst body = $('Webhook Guardar Transaccion1').first().json.body;\nconst transacciones = body.transacciones;\n\n// 2. Datos del comerciante\nconst comerciante = $input.first().json;\n\nif (!comerciante || !comerciante.id) {\n  throw new Error('Comerciante no encontrado en la base de datos');\n}\n\n// 3. Validar si es una lista o una sola\nconst listaAProcesar = Array.isArray(transacciones) ? transacciones : [body];\n\n// 4. Procesar cada una\nreturn listaAProcesar.map(t => {\n  const registro = {\n    comercio_id: comerciante.id,\n    tipo: t.tipo, \n    monto: parseFloat(t.monto) || 0,\n    descripcion: t.descripcion || null,\n    fecha_hora: t.fecha_hora || new Date().toISOString(),\n    metodo_pago: t.metodo_pago || t.metodo || null,  // ✅ Acepta ambos\n    categoria_gasto: t.categoria_gasto || t.categoria || null,  // ✅ Acepta ambos\n    id_local: t.id || t.id_local || null\n  };\n\n  return { json: registro };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -3312,
+          1184
+        ],
+        "id": "bb2f5c3a-9f0f-4ac4-ad5f-5d0762332616",
+        "name": "Preparar Datos1"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "keyValue": "={{ $json.body.id_comerciante }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          -3536,
+          1184
+        ],
+        "id": "e2b77fb7-e57f-4477-a58a-0efc4c071687",
+        "name": "Buscar comerciante1",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n  \"success\": true,\n  \"message\": \"Transacción guardada\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          -2864,
+          1184
+        ],
+        "id": "e1b7546e-8862-4f41-9121-044a6ef23d5b",
+        "name": "Respond to Webhook3"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "resolution=merge-duplicates"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -3088,
+          1184
+        ],
+        "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
+        "name": "Guardar en Supabase2"
+      },
+      {
+        "parameters": {
+          "content": "WEBHOOK ",
+          "height": 880,
+          "width": 288
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -3872,
+          576
+        ],
+        "id": "8471d12c-cdfb-4761-a537-f51b31d68df1",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "LOGICA Y BASE DE DATOS:",
+          "height": 880,
+          "width": 992
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -3568,
+          576
+        ],
+        "id": "6a0d9113-2a01-4e1b-8a1d-393e412fc5c4",
+        "name": "Sticky Note10"
+      }
+    ],
+    "connections": {
+      "Webhook Guardar Transaccion": {
+        "main": [
+          [
+            {
+              "node": "Buscar comerciante",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Datos": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar comerciante": {
+        "main": [
+          [
+            {
+              "node": "Preparar Datos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Guardar Transaccion1": {
+        "main": [
+          [
+            {
+              "node": "Buscar comerciante1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Datos1": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Supabase2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar comerciante1": {
+        "main": [
+          [
+            {
+              "node": "Preparar Datos1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase2": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 1cb367ff",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-23T14:01:22.970Z",
+      "createdAt": "2026-01-23T14:01:22.970Z",
+      "id": "gy1rAhYFoAQXIZ9u",
+      "name": "App 360"
+    }
+  ]
+}
