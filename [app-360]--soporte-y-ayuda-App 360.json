@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T14:01:35.044Z",
+  "updatedAt": "2026-01-23T20:24:33.113Z",
   "createdAt": "2026-01-17T11:40:47.311Z",
   "id": "xsKwZlySarztS7XbS9Qb1",
   "name": "[App 360] -Soporte y Ayuda",
@@ -105,7 +105,9 @@
     },
     {
       "parameters": {
-        "options": {}
+        "options": {
+          "systemPromptTemplate": "Eres El Asistente de Soporte Técnico y Estratégico de \"Reporte Automatizado 360\", la plataforma de gestión creada por la Agencia Arnaldo Ayala.\n\nTU OBJETIVO: Ayudar a comerciantes y emprendedores a resolver dudas sobre la App, transmitiendo seguridad, profesionalismo y visión de negocio.\n\nBASE DE CONOCIMIENTO (Reglas inquebrantables):\n1. MODALIDAD OFFLINE: Si preguntan por falta de internet, recuérdales que la App tiene \"Persistencia Local\".\n2. ACCESO: El ingreso es SIEMPRE con el \"ID de Comercio\" y el \"PIN de 4 dígitos\".\n3. REPORTES: Existen el \"Reporte del Día\" (botón app) y el \"Email Matutino\" (7:00 AM).\n4. INVENTARIO: Recalca la importancia de cargar el Costo vs Precio Venta para ver la rentabilidad real.\n\nTONO DE VOZ:\n- Profesional pero cercano (como Arnaldo Ayala).\n- Didáctico y Estratégico.\n\nRESTRICCIONES:\n- Responde SOLO basándote en el CONTEXTO proporcionado abajo.\n- Si la respuesta NO está en el contexto, indica que deben hablar con un humano.\n- Si el usuario pregunta sobre temas ajenos a la App, responde: \"Soy un asistente especializado en Reporte 360 y no tengo información sobre ese tema.\"\n\nCUÁNDO INCLUIR BOTONES DE CONTACTO:\nIncluye botones de contacto cuando:\n- El usuario pide hablar con alguien, soporte humano o ayuda personalizada\n- Mencionas \"contactar\", \"hablar con\", \"comunicarse\"\n- La pregunta requiere intervención humana o casos especiales\n- El usuario pregunta por servicios adicionales, precios o contratar\n- Quiere conocer más sobre la agencia o Arnaldo Ayala\n\nFORMATO DE SALIDA (ESTRICTO):\nTu respuesta debe ser SIEMPRE un objeto JSON válido. No incluyas markdown ni texto fuera del JSON.\n\nEJEMPLO CON BOTONES:\n{{ \"respuesta\": \"¡Claro! Te ayudo con eso. Para soporte personalizado puedes contactar directamente.\", \"botones\": [ {{ \"etiqueta\": \"WhatsApp\", \"url\": \"https://wa.me/543765384843\" }}, {{ \"etiqueta\": \"Instagram\", \"url\": \"https://instagram.com/arnaldoayalaestratega\" }}, {{ \"etiqueta\": \"Sitio Web\", \"url\": \"https://arnaldoayalaestratega.com\" }} ] }}\n\nEJEMPLO SIN BOTONES:\n{{ \"respuesta\": \"Para ingresar a la app usa tu ID de Comercio y PIN de 4 dígitos.\", \"botones\": [] }}\n\nIMPORTANTE: Usa doble llave {{}} para abrir y cerrar el JSON principal. Usa corchetes [] para el array de botones.\n\nINFORMACIÓN RECUPERADA (CONTEXTO):\n{context}\n\nPREGUNTA DEL USUARIO:\n{input}"
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
       "typeVersion": 1.7,
@@ -206,26 +208,64 @@
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "dd934c08-04c6-466c-b434-eedb7d659887",
-              "name": "text",
-              "value": "={{ $json.response }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
+        "content": "# 📄 FICHA TÉCNICA: AGENTE DE SOPORTE (RAG)\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 Cerebro: Gemini / DeepSeek\n🧠 Memoria: Pinecone (Vector Store)\n---------------------------------\nDESCRIPCIÓN:\nSistema de Inteligencia Artificial que responde dudas\nde los comerciantes leyendo tu documentación técnica.\nUtiliza RAG (Retrieval-Augmented Generation) para\nno alucinar y dar respuestas precisas.",
+        "height": 944,
+        "width": 672,
+        "color": 7
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        1344,
+        -912,
+        -368
+      ],
+      "id": "a7aa9b55-6614-4bd2-ae97-5bb8109f67d4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 🗣️ RECEPCIÓN DE CONSULTA\n**Objetivo:** Escuchar al usuario desde la App.\n\n**📥 INPUT:**\n- body.mensaje (La duda del comerciante)\n- body.historial (Contexto de la charla)\n\n**⚙️ PROCESO:**\nRecibe la pregunta en lenguaje natural y la prepara\npara ser procesada por el motor vectorial.",
+        "height": 944,
+        "width": 1024,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -368
+      ],
+      "id": "392be8ff-cde2-4b27-9523-e2ca7756c053",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 MOTOR DE INTELIGENCIA (RAG)\n**Objetivo:** Pensar la respuesta basada en tus datos.\n\n**⚙️ EL PROCESO DE 3 PASOS:**\n1. **Búsqueda:** Convierte la duda en vectores y busca en Pinecone los fragmentos de tu manual que mejor responden.\n2. **Contexto:** Une la duda del usuario + la información encontrada.\n3. **Generación:** La IA redacta una respuesta amable y experta usando solo tu información real.",
+        "height": 944,
+        "width": 896,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -368
+      ],
+      "id": "e3eb8f14-a7bc-479d-8fe3-217856a1ff7b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PARSEADOR CORREGIDO - Compatible con n8n Chat Widget\n// ============================================\n// Este código va en el nodo \"Parseador de Respuesta JSON\" en n8n\n\nconst respuestaTexto = $json.response;\n\ntry {\n  let textoLimpio = respuestaTexto.trim();\n  \n  // Limpiar markdown si viene envuelto en ```json\n  if (textoLimpio.startsWith('```json')) {\n    textoLimpio = textoLimpio.replace(/```json\\n?/g, '').replace(/```\\n?/g, '');\n  }\n  \n  // Parsear el JSON de la respuesta del LLM\n  const datosLimpios = JSON.parse(textoLimpio);\n  \n  // Extraer texto y botones\n  let texto = datosLimpios.respuesta || datosLimpios.text || textoLimpio;\n  let botones = datosLimpios.botones || datosLimpios.buttons || [];\n  \n  // 🔥 FORZAR botones de contacto si la respuesta menciona \"contactar\" o \"hablar\"\n  const textoLower = texto.toLowerCase();\n  if ((textoLower.includes('contactar') || textoLower.includes('hablar') || textoLower.includes('comunicar')) && botones.length === 0) {\n    botones = [\n      { etiqueta: \"WhatsApp\", url: \"https://wa.me/543765384843\" },\n      { etiqueta: \"Instagram\", url: \"https://instagram.com/arnaldoayalaestratega\" },\n      { etiqueta: \"Sitio Web\", url: \"https://arnaldoayalaestratega.com\" }\n    ];\n  }\n  \n  // ✅ NUEVO: Convertir botones a formato Markdown DENTRO del texto\n  if (botones.length > 0) {\n    texto += '\\n\\n';\n    botones.forEach(btn => {\n      const etiqueta = btn.etiqueta || btn.label || 'Enlace';\n      const url = btn.url;\n      \n      let emoji = '🔗';\n      const labelLower = etiqueta.toLowerCase();\n      if (labelLower.includes('whatsapp')) emoji = '💬';\n      else if (labelLower.includes('instagram')) emoji = '📸';\n      else if (labelLower.includes('web') || labelLower.includes('sitio')) emoji = '🌐';\n      \n      // Agregar enlaces en formato Markdown directamente al texto\n      texto += `${emoji} [${etiqueta}](${url})\\n`;\n    });\n  }\n  \n  // Devolver SOLO el texto con los enlaces integrados\n  return {\n    json: {\n      output: texto\n    }\n  };\n  \n} catch (error) {\n  console.error('Error parseando respuesta:', error);\n  \n  // Si falla el parseo, devolver la respuesta como texto plano\n  return {\n    json: {\n      output: respuestaTexto\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
         0
       ],
-      "id": "e8d2480b-fca7-42b7-b490-84eacd64e25c",
-      "name": "Edit Fields"
+      "id": "ae5c4e82-54c8-45f7-a84b-0c82179bb2de",
+      "name": "Parseador de Respuesta JSON"
     }
   ],
   "connections": {
@@ -332,11 +372,16 @@
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Parseador de Respuesta JSON",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Parseador de Respuesta JSON": {
+      "main": [
+        []
       ]
     }
   },
@@ -352,8 +397,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "c5978415-b212-4f20-b95e-1676aa7168a8",
-  "activeVersionId": "c5978415-b212-4f20-b95e-1676aa7168a8",
+  "versionId": "5259a624-06af-443e-a850-67f4e35c61bc",
+  "activeVersionId": "5259a624-06af-443e-a850-67f4e35c61bc",
   "triggerCount": 1,
   "shared": [
     {
@@ -365,9 +410,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T02:54:01.000Z",
-    "createdAt": "2026-01-23T02:53:58.116Z",
-    "versionId": "c5978415-b212-4f20-b95e-1676aa7168a8",
+    "updatedAt": "2026-01-23T20:24:35.000Z",
+    "createdAt": "2026-01-23T20:24:33.114Z",
+    "versionId": "5259a624-06af-443e-a850-67f4e35c61bc",
     "workflowId": "xsKwZlySarztS7XbS9Qb1",
     "nodes": [
       {
@@ -469,7 +514,9 @@
       },
       {
         "parameters": {
-          "options": {}
+          "options": {
+            "systemPromptTemplate": "Eres El Asistente de Soporte Técnico y Estratégico de \"Reporte Automatizado 360\", la plataforma de gestión creada por la Agencia Arnaldo Ayala.\n\nTU OBJETIVO: Ayudar a comerciantes y emprendedores a resolver dudas sobre la App, transmitiendo seguridad, profesionalismo y visión de negocio.\n\nBASE DE CONOCIMIENTO (Reglas inquebrantables):\n1. MODALIDAD OFFLINE: Si preguntan por falta de internet, recuérdales que la App tiene \"Persistencia Local\".\n2. ACCESO: El ingreso es SIEMPRE con el \"ID de Comercio\" y el \"PIN de 4 dígitos\".\n3. REPORTES: Existen el \"Reporte del Día\" (botón app) y el \"Email Matutino\" (7:00 AM).\n4. INVENTARIO: Recalca la importancia de cargar el Costo vs Precio Venta para ver la rentabilidad real.\n\nTONO DE VOZ:\n- Profesional pero cercano (como Arnaldo Ayala).\n- Didáctico y Estratégico.\n\nRESTRICCIONES:\n- Responde SOLO basándote en el CONTEXTO proporcionado abajo.\n- Si la respuesta NO está en el contexto, indica que deben hablar con un humano.\n- Si el usuario pregunta sobre temas ajenos a la App, responde: \"Soy un asistente especializado en Reporte 360 y no tengo información sobre ese tema.\"\n\nCUÁNDO INCLUIR BOTONES DE CONTACTO:\nIncluye botones de contacto cuando:\n- El usuario pide hablar con alguien, soporte humano o ayuda personalizada\n- Mencionas \"contactar\", \"hablar con\", \"comunicarse\"\n- La pregunta requiere intervención humana o casos especiales\n- El usuario pregunta por servicios adicionales, precios o contratar\n- Quiere conocer más sobre la agencia o Arnaldo Ayala\n\nFORMATO DE SALIDA (ESTRICTO):\nTu respuesta debe ser SIEMPRE un objeto JSON válido. No incluyas markdown ni texto fuera del JSON.\n\nEJEMPLO CON BOTONES:\n{{ \"respuesta\": \"¡Claro! Te ayudo con eso. Para soporte personalizado puedes contactar directamente.\", \"botones\": [ {{ \"etiqueta\": \"WhatsApp\", \"url\": \"https://wa.me/543765384843\" }}, {{ \"etiqueta\": \"Instagram\", \"url\": \"https://instagram.com/arnaldoayalaestratega\" }}, {{ \"etiqueta\": \"Sitio Web\", \"url\": \"https://arnaldoayalaestratega.com\" }} ] }}\n\nEJEMPLO SIN BOTONES:\n{{ \"respuesta\": \"Para ingresar a la app usa tu ID de Comercio y PIN de 4 dígitos.\", \"botones\": [] }}\n\nIMPORTANTE: Usa doble llave {{}} para abrir y cerrar el JSON principal. Usa corchetes [] para el array de botones.\n\nINFORMACIÓN RECUPERADA (CONTEXTO):\n{context}\n\nPREGUNTA DEL USUARIO:\n{input}"
+          }
         },
         "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
         "typeVersion": 1.7,
@@ -570,26 +617,64 @@
       },
       {
         "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "dd934c08-04c6-466c-b434-eedb7d659887",
-                "name": "text",
-                "value": "={{ $json.response }}",
-                "type": "string"
-              }
-            ]
-          },
-          "options": {}
+          "content": "# 📄 FICHA TÉCNICA: AGENTE DE SOPORTE (RAG)\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 Cerebro: Gemini / DeepSeek\n🧠 Memoria: Pinecone (Vector Store)\n---------------------------------\nDESCRIPCIÓN:\nSistema de Inteligencia Artificial que responde dudas\nde los comerciantes leyendo tu documentación técnica.\nUtiliza RAG (Retrieval-Augmented Generation) para\nno alucinar y dar respuestas precisas.",
+          "height": 944,
+          "width": 672,
+          "color": 7
         },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
         "position": [
-          1344,
+          -912,
+          -368
+        ],
+        "id": "a7aa9b55-6614-4bd2-ae97-5bb8109f67d4",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## 🗣️ RECEPCIÓN DE CONSULTA\n**Objetivo:** Escuchar al usuario desde la App.\n\n**📥 INPUT:**\n- body.mensaje (La duda del comerciante)\n- body.historial (Contexto de la charla)\n\n**⚙️ PROCESO:**\nRecibe la pregunta en lenguaje natural y la prepara\npara ser procesada por el motor vectorial.",
+          "height": 944,
+          "width": 1024,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          752,
+          -368
+        ],
+        "id": "392be8ff-cde2-4b27-9523-e2ca7756c053",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## 🧠 MOTOR DE INTELIGENCIA (RAG)\n**Objetivo:** Pensar la respuesta basada en tus datos.\n\n**⚙️ EL PROCESO DE 3 PASOS:**\n1. **Búsqueda:** Convierte la duda en vectores y busca en Pinecone los fragmentos de tu manual que mejor responden.\n2. **Contexto:** Une la duda del usuario + la información encontrada.\n3. **Generación:** La IA redacta una respuesta amable y experta usando solo tu información real.",
+          "height": 944,
+          "width": 896,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -192,
+          -368
+        ],
+        "id": "e3eb8f14-a7bc-479d-8fe3-217856a1ff7b",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// PARSEADOR CORREGIDO - Compatible con n8n Chat Widget\n// ============================================\n// Este código va en el nodo \"Parseador de Respuesta JSON\" en n8n\n\nconst respuestaTexto = $json.response;\n\ntry {\n  let textoLimpio = respuestaTexto.trim();\n  \n  // Limpiar markdown si viene envuelto en ```json\n  if (textoLimpio.startsWith('```json')) {\n    textoLimpio = textoLimpio.replace(/```json\\n?/g, '').replace(/```\\n?/g, '');\n  }\n  \n  // Parsear el JSON de la respuesta del LLM\n  const datosLimpios = JSON.parse(textoLimpio);\n  \n  // Extraer texto y botones\n  let texto = datosLimpios.respuesta || datosLimpios.text || textoLimpio;\n  let botones = datosLimpios.botones || datosLimpios.buttons || [];\n  \n  // 🔥 FORZAR botones de contacto si la respuesta menciona \"contactar\" o \"hablar\"\n  const textoLower = texto.toLowerCase();\n  if ((textoLower.includes('contactar') || textoLower.includes('hablar') || textoLower.includes('comunicar')) && botones.length === 0) {\n    botones = [\n      { etiqueta: \"WhatsApp\", url: \"https://wa.me/543765384843\" },\n      { etiqueta: \"Instagram\", url: \"https://instagram.com/arnaldoayalaestratega\" },\n      { etiqueta: \"Sitio Web\", url: \"https://arnaldoayalaestratega.com\" }\n    ];\n  }\n  \n  // ✅ NUEVO: Convertir botones a formato Markdown DENTRO del texto\n  if (botones.length > 0) {\n    texto += '\\n\\n';\n    botones.forEach(btn => {\n      const etiqueta = btn.etiqueta || btn.label || 'Enlace';\n      const url = btn.url;\n      \n      let emoji = '🔗';\n      const labelLower = etiqueta.toLowerCase();\n      if (labelLower.includes('whatsapp')) emoji = '💬';\n      else if (labelLower.includes('instagram')) emoji = '📸';\n      else if (labelLower.includes('web') || labelLower.includes('sitio')) emoji = '🌐';\n      \n      // Agregar enlaces en formato Markdown directamente al texto\n      texto += `${emoji} [${etiqueta}](${url})\\n`;\n    });\n  }\n  \n  // Devolver SOLO el texto con los enlaces integrados\n  return {\n    json: {\n      output: texto\n    }\n  };\n  \n} catch (error) {\n  console.error('Error parseando respuesta:', error);\n  \n  // Si falla el parseo, devolver la respuesta como texto plano\n  return {\n    json: {\n      output: respuestaTexto\n    }\n  };\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1360,
           0
         ],
-        "id": "e8d2480b-fca7-42b7-b490-84eacd64e25c",
-        "name": "Edit Fields"
+        "id": "ae5c4e82-54c8-45f7-a84b-0c82179bb2de",
+        "name": "Parseador de Respuesta JSON"
       }
     ],
     "connections": {
@@ -696,16 +781,21 @@
         "main": [
           [
             {
-              "node": "Edit Fields",
+              "node": "Parseador de Respuesta JSON",
               "type": "main",
               "index": 0
             }
           ]
         ]
+      },
+      "Parseador de Respuesta JSON": {
+        "main": [
+          []
+        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version c5978415",
+    "name": "Version 5259a624",
     "description": "",
     "autosaved": false
   },
