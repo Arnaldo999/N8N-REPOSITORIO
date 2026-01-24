@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T14:03:11.504Z",
+  "updatedAt": "2026-01-23T15:04:11.186Z",
   "createdAt": "2026-01-15T13:53:29.264Z",
   "id": "_DGhEcFyFUEWpZHnU6tYe",
   "name": "[App 360] - Ventas y Gastos",
@@ -16,8 +16,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -3776,
-        912
+        -3760,
+        640
       ],
       "id": "4c77afa0-3744-45c0-a8d3-24e82ead4963",
       "name": "Webhook Guardar Transaccion",
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3328,
-        912
+        -3312,
+        640
       ],
       "id": "7a9f1acf-a471-4923-98de-63c4b5a88576",
       "name": "Preparar Datos"
@@ -55,8 +55,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3552,
-        912
+        -3536,
+        640
       ],
       "id": "dbf224dc-5baf-4c38-a261-0a07922b636a",
       "name": "Buscar comerciante",
@@ -76,8 +76,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -2880,
-        912
+        -2864,
+        640
       ],
       "id": "f250da21-13c0-4330-9e43-b9757bdd326e",
       "name": "Respond to Webhook"
@@ -90,8 +90,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3104,
-        912
+        -3088,
+        640
       ],
       "id": "28247a1e-2c5b-4a92-a6ca-bc4d06c7d3d7",
       "name": "Guardar en Supabase",
@@ -112,7 +112,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -3760,
+        -3728,
         1184
       ],
       "id": "d538ca41-8df5-4ae9-a2d3-7fe10058f644",
@@ -126,7 +126,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3312,
+        -3280,
         1184
       ],
       "id": "bb2f5c3a-9f0f-4ac4-ad5f-5d0762332616",
@@ -148,7 +148,7 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -3536,
+        -3504,
         1184
       ],
       "id": "e2b77fb7-e57f-4477-a58a-0efc4c071687",
@@ -169,7 +169,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -2864,
+        -2832,
         1184
       ],
       "id": "e1b7546e-8862-4f41-9121-044a6ef23d5b",
@@ -208,7 +208,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -3088,
+        -3056,
         1184
       ],
       "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
@@ -216,33 +216,50 @@
     },
     {
       "parameters": {
-        "content": "WEBHOOK ",
-        "height": 880,
-        "width": 288
+        "content": "## 💰 PROCESAMIENTO DE VENTAS (ONLINE)\n**Objetivo:** Recibir transacciones en tiempo real.\n\n**📥 INPUT:**\n- body.monto, body.tipo (INGRESO/GASTO)\n- body.items (Array de productos)\n\n**⚙️ LÓGICA:**\n1. Valida que el comercio exista.\n2. Calcula costos totales y ganancias.\n3. Inserta en Supabase y devuelve confirmación inmediata.",
+        "height": 496,
+        "width": 1312,
+        "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         -3872,
-        576
+        320
       ],
       "id": "8471d12c-cdfb-4761-a537-f51b31d68df1",
       "name": "Sticky Note"
     },
     {
       "parameters": {
-        "content": "LOGICA Y BASE DE DATOS:",
-        "height": 880,
-        "width": 992
+        "content": "## 🔄 SINCRONIZACIÓN OFFLINE (LOCAL STORAGE)\n**Objetivo:** Procesar ventas guardadas cuando no había internet.\n\n**📥 INPUT:**\n- Array de transacciones pendientes.\n\n**⚙️ LÓGICA:**\n1. Recibe un lote (Batch) de ventas.\n2. Itera y limpia los datos.\n3. Inserta en base de datos usando \"Upsert\" (evita duplicados).",
+        "height": 496,
+        "width": 1312
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -3568,
-        576
+        -3872,
+        864
       ],
       "id": "6a0d9113-2a01-4e1b-8a1d-393e412fc5c4",
       "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "# 📄 FICHA TÉCNICA: MOTOR TRANSACCIONAL\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Transacciones)\n---------------------------------\nDESCRIPCIÓN:\nWorkflow central encargado de procesar, validar\ny registrar todas las ventas y gastos.\nIncluye lógica para manejo de sincronización Offline.",
+        "height": 1040,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4672,
+        320
+      ],
+      "id": "1d8b9ade-2f57-4b5b-9e01-2979b8ba8b71",
+      "name": "Sticky Note1"
     }
   ],
   "connections": {
@@ -348,8 +365,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
-  "activeVersionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
+  "versionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
+  "activeVersionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
   "triggerCount": 2,
   "shared": [
     {
@@ -361,9 +378,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T14:03:14.000Z",
-    "createdAt": "2026-01-23T14:03:11.505Z",
-    "versionId": "1cb367ff-84ba-42c1-a048-19a20066a70c",
+    "updatedAt": "2026-01-23T15:04:13.000Z",
+    "createdAt": "2026-01-23T15:04:11.187Z",
+    "versionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
     "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
     "nodes": [
       {
@@ -376,8 +393,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          -3776,
-          912
+          -3760,
+          640
         ],
         "id": "4c77afa0-3744-45c0-a8d3-24e82ead4963",
         "name": "Webhook Guardar Transaccion",
@@ -390,8 +407,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -3328,
-          912
+          -3312,
+          640
         ],
         "id": "7a9f1acf-a471-4923-98de-63c4b5a88576",
         "name": "Preparar Datos"
@@ -415,8 +432,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          -3552,
-          912
+          -3536,
+          640
         ],
         "id": "dbf224dc-5baf-4c38-a261-0a07922b636a",
         "name": "Buscar comerciante",
@@ -436,8 +453,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          -2880,
-          912
+          -2864,
+          640
         ],
         "id": "f250da21-13c0-4330-9e43-b9757bdd326e",
         "name": "Respond to Webhook"
@@ -450,8 +467,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          -3104,
-          912
+          -3088,
+          640
         ],
         "id": "28247a1e-2c5b-4a92-a6ca-bc4d06c7d3d7",
         "name": "Guardar en Supabase",
@@ -472,7 +489,7 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          -3760,
+          -3728,
           1184
         ],
         "id": "d538ca41-8df5-4ae9-a2d3-7fe10058f644",
@@ -486,7 +503,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -3312,
+          -3280,
           1184
         ],
         "id": "bb2f5c3a-9f0f-4ac4-ad5f-5d0762332616",
@@ -508,7 +525,7 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          -3536,
+          -3504,
           1184
         ],
         "id": "e2b77fb7-e57f-4477-a58a-0efc4c071687",
@@ -529,7 +546,7 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          -2864,
+          -2832,
           1184
         ],
         "id": "e1b7546e-8862-4f41-9121-044a6ef23d5b",
@@ -568,7 +585,7 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          -3088,
+          -3056,
           1184
         ],
         "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
@@ -576,33 +593,50 @@
       },
       {
         "parameters": {
-          "content": "WEBHOOK ",
-          "height": 880,
-          "width": 288
+          "content": "## 💰 PROCESAMIENTO DE VENTAS (ONLINE)\n**Objetivo:** Recibir transacciones en tiempo real.\n\n**📥 INPUT:**\n- body.monto, body.tipo (INGRESO/GASTO)\n- body.items (Array de productos)\n\n**⚙️ LÓGICA:**\n1. Valida que el comercio exista.\n2. Calcula costos totales y ganancias.\n3. Inserta en Supabase y devuelve confirmación inmediata.",
+          "height": 496,
+          "width": 1312,
+          "color": 4
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
           -3872,
-          576
+          320
         ],
         "id": "8471d12c-cdfb-4761-a537-f51b31d68df1",
         "name": "Sticky Note"
       },
       {
         "parameters": {
-          "content": "LOGICA Y BASE DE DATOS:",
-          "height": 880,
-          "width": 992
+          "content": "## 🔄 SINCRONIZACIÓN OFFLINE (LOCAL STORAGE)\n**Objetivo:** Procesar ventas guardadas cuando no había internet.\n\n**📥 INPUT:**\n- Array de transacciones pendientes.\n\n**⚙️ LÓGICA:**\n1. Recibe un lote (Batch) de ventas.\n2. Itera y limpia los datos.\n3. Inserta en base de datos usando \"Upsert\" (evita duplicados).",
+          "height": 496,
+          "width": 1312
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          -3568,
-          576
+          -3872,
+          864
         ],
         "id": "6a0d9113-2a01-4e1b-8a1d-393e412fc5c4",
         "name": "Sticky Note10"
+      },
+      {
+        "parameters": {
+          "content": "# 📄 FICHA TÉCNICA: MOTOR TRANSACCIONAL\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Transacciones)\n---------------------------------\nDESCRIPCIÓN:\nWorkflow central encargado de procesar, validar\ny registrar todas las ventas y gastos.\nIncluye lógica para manejo de sincronización Offline.",
+          "height": 1040,
+          "width": 672,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -4672,
+          320
+        ],
+        "id": "1d8b9ade-2f57-4b5b-9e01-2979b8ba8b71",
+        "name": "Sticky Note1"
       }
     ],
     "connections": {
@@ -696,7 +730,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 1cb367ff",
+    "name": "Version f569045f",
     "description": "",
     "autosaved": false
   },
