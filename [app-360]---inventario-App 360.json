@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T14:02:16.520Z",
+  "updatedAt": "2026-01-23T15:13:57.057Z",
   "createdAt": "2026-01-23T13:29:20.032Z",
   "id": "y7VgcASFrW9dkSyd1iXP3",
   "name": "[App 360] - Inventario",
@@ -19,7 +19,7 @@
       "typeVersion": 2,
       "position": [
         384,
-        416
+        320
       ],
       "webhookId": "inventario-v1"
     },
@@ -33,7 +33,7 @@
       "typeVersion": 2,
       "position": [
         608,
-        416
+        320
       ]
     },
     {
@@ -55,7 +55,7 @@
       "typeVersion": 1,
       "position": [
         832,
-        416
+        320
       ],
       "credentials": {
         "supabaseApi": {
@@ -74,7 +74,7 @@
       "typeVersion": 2,
       "position": [
         1056,
-        416
+        320
       ]
     },
     {
@@ -88,7 +88,7 @@
       "typeVersion": 1,
       "position": [
         1264,
-        416
+        320
       ],
       "credentials": {
         "supabaseApi": {
@@ -109,39 +109,24 @@
       "typeVersion": 1.1,
       "position": [
         1488,
-        416
+        320
       ]
     },
     {
       "parameters": {
-        "content": "CARGAR-INVENTARIO",
-        "height": 416,
-        "width": 1728
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        224,
-        304
-      ],
-      "id": "155c4491-0ab6-4c8e-b8e6-d17a63b12462",
-      "name": "Sticky Note1"
-    },
-    {
-      "parameters": {
-        "content": "CONSULTAR-INVENTARIO",
-        "height": 352,
-        "width": 1744,
+        "content": "## ➕ ALTA DE PRODUCTOS AL INVENTARIO\n**Objetivo:** Registrar un nuevo ítem en el catálogo.\n\n**📥 INPUT:**\n- Código, Nombre, Precio Costo/Venta, Stock.\n\n**⚙️ PROCESO:**\n1. Valida que el código no exista.\n2. Asocia el producto al Comercio ID.\n3. Guarda en base de datos.",
+        "height": 512,
+        "width": 1552,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        208,
-        816
+        224,
+        0
       ],
-      "id": "ed878a79-1448-41d0-bae3-b97a2d78e77b",
-      "name": "Sticky Note8"
+      "id": "155c4491-0ab6-4c8e-b8e6-d17a63b12462",
+      "name": "Sticky Note1"
     },
     {
       "parameters": {
@@ -154,8 +139,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        336,
-        928
+        400,
+        880
       ],
       "webhookId": "consulta-inventario-simple"
     },
@@ -177,8 +162,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        592,
-        928
+        656,
+        880
       ],
       "credentials": {
         "supabaseApi": {
@@ -208,8 +193,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        848,
-        928
+        912,
+        880
       ],
       "id": "fc7dd5ba-65b5-40c3-8bcc-cc468200ba47",
       "name": "HTTP Request4"
@@ -223,8 +208,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1104,
-        928
+        1168,
+        880
       ]
     },
     {
@@ -239,39 +224,9 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1360,
-        928
+        1424,
+        880
       ]
-    },
-    {
-      "parameters": {
-        "content": "EDITAR INVENTARIO",
-        "height": 352,
-        "width": 1792
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        256,
-        1296
-      ],
-      "id": "0c74057a-0c6f-410d-ac1c-fa028535abbc",
-      "name": "Sticky Note11"
-    },
-    {
-      "parameters": {
-        "content": "ELIMINAR INVENTARIO",
-        "height": 368,
-        "width": 1936
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        208,
-        1744
-      ],
-      "id": "d0ca09ad-f3c5-4217-b23e-70552e41094e",
-      "name": "Sticky Note12"
     },
     {
       "parameters": {
@@ -285,8 +240,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        384,
-        1392
+        1984,
+        320
       ],
       "webhookId": "inv-update-ops"
     },
@@ -299,8 +254,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        688,
-        1392
+        2288,
+        320
       ]
     },
     {
@@ -343,8 +298,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1040,
-        1392
+        2640,
+        320
       ]
     },
     {
@@ -356,8 +311,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
-        1392
+        3008,
+        320
       ]
     },
     {
@@ -371,8 +326,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1760,
-        1392
+        3360,
+        320
       ]
     },
     {
@@ -384,8 +339,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1424,
-        1888
+        3120,
+        880
       ]
     },
     {
@@ -399,8 +354,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        1792,
-        1888
+        3488,
+        880
       ]
     },
     {
@@ -415,8 +370,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        352,
-        1888
+        2048,
+        880
       ],
       "webhookId": "inv-delete-ops"
     },
@@ -459,8 +414,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1008,
-        1888
+        2704,
+        880
       ],
       "id": "2952e003-cb65-4b40-8001-fe4e8505f878",
       "name": "HTTP Request Delete Inventario1"
@@ -472,11 +427,74 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
-        1888
+        2400,
+        880
       ],
       "id": "27c272a8-b064-4868-b785-8d8915ae7829",
       "name": "Extract ID JavaScript1"
+    },
+    {
+      "parameters": {
+        "content": "# 📄 FICHA TÉCNICA: GESTIÓN DE INVENTARIO\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Inventario)\n---------------------------------\nDESCRIPCIÓN:\nSistema CRUD completo (Crear, Leer, Actualizar, Borrar)\npara la gestión de productos, precios y stock.",
+        "height": 1072,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        0
+      ],
+      "id": "935cf349-427d-46b0-93e7-6735aa8a7770",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 🔍 CONSULTA DE STOCK\n**Objetivo:** Enviar la lista actualizada a la App.\n\n**⚙️ PROCESO:**\n1. Recibe ID del comercio.\n2. Ejecuta Query en Supabase.\n3. Formatea JSON para el frontend de la App.",
+        "height": 496,
+        "width": 1552,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        224,
+        576
+      ],
+      "id": "2fbb48f3-d6c4-43c3-bc36-57c7e4dd700e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## ✏️ EDICIÓN Y AJUSTES\n**Objetivo:** Modificar precios o corregir nombres.\n\n**⚠️ IMPORTANTE:**\nUtiliza el 'Código' del producto como llave única\npara encontrar y actualizar el registro exacto.",
+        "height": 512,
+        "width": 1856
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        0
+      ],
+      "id": "c5172989-825d-4f5d-8994-8fb27ce0fceb",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 🗑️ BAJA DE PRODUCTOS\n**Objetivo:** Quitar productos del catálogo.\n\n**⚠️ ZONA DE PELIGRO:**\nEsta acción es irreversible. Se elimina el registro\npermanentemente de la base de datos.",
+        "height": 496,
+        "width": 1872,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        576
+      ],
+      "id": "fe34d8cd-5970-4ef2-8aca-43d97067d654",
+      "name": "Sticky Note4"
     }
   ],
   "connections": {
@@ -675,8 +693,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "9c4f5644-8bd6-4d2c-82be-f36376b0f987",
-  "activeVersionId": "9c4f5644-8bd6-4d2c-82be-f36376b0f987",
+  "versionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
+  "activeVersionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
   "triggerCount": 4,
   "shared": [
     {
@@ -688,9 +706,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T14:08:06.000Z",
-    "createdAt": "2026-01-23T13:44:49.783Z",
-    "versionId": "9c4f5644-8bd6-4d2c-82be-f36376b0f987",
+    "updatedAt": "2026-01-23T15:13:59.000Z",
+    "createdAt": "2026-01-23T15:13:57.058Z",
+    "versionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
     "workflowId": "y7VgcASFrW9dkSyd1iXP3",
     "nodes": [
       {
@@ -706,7 +724,7 @@
         "typeVersion": 2,
         "position": [
           384,
-          416
+          320
         ],
         "webhookId": "inventario-v1"
       },
@@ -720,7 +738,7 @@
         "typeVersion": 2,
         "position": [
           608,
-          416
+          320
         ]
       },
       {
@@ -742,7 +760,7 @@
         "typeVersion": 1,
         "position": [
           832,
-          416
+          320
         ],
         "credentials": {
           "supabaseApi": {
@@ -761,7 +779,7 @@
         "typeVersion": 2,
         "position": [
           1056,
-          416
+          320
         ]
       },
       {
@@ -775,7 +793,7 @@
         "typeVersion": 1,
         "position": [
           1264,
-          416
+          320
         ],
         "credentials": {
           "supabaseApi": {
@@ -796,39 +814,24 @@
         "typeVersion": 1.1,
         "position": [
           1488,
-          416
+          320
         ]
       },
       {
         "parameters": {
-          "content": "CARGAR-INVENTARIO",
-          "height": 416,
-          "width": 1728
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          224,
-          304
-        ],
-        "id": "155c4491-0ab6-4c8e-b8e6-d17a63b12462",
-        "name": "Sticky Note1"
-      },
-      {
-        "parameters": {
-          "content": "CONSULTAR-INVENTARIO",
-          "height": 352,
-          "width": 1744,
+          "content": "## ➕ ALTA DE PRODUCTOS AL INVENTARIO\n**Objetivo:** Registrar un nuevo ítem en el catálogo.\n\n**📥 INPUT:**\n- Código, Nombre, Precio Costo/Venta, Stock.\n\n**⚙️ PROCESO:**\n1. Valida que el código no exista.\n2. Asocia el producto al Comercio ID.\n3. Guarda en base de datos.",
+          "height": 512,
+          "width": 1552,
           "color": 4
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          208,
-          816
+          224,
+          0
         ],
-        "id": "ed878a79-1448-41d0-bae3-b97a2d78e77b",
-        "name": "Sticky Note8"
+        "id": "155c4491-0ab6-4c8e-b8e6-d17a63b12462",
+        "name": "Sticky Note1"
       },
       {
         "parameters": {
@@ -841,8 +844,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          336,
-          928
+          400,
+          880
         ],
         "webhookId": "consulta-inventario-simple"
       },
@@ -864,8 +867,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          592,
-          928
+          656,
+          880
         ],
         "credentials": {
           "supabaseApi": {
@@ -895,8 +898,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          848,
-          928
+          912,
+          880
         ],
         "id": "fc7dd5ba-65b5-40c3-8bcc-cc468200ba47",
         "name": "HTTP Request4"
@@ -910,8 +913,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1104,
-          928
+          1168,
+          880
         ]
       },
       {
@@ -926,39 +929,9 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.1,
         "position": [
-          1360,
-          928
+          1424,
+          880
         ]
-      },
-      {
-        "parameters": {
-          "content": "EDITAR INVENTARIO",
-          "height": 352,
-          "width": 1792
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          256,
-          1296
-        ],
-        "id": "0c74057a-0c6f-410d-ac1c-fa028535abbc",
-        "name": "Sticky Note11"
-      },
-      {
-        "parameters": {
-          "content": "ELIMINAR INVENTARIO",
-          "height": 368,
-          "width": 1936
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          208,
-          1744
-        ],
-        "id": "d0ca09ad-f3c5-4217-b23e-70552e41094e",
-        "name": "Sticky Note12"
       },
       {
         "parameters": {
@@ -972,8 +945,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1.1,
         "position": [
-          384,
-          1392
+          1984,
+          320
         ],
         "webhookId": "inv-update-ops"
       },
@@ -986,8 +959,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          688,
-          1392
+          2288,
+          320
         ]
       },
       {
@@ -1030,8 +1003,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          1040,
-          1392
+          2640,
+          320
         ]
       },
       {
@@ -1043,8 +1016,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1408,
-          1392
+          3008,
+          320
         ]
       },
       {
@@ -1058,8 +1031,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          1760,
-          1392
+          3360,
+          320
         ]
       },
       {
@@ -1071,8 +1044,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1424,
-          1888
+          3120,
+          880
         ]
       },
       {
@@ -1086,8 +1059,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          1792,
-          1888
+          3488,
+          880
         ]
       },
       {
@@ -1102,8 +1075,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1.1,
         "position": [
-          352,
-          1888
+          2048,
+          880
         ],
         "webhookId": "inv-delete-ops"
       },
@@ -1146,8 +1119,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          1008,
-          1888
+          2704,
+          880
         ],
         "id": "2952e003-cb65-4b40-8001-fe4e8505f878",
         "name": "HTTP Request Delete Inventario1"
@@ -1159,11 +1132,74 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          704,
-          1888
+          2400,
+          880
         ],
         "id": "27c272a8-b064-4868-b785-8d8915ae7829",
         "name": "Extract ID JavaScript1"
+      },
+      {
+        "parameters": {
+          "content": "# 📄 FICHA TÉCNICA: GESTIÓN DE INVENTARIO\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Inventario)\n---------------------------------\nDESCRIPCIÓN:\nSistema CRUD completo (Crear, Leer, Actualizar, Borrar)\npara la gestión de productos, precios y stock.",
+          "height": 1072,
+          "width": 672,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -608,
+          0
+        ],
+        "id": "935cf349-427d-46b0-93e7-6735aa8a7770",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## 🔍 CONSULTA DE STOCK\n**Objetivo:** Enviar la lista actualizada a la App.\n\n**⚙️ PROCESO:**\n1. Recibe ID del comercio.\n2. Ejecuta Query en Supabase.\n3. Formatea JSON para el frontend de la App.",
+          "height": 496,
+          "width": 1552,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          224,
+          576
+        ],
+        "id": "2fbb48f3-d6c4-43c3-bc36-57c7e4dd700e",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## ✏️ EDICIÓN Y AJUSTES\n**Objetivo:** Modificar precios o corregir nombres.\n\n**⚠️ IMPORTANTE:**\nUtiliza el 'Código' del producto como llave única\npara encontrar y actualizar el registro exacto.",
+          "height": 512,
+          "width": 1856
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1872,
+          0
+        ],
+        "id": "c5172989-825d-4f5d-8994-8fb27ce0fceb",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## 🗑️ BAJA DE PRODUCTOS\n**Objetivo:** Quitar productos del catálogo.\n\n**⚠️ ZONA DE PELIGRO:**\nEsta acción es irreversible. Se elimina el registro\npermanentemente de la base de datos.",
+          "height": 496,
+          "width": 1872,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1872,
+          576
+        ],
+        "id": "fe34d8cd-5970-4ef2-8aca-43d97067d654",
+        "name": "Sticky Note4"
       }
     ],
     "connections": {
@@ -1356,7 +1392,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 9c4f5644",
+    "name": "Version 31f2de98",
     "description": "",
     "autosaved": false
   },
