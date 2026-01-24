@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T14:02:36.230Z",
+  "updatedAt": "2026-01-23T14:54:44.580Z",
   "createdAt": "2026-01-23T13:30:03.211Z",
   "id": "i5EuVsH4nTcfqxiyup9Sb",
   "name": "[App 360] - Admin-Login",
@@ -19,8 +19,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        368,
-        864
+        320,
+        1168
       ],
       "webhookId": "obtener-comerciante-supabase"
     },
@@ -33,8 +33,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
-        864
+        768,
+        1168
       ],
       "notes": "Transforma los datos de Supabase al formato que espera la app"
     },
@@ -49,24 +49,9 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1040,
-        864
+        992,
+        1168
       ]
-    },
-    {
-      "parameters": {
-        "content": "OBTENER ID COMERCIANTE\n",
-        "height": 272,
-        "width": 1216
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        192,
-        768
-      ],
-      "id": "239af426-0db8-46fa-abaa-582669d21f01",
-      "name": "Sticky Note3"
     },
     {
       "parameters": {
@@ -84,8 +69,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        592,
-        864
+        544,
+        1168
       ],
       "id": "87cb5fa6-6498-4c84-8e10-e54d92a46154",
       "name": "Leer Comerciante",
@@ -129,7 +114,7 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        512,
+        528,
         480
       ],
       "id": "367d2b3f-a034-4238-a539-e61a12e0d84d",
@@ -171,18 +156,51 @@
     },
     {
       "parameters": {
-        "content": "FLUJO DE LOGIN",
-        "height": 384,
-        "width": 1728
+        "content": "## 🔐 MÓDULO DE AUTENTICACIÓN (LOGIN)\n**Objetivo:** Validar credenciales (ID y PIN) enviadas desde la App Móvil.\n\n**📥 INPUT (Webhook POST):**\n- body.cliente_id (Slug del comercio)\n- body.pin (Contraseña numérica)\n\n**⚙️ PROCESO:**\n1. Busca el comercio en Supabase por su Slug.\n2. Compara el PIN almacenado vs. el recibido (JS Code).\n3. Determina éxito o fallo.\n\n**out OUTPUT:**\n- JSON { success: true, token: \"...\" } o Error 401.",
+        "height": 640,
+        "width": 1728,
+        "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        208,
-        320
+        -192,
+        48
       ],
       "id": "e771c950-17ae-44a0-8a8b-7e7eb94f2ecd",
       "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## 🆔 RESOLUCIÓN DE IDENTIDAD\n**Objetivo:** Traducir el 'slug' público (ej: kiosco-pepe) al ID interno de BD.\n\n**📥 INPUT (Webhook GET):**\n- query.id (Slug público)\n\n**⚙️ PROCESO:**\n1. Consulta tabla 'comercios' filtrando por slug.\n2. Formatea la respuesta eliminando datos sensibles.\n\n**out OUTPUT:**\n- JSON con datos públicos del comercio (Nombre, Configuración, IDs).",
+        "height": 576,
+        "width": 1728,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        784
+      ],
+      "id": "68dfad66-c778-45e5-b84d-91faf44c53f9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# 📄 FICHA TÉCNICA: ADMIN & LOGIN\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Comercios)\n---------------------------------\nDESCRIPCIÓN:\nMicroservicio encargado de gestionar el acceso\ny la identificación inicial de los usuarios\nen la App Reporte 360.",
+        "height": 1296,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        48
+      ],
+      "id": "9452b511-87d6-4bb3-82e3-acf4fb24f619",
+      "name": "Sticky Note1"
     }
   ],
   "connections": {
@@ -260,8 +278,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
-  "activeVersionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
+  "versionId": "ba9b939b-9c44-4644-91bc-9e463a05cb33",
+  "activeVersionId": "ba9b939b-9c44-4644-91bc-9e463a05cb33",
   "triggerCount": 2,
   "shared": [
     {
@@ -273,9 +291,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T14:07:44.000Z",
-    "createdAt": "2026-01-23T13:47:49.485Z",
-    "versionId": "70db7c43-1193-47a2-9357-589025aa0c2f",
+    "updatedAt": "2026-01-23T14:54:47.000Z",
+    "createdAt": "2026-01-23T14:54:44.581Z",
+    "versionId": "ba9b939b-9c44-4644-91bc-9e463a05cb33",
     "workflowId": "i5EuVsH4nTcfqxiyup9Sb",
     "nodes": [
       {
@@ -291,8 +309,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2,
         "position": [
-          368,
-          864
+          320,
+          1168
         ],
         "webhookId": "obtener-comerciante-supabase"
       },
@@ -305,8 +323,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          816,
-          864
+          768,
+          1168
         ],
         "notes": "Transforma los datos de Supabase al formato que espera la app"
       },
@@ -321,24 +339,9 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.1,
         "position": [
-          1040,
-          864
+          992,
+          1168
         ]
-      },
-      {
-        "parameters": {
-          "content": "OBTENER ID COMERCIANTE\n",
-          "height": 272,
-          "width": 1216
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          192,
-          768
-        ],
-        "id": "239af426-0db8-46fa-abaa-582669d21f01",
-        "name": "Sticky Note3"
       },
       {
         "parameters": {
@@ -356,8 +359,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          592,
-          864
+          544,
+          1168
         ],
         "id": "87cb5fa6-6498-4c84-8e10-e54d92a46154",
         "name": "Leer Comerciante",
@@ -401,7 +404,7 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          512,
+          528,
           480
         ],
         "id": "367d2b3f-a034-4238-a539-e61a12e0d84d",
@@ -443,18 +446,51 @@
       },
       {
         "parameters": {
-          "content": "FLUJO DE LOGIN",
-          "height": 384,
-          "width": 1728
+          "content": "## 🔐 MÓDULO DE AUTENTICACIÓN (LOGIN)\n**Objetivo:** Validar credenciales (ID y PIN) enviadas desde la App Móvil.\n\n**📥 INPUT (Webhook POST):**\n- body.cliente_id (Slug del comercio)\n- body.pin (Contraseña numérica)\n\n**⚙️ PROCESO:**\n1. Busca el comercio en Supabase por su Slug.\n2. Compara el PIN almacenado vs. el recibido (JS Code).\n3. Determina éxito o fallo.\n\n**out OUTPUT:**\n- JSON { success: true, token: \"...\" } o Error 401.",
+          "height": 640,
+          "width": 1728,
+          "color": 4
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          208,
-          320
+          -192,
+          48
         ],
         "id": "e771c950-17ae-44a0-8a8b-7e7eb94f2ecd",
         "name": "Sticky Note9"
+      },
+      {
+        "parameters": {
+          "content": "## 🆔 RESOLUCIÓN DE IDENTIDAD\n**Objetivo:** Traducir el 'slug' público (ej: kiosco-pepe) al ID interno de BD.\n\n**📥 INPUT (Webhook GET):**\n- query.id (Slug público)\n\n**⚙️ PROCESO:**\n1. Consulta tabla 'comercios' filtrando por slug.\n2. Formatea la respuesta eliminando datos sensibles.\n\n**out OUTPUT:**\n- JSON con datos públicos del comercio (Nombre, Configuración, IDs).",
+          "height": 576,
+          "width": 1728,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -192,
+          784
+        ],
+        "id": "68dfad66-c778-45e5-b84d-91faf44c53f9",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "# 📄 FICHA TÉCNICA: ADMIN & LOGIN\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🔗 Dependencias: Supabase (Tabla: Comercios)\n---------------------------------\nDESCRIPCIÓN:\nMicroservicio encargado de gestionar el acceso\ny la identificación inicial de los usuarios\nen la App Reporte 360.",
+          "height": 1296,
+          "width": 672,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -1088,
+          48
+        ],
+        "id": "9452b511-87d6-4bb3-82e3-acf4fb24f619",
+        "name": "Sticky Note1"
       }
     ],
     "connections": {
@@ -526,7 +562,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 70db7c43",
+    "name": "Version ba9b939b",
     "description": "",
     "autosaved": false
   },
