@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T14:01:47.850Z",
+  "updatedAt": "2026-01-23T16:53:42.193Z",
   "createdAt": "2026-01-23T13:30:30.892Z",
   "id": "CgBb94Jif_sUJbd4XOk_b",
   "name": "[App 360] - Reportes",
@@ -21,8 +21,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        128,
-        320
+        720,
+        480
       ]
     },
     {
@@ -34,8 +34,8 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        576,
-        320
+        1168,
+        480
       ],
       "notes": "Procesa cada comercio uno por uno"
     },
@@ -53,8 +53,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        1552,
-        240
+        2144,
+        400
       ],
       "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
       "credentials": {
@@ -72,22 +72,22 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        1808,
-        320
+        2400,
+        480
       ]
     },
     {
       "parameters": {
-        "content": "REPORTE AUTOMATICO 7AM ",
-        "height": 352,
+        "content": "## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ EL PROCESO:**\n1. **Trigger:** Se despierta a las 7 AM.\n2. **Loop:** Recorre cada comercio activo.\n3. **Análisis:** Calcula ventas de ayer.\n4. **Consultor IA:** Gemini redacta un consejo de negocios personalizado según el rendimiento.\n5. **Entrega:** Envía email motivacional.",
+        "height": 880,
         "width": 1904,
-        "color": 4
+        "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        96,
-        208
+        656,
+        -176
       ],
       "id": "79a7a532-3433-4c13-9658-453d5d8fc546",
       "name": "Sticky Note7"
@@ -102,8 +102,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        336,
-        320
+        928,
+        480
       ],
       "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
       "name": "Obtener Comercios Activos",
@@ -119,8 +119,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        912,
-        240
+        1504,
+        400
       ],
       "id": "85626aec-f854-45ba-9e44-1f934bd55196",
       "name": "Wait 5 s",
@@ -147,8 +147,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        1168,
-        240
+        1760,
+        400
       ],
       "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
       "name": "Message a model",
@@ -169,8 +169,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        256,
-        -128
+        1824,
+        -640
       ],
       "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
       "name": "Webhook2",
@@ -192,8 +192,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        688,
-        -128
+        2256,
+        -640
       ],
       "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
       "name": "Obtener Comerciante",
@@ -216,8 +216,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        1296,
-        -128
+        2864,
+        -640
       ],
       "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
       "name": "Enviar Reporte",
@@ -236,23 +236,24 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1472,
-        -128
+        3040,
+        -640
       ],
       "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
       "name": "Respond to Webhook4"
     },
     {
       "parameters": {
-        "content": "GENERAR REPORTE ",
-        "height": 336,
-        "width": 1648
+        "content": "## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.",
+        "height": 800,
+        "width": 1616,
+        "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        96,
-        -224
+        1712,
+        -1088
       ],
       "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
       "name": "Sticky Note13"
@@ -280,8 +281,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        464,
-        -128
+        2032,
+        -640
       ],
       "id": "9468b9de-7661-4365-affd-b9e30997293b",
       "name": "Preparar Fechas"
@@ -293,8 +294,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1104,
-        -128
+        2672,
+        -640
       ],
       "id": "97330213-f5aa-4dba-917c-7def06e38011",
       "name": "Preparar Reporte"
@@ -328,24 +329,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        896,
-        -128
+        2464,
+        -640
       ],
       "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
       "name": "Obtener Reporte"
     },
     {
       "parameters": {
-        "content": "REGISTRO DE NUEVOS COMERCIANTES",
-        "height": 352,
-        "width": 2096,
-        "color": 6
+        "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
+        "height": 816,
+        "width": 1616,
+        "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        48,
-        -736
+        16,
+        -1088
       ],
       "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
       "name": "Sticky Note2"
@@ -571,6 +572,22 @@
           "name": "Notion account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "content": "# 📄 FICHA TÉCNICA: GROWTH & RETENTION\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 IA: Google Gemini (Análisis de Negocio)\n🔗 Integraciones: Gmail, Notion, Supabase\n---------------------------------\nDESCRIPCIÓN:\nMódulo híbrido encargado del ciclo de vida del cliente:\n1. Adquisición (Alta de nuevos comercios).\n2. Retención (Reportes automáticos y mentoría IA).",
+        "height": 1776,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -1072
+      ],
+      "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
+      "name": "Sticky Note1"
     }
   ],
   "connections": {
@@ -786,8 +803,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
-  "activeVersionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
+  "versionId": "a5810797-e2ef-4b77-b086-9da7a32d0225",
+  "activeVersionId": "a5810797-e2ef-4b77-b086-9da7a32d0225",
   "triggerCount": 3,
   "shared": [
     {
@@ -799,9 +816,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T14:08:22.000Z",
-    "createdAt": "2026-01-23T13:54:52.206Z",
-    "versionId": "9ef245e4-bf5a-4642-b93e-74fafc3bbe02",
+    "updatedAt": "2026-01-23T16:53:45.000Z",
+    "createdAt": "2026-01-23T16:53:42.195Z",
+    "versionId": "a5810797-e2ef-4b77-b086-9da7a32d0225",
     "workflowId": "CgBb94Jif_sUJbd4XOk_b",
     "nodes": [
       {
@@ -819,8 +836,8 @@
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
         "position": [
-          128,
-          320
+          720,
+          480
         ]
       },
       {
@@ -832,8 +849,8 @@
         "type": "n8n-nodes-base.splitInBatches",
         "typeVersion": 3,
         "position": [
-          576,
-          320
+          1168,
+          480
         ],
         "notes": "Procesa cada comercio uno por uno"
       },
@@ -851,8 +868,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.2,
         "position": [
-          1552,
-          240
+          2144,
+          400
         ],
         "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
         "credentials": {
@@ -870,22 +887,22 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          1808,
-          320
+          2400,
+          480
         ]
       },
       {
         "parameters": {
-          "content": "REPORTE AUTOMATICO 7AM ",
-          "height": 352,
+          "content": "## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ EL PROCESO:**\n1. **Trigger:** Se despierta a las 7 AM.\n2. **Loop:** Recorre cada comercio activo.\n3. **Análisis:** Calcula ventas de ayer.\n4. **Consultor IA:** Gemini redacta un consejo de negocios personalizado según el rendimiento.\n5. **Entrega:** Envía email motivacional.",
+          "height": 880,
           "width": 1904,
-          "color": 4
+          "color": 6
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          96,
-          208
+          656,
+          -176
         ],
         "id": "79a7a532-3433-4c13-9658-453d5d8fc546",
         "name": "Sticky Note7"
@@ -900,8 +917,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          336,
-          320
+          928,
+          480
         ],
         "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
         "name": "Obtener Comercios Activos",
@@ -917,8 +934,8 @@
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
         "position": [
-          912,
-          240
+          1504,
+          400
         ],
         "id": "85626aec-f854-45ba-9e44-1f934bd55196",
         "name": "Wait 5 s",
@@ -945,8 +962,8 @@
         "type": "@n8n/n8n-nodes-langchain.googleGemini",
         "typeVersion": 1.1,
         "position": [
-          1168,
-          240
+          1760,
+          400
         ],
         "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
         "name": "Message a model",
@@ -967,8 +984,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          256,
-          -128
+          1824,
+          -640
         ],
         "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
         "name": "Webhook2",
@@ -990,8 +1007,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          688,
-          -128
+          2256,
+          -640
         ],
         "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
         "name": "Obtener Comerciante",
@@ -1014,8 +1031,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.2,
         "position": [
-          1296,
-          -128
+          2864,
+          -640
         ],
         "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
         "name": "Enviar Reporte",
@@ -1034,23 +1051,24 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          1472,
-          -128
+          3040,
+          -640
         ],
         "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
         "name": "Respond to Webhook4"
       },
       {
         "parameters": {
-          "content": "GENERAR REPORTE ",
-          "height": 336,
-          "width": 1648
+          "content": "## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.",
+          "height": 800,
+          "width": 1616,
+          "color": 5
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          96,
-          -224
+          1712,
+          -1088
         ],
         "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
         "name": "Sticky Note13"
@@ -1078,8 +1096,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          464,
-          -128
+          2032,
+          -640
         ],
         "id": "9468b9de-7661-4365-affd-b9e30997293b",
         "name": "Preparar Fechas"
@@ -1091,8 +1109,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1104,
-          -128
+          2672,
+          -640
         ],
         "id": "97330213-f5aa-4dba-917c-7def06e38011",
         "name": "Preparar Reporte"
@@ -1126,24 +1144,24 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          896,
-          -128
+          2464,
+          -640
         ],
         "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
         "name": "Obtener Reporte"
       },
       {
         "parameters": {
-          "content": "REGISTRO DE NUEVOS COMERCIANTES",
-          "height": 352,
-          "width": 2096,
-          "color": 6
+          "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
+          "height": 816,
+          "width": 1616,
+          "color": 4
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          48,
-          -736
+          16,
+          -1088
         ],
         "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
         "name": "Sticky Note2"
@@ -1369,6 +1387,22 @@
             "name": "Notion account 2"
           }
         }
+      },
+      {
+        "parameters": {
+          "content": "# 📄 FICHA TÉCNICA: GROWTH & RETENTION\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 IA: Google Gemini (Análisis de Negocio)\n🔗 Integraciones: Gmail, Notion, Supabase\n---------------------------------\nDESCRIPCIÓN:\nMódulo híbrido encargado del ciclo de vida del cliente:\n1. Adquisición (Alta de nuevos comercios).\n2. Retención (Reportes automáticos y mentoría IA).",
+          "height": 1776,
+          "width": 672,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -960,
+          -1072
+        ],
+        "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
+        "name": "Sticky Note1"
       }
     ],
     "connections": {
@@ -1578,7 +1612,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 9ef245e4",
+    "name": "Version a5810797",
     "description": "",
     "autosaved": false
   },
