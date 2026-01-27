@@ -1,0 +1,664 @@
+{
+  "updatedAt": "2026-01-26T12:17:50.323Z",
+  "createdAt": "2026-01-26T09:40:02.977Z",
+  "id": "hxJlA1ehlYsp5vxetqE5u",
+  "name": "Publicación Diaria IA con Gemini - Instagram & LinkedIn",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "f30fa56e-4ea2-44fe-8fdd-05e43c7decfc",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        656
+      ],
+      "notes": "Se ejecuta todos los días a las 10:00 AM"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appejn9ep8JMLJmPG",
+          "mode": "list",
+          "cachedResultName": "Social Media Automator AI"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblgFvYebZcJaYM07",
+          "mode": "list",
+          "cachedResultName": "IMÁGENES PAR PUBLICAR"
+        },
+        "filterByFormula": "={Estado} = 'Pendiente'",
+        "options": {}
+      },
+      "id": "c622f2b0-9bd3-48d2-aeb2-96ab631e8aaf",
+      "name": "Airtable - Obtener Tema Pendiente",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        64,
+        656
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Sbd5Vje0VhbncPBI",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "notes": "Obtiene UN tema con estado 'Pendiente'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-record-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b88150f3-ce4b-4e9c-862b-16f8115e4897",
+      "name": "¿Hay Tema Pendiente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        256,
+        656
+      ],
+      "notes": "Verifica que exista al menos un tema pendiente"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "record-id",
+              "name": "recordId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "tema",
+              "name": "tema",
+              "value": "={{ $json.fields.Tema }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4a39722-2941-4811-9a32-85cdd7dc20da",
+      "name": "Guardar Tema",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        560
+      ],
+      "notes": "Guarda el tema del registro"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "copy-text",
+              "name": "copyFinal",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "record-id",
+              "name": "recordId",
+              "value": "={{ $('Guardar Tema').item.json.recordId }}",
+              "type": "string"
+            },
+            {
+              "id": "tema",
+              "name": "tema",
+              "value": "={{ $('Guardar Tema').item.json.tema }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b55f07f-6bfe-4690-9368-533d4d53304a",
+      "name": "Extraer Copy",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        400
+      ],
+      "notes": "Extrae el texto generado por Gemini"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "image-prompt",
+              "name": "imagePrompt",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "edc37c65-6ac7-469a-9d83-4e0a89fe257e",
+      "name": "Extraer Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        768
+      ],
+      "notes": "Extrae el prompt generado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cloudinary.com/v1_1/dmqkqcreo/image/upload",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{ 'data:image/png;base64,' + $json.predictions[0].bytesBase64Encoded }}"
+            },
+            {
+              "name": "upload_preset",
+              "value": "=social_media_posts"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "75f24380-649e-419b-ae0e-419c426902fc",
+      "name": "Subir Imagen a Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        768
+      ],
+      "notes": "Sube la imagen a Cloudinary para obtener URL pública"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "image-url",
+              "name": "imagenUrl",
+              "value": "={{ $json.secure_url }}",
+              "type": "string"
+            },
+            {
+              "id": "copy",
+              "name": "copyFinal",
+              "value": "={{ $('Extraer Copy').item.json.copyFinal }}",
+              "type": "string"
+            },
+            {
+              "id": "record-id",
+              "name": "recordId",
+              "value": "={{ $('Extraer Copy').item.json.recordId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4c41e588-3520-459f-a15e-6ef4fe374f7b",
+      "name": "Preparar Datos Finales",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        544
+      ],
+      "notes": "Combina copy + URL de imagen"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/{{ $env.INSTAGRAM_ACCOUNT_ID }}/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.imagenUrl }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.copyFinal }}\\n\\n#InteligenciaArtificial #IA #AI #TechTrends #Innovation #Emprendedores #PyMEs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "435be5af-1a6e-4bc7-9cfa-47e76abfb573",
+      "name": "Instagram - Crear Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1664,
+        512
+      ],
+      "notes": "Crea un contenedor de imagen en Instagram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/{{ $env.INSTAGRAM_ACCOUNT_ID }}/media_publish",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c53260fd-b0a8-43a5-881e-4587c421a938",
+      "name": "Instagram - Publicar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1856,
+        512
+      ],
+      "notes": "Publica el contenedor en Instagram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "linkedInOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "9c0148cd-e968-466a-9385-2d644af8b64c",
+      "name": "LinkedIn - Publicar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1664,
+        704
+      ],
+      "notes": "Publica en LinkedIn"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appejn9ep8JMLJmPG",
+          "mode": "list",
+          "cachedResultName": "Social Media Automator AI"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblgFvYebZcJaYM07",
+          "mode": "list",
+          "cachedResultName": "IMÁGENES PAR PUBLICAR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "e3077a88-36f1-4d45-9843-c38d7cf2d494",
+      "name": "Airtable - Guardar y Marcar Publicado",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        608
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Sbd5Vje0VhbncPBI",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "notes": "Guarda copy + imagen y marca como publicado"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "={{ \"Professional, modern image about \" + $('Guardar Tema').item.json.tema + \". Visual style: clean, vibrant colors, tech-focused, AI and automation theme, suitable for social media (Instagram/LinkedIn). High quality, square format 1:1, professional business aesthetic. Include elements like: artificial intelligence, robots, automation, digital technology, innovation. No text in image.\" }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        768
+      ],
+      "id": "17c3e08b-d376-468d-ad15-6d7c35fca80c",
+      "name": "Genera una imagen",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "J6ek1PPiUeSIkopA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Generate a detailed image generation prompt in English for creating a professional social media image about: {{ $('Guardar Tema').item.json.tema }}\n\nThe prompt should describe:\n- Visual style: modern, clean, professional, tech-focused\n- Theme: artificial intelligence, automation, digital transformation, no-code tools\n- Colors: vibrant but professional (blues, purples, greens, gradients)\n- Elements: robots, AI symbols, automation icons, technology, circuits, data visualization\n- Composition: centered, balanced, visually striking\n- Format: square 1:1 ratio for Instagram and LinkedIn\n- Aesthetic: suitable for business and tech social media posts about AI and automation\n- Mood: innovative, futuristic, inspiring, professional\n- Quality: high resolution, detailed, polished\n- IMPORTANT: NO text, NO words, NO letters should appear in the image\n\nRespond ONLY with the English image generation prompt, nothing else. No explanations, no preamble."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        768
+      ],
+      "id": "005a7f82-6a9c-4215-adec-ccdafbfa75d9",
+      "name": "Genera el PROMPT para la imagen",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "J6ek1PPiUeSIkopA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Crea un post atractivo para redes sociales (Instagram y LinkedIn) sobre el siguiente tema: {{ $('Guardar Tema').item.json.tema }}\n\nEl post debe:\n1. Tener entre 100-150 palabras\n2. Incluir 3-5 emojis relevantes (🤖 ⚡ 🚀 💡 🔧 etc.)\n3. Ser profesional pero conversacional\n4. Enfocarse en IA, automatizaciones, n8n, Make, y herramientas no-code\n5. Dirigido a pequeñas empresas, PyMEs y emprendedores que quieren automatizar procesos\n6. Incluir un call-to-action relacionado con automatización o productividad\n7. NO incluir hashtags (los agregaremos después)\n8. Mostrar cómo este tema ayuda a ahorrar tiempo, reducir costos o aumentar eficiencia\n\nTono: Inspirador, práctico y accionable.\n\nResponde SOLO con el texto del post, sin explicaciones adicionales."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        400
+      ],
+      "id": "db7f0f04-8f2c-4f6d-9ce8-b275132eaf6a",
+      "name": "Genera el TEXTO del post",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "J6ek1PPiUeSIkopA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Obtener Tema Pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Obtener Tema Pendiente": {
+      "main": [
+        [
+          {
+            "node": "¿Hay Tema Pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay Tema Pendiente?": {
+      "main": [
+        [
+          {
+            "node": "Guardar Tema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Tema": {
+      "main": [
+        [
+          {
+            "node": "Genera el TEXTO del post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Genera el PROMPT para la imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Prompt": {
+      "main": [
+        [
+          {
+            "node": "Genera una imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir Imagen a Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Finales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Copy": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Finales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Finales": {
+      "main": [
+        [
+          {
+            "node": "Instagram - Crear Container",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LinkedIn - Publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram - Crear Container": {
+      "main": [
+        [
+          {
+            "node": "Instagram - Publicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram - Publicar": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Guardar y Marcar Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn - Publicar": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Guardar y Marcar Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Genera una imagen": {
+      "main": [
+        [
+          {
+            "node": "Subir Imagen a Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Genera el PROMPT para la imagen": {
+      "main": [
+        [
+          {
+            "node": "Extraer Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Genera el TEXTO del post": {
+      "main": [
+        [
+          {
+            "node": "Extraer Copy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7ae350ae-0001-47c1-b717-465769c4ec89",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-26T09:40:02.980Z",
+      "createdAt": "2026-01-26T09:40:02.980Z",
+      "role": "workflow:owner",
+      "workflowId": "hxJlA1ehlYsp5vxetqE5u",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
