@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T15:13:57.057Z",
+  "updatedAt": "2026-01-27T12:18:21.198Z",
   "createdAt": "2026-01-23T13:29:20.032Z",
   "id": "y7VgcASFrW9dkSyd1iXP3",
   "name": "[App 360] - Inventario",
@@ -175,16 +175,14 @@
     {
       "parameters": {
         "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?comercio_id=eq.{{ $('Buscar Comercio1').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             }
           ]
         },
@@ -197,7 +195,13 @@
         880
       ],
       "id": "fc7dd5ba-65b5-40c3-8bcc-cc468200ba47",
-      "name": "HTTP Request4"
+      "name": "HTTP Request4",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -262,6 +266,8 @@
       "parameters": {
         "method": "PATCH",
         "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?codigo=eq.{{ $json.codigo }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -277,10 +283,6 @@
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -300,7 +302,13 @@
       "position": [
         2640,
         320
-      ]
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -379,6 +387,8 @@
       "parameters": {
         "method": "DELETE",
         "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -394,10 +404,6 @@
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -418,7 +424,13 @@
         880
       ],
       "id": "2952e003-cb65-4b40-8001-fe4e8505f878",
-      "name": "HTTP Request Delete Inventario1"
+      "name": "HTTP Request Delete Inventario1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -693,8 +705,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
-  "activeVersionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
+  "versionId": "bc9f5a5b-5cf9-4d4b-835b-0fee28ad06e7",
+  "activeVersionId": "bc9f5a5b-5cf9-4d4b-835b-0fee28ad06e7",
   "triggerCount": 4,
   "shared": [
     {
@@ -706,9 +718,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T15:13:59.000Z",
-    "createdAt": "2026-01-23T15:13:57.058Z",
-    "versionId": "31f2de98-1669-4bfc-8784-e7c1c549493b",
+    "updatedAt": "2026-01-27T12:18:24.000Z",
+    "createdAt": "2026-01-27T12:18:21.199Z",
+    "versionId": "bc9f5a5b-5cf9-4d4b-835b-0fee28ad06e7",
     "workflowId": "y7VgcASFrW9dkSyd1iXP3",
     "nodes": [
       {
@@ -880,16 +892,14 @@
       {
         "parameters": {
           "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?comercio_id=eq.{{ $('Buscar Comercio1').item.json.id }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               }
             ]
           },
@@ -902,7 +912,13 @@
           880
         ],
         "id": "fc7dd5ba-65b5-40c3-8bcc-cc468200ba47",
-        "name": "HTTP Request4"
+        "name": "HTTP Request4",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -967,6 +983,8 @@
         "parameters": {
           "method": "PATCH",
           "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario?codigo=eq.{{ $json.codigo }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendQuery": true,
           "queryParameters": {
             "parameters": [
@@ -982,10 +1000,6 @@
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -1005,7 +1019,13 @@
         "position": [
           2640,
           320
-        ]
+        ],
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -1084,6 +1104,8 @@
         "parameters": {
           "method": "DELETE",
           "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/inventario",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendQuery": true,
           "queryParameters": {
             "parameters": [
@@ -1099,10 +1121,6 @@
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -1123,7 +1141,13 @@
           880
         ],
         "id": "2952e003-cb65-4b40-8001-fe4e8505f878",
-        "name": "HTTP Request Delete Inventario1"
+        "name": "HTTP Request Delete Inventario1",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -1392,9 +1416,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 31f2de98",
+    "name": "Version bc9f5a5b",
     "description": "",
-    "autosaved": false
+    "autosaved": true
   },
   "tags": [
     {
