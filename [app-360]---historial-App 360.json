@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T15:23:53.353Z",
+  "updatedAt": "2026-01-27T12:11:57.829Z",
   "createdAt": "2026-01-23T13:51:10.798Z",
   "id": "vHNfr13ZD91TcnnamYi7f",
   "name": "[App 360] - Historial",
@@ -81,16 +81,14 @@
       "parameters": {
         "method": "POST",
         "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -110,7 +108,13 @@
         624
       ],
       "id": "907406e2-39c5-4285-985b-10c2d492970e",
-      "name": "HTTP Request"
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -166,6 +170,8 @@
       "parameters": {
         "method": "PATCH",
         "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -181,10 +187,6 @@
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -208,7 +210,13 @@
         960
       ],
       "id": "bf6dc58e-7680-477b-8dc1-585e84eec725",
-      "name": "HTTP Request1"
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -229,6 +237,8 @@
       "parameters": {
         "method": "DELETE",
         "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -244,10 +254,6 @@
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -268,7 +274,13 @@
         336
       ],
       "id": "901a88e4-7609-4959-9e8d-72a8e3cc264d",
-      "name": "HTTP Request2"
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -503,8 +515,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "0661287f-b749-453f-b235-078c9eff18b5",
-  "activeVersionId": "0661287f-b749-453f-b235-078c9eff18b5",
+  "versionId": "133c2a8e-4960-487d-ab90-db6a192b59ea",
+  "activeVersionId": "133c2a8e-4960-487d-ab90-db6a192b59ea",
   "triggerCount": 3,
   "shared": [
     {
@@ -516,9 +528,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T15:23:56.000Z",
-    "createdAt": "2026-01-23T15:23:53.354Z",
-    "versionId": "0661287f-b749-453f-b235-078c9eff18b5",
+    "updatedAt": "2026-01-27T12:12:03.000Z",
+    "createdAt": "2026-01-27T12:11:57.830Z",
+    "versionId": "133c2a8e-4960-487d-ab90-db6a192b59ea",
     "workflowId": "vHNfr13ZD91TcnnamYi7f",
     "nodes": [
       {
@@ -596,16 +608,14 @@
         "parameters": {
           "method": "POST",
           "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/rpc/obtener_historial_transacciones",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -625,7 +635,13 @@
           624
         ],
         "id": "907406e2-39c5-4285-985b-10c2d492970e",
-        "name": "HTTP Request"
+        "name": "HTTP Request",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -681,6 +697,8 @@
         "parameters": {
           "method": "PATCH",
           "url": "=https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendQuery": true,
           "queryParameters": {
             "parameters": [
@@ -696,10 +714,6 @@
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -723,7 +737,13 @@
           960
         ],
         "id": "bf6dc58e-7680-477b-8dc1-585e84eec725",
-        "name": "HTTP Request1"
+        "name": "HTTP Request1",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -744,6 +764,8 @@
         "parameters": {
           "method": "DELETE",
           "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendQuery": true,
           "queryParameters": {
             "parameters": [
@@ -759,10 +781,6 @@
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -783,7 +801,13 @@
           336
         ],
         "id": "901a88e4-7609-4959-9e8d-72a8e3cc264d",
-        "name": "HTTP Request2"
+        "name": "HTTP Request2",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -1012,9 +1036,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 0661287f",
+    "name": "Version 133c2a8e",
     "description": "",
-    "autosaved": false
+    "autosaved": true
   },
   "tags": [
     {
