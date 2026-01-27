@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-23T15:04:11.186Z",
+  "updatedAt": "2026-01-27T12:24:50.334Z",
   "createdAt": "2026-01-15T13:53:29.264Z",
   "id": "_DGhEcFyFUEWpZHnU6tYe",
   "name": "[App 360] - Ventas y Gastos",
@@ -179,16 +179,14 @@
       "parameters": {
         "method": "POST",
         "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
               "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
             },
             {
               "name": "Content-Type",
@@ -212,7 +210,13 @@
         1184
       ],
       "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
-      "name": "Guardar en Supabase2"
+      "name": "Guardar en Supabase2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "cAsFCRAMg8tGIVH4",
+          "name": "Bearer Auth account"
+        }
+      }
     },
     {
       "parameters": {
@@ -365,8 +369,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
-  "activeVersionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
+  "versionId": "ba7a24f7-3376-4f23-81e7-6f4fc2f2b97f",
+  "activeVersionId": "ba7a24f7-3376-4f23-81e7-6f4fc2f2b97f",
   "triggerCount": 2,
   "shared": [
     {
@@ -378,9 +382,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-23T15:04:13.000Z",
-    "createdAt": "2026-01-23T15:04:11.187Z",
-    "versionId": "f569045f-b1f7-43ff-a02f-2b89a62e16de",
+    "updatedAt": "2026-01-27T12:24:53.000Z",
+    "createdAt": "2026-01-27T12:24:50.335Z",
+    "versionId": "ba7a24f7-3376-4f23-81e7-6f4fc2f2b97f",
     "workflowId": "_DGhEcFyFUEWpZHnU6tYe",
     "nodes": [
       {
@@ -556,16 +560,14 @@
         "parameters": {
           "method": "POST",
           "url": "https://pczrezpmdugdsjrxspjh.supabase.co/rest/v1/transacciones?on_conflict=id_local",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
               {
                 "name": "apikey",
                 "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
-              },
-              {
-                "name": "Authorization",
-                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjenJlenBtZHVnZHNqcnhzcGpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzY4OTQsImV4cCI6MjA4MjYxMjg5NH0.mBuOcarBuFDs5lkR6y4733UfvLV9jiQWQNDJh0c5KlE"
               },
               {
                 "name": "Content-Type",
@@ -589,7 +591,13 @@
           1184
         ],
         "id": "8205ba08-ccbb-4ba1-a737-9d977b721984",
-        "name": "Guardar en Supabase2"
+        "name": "Guardar en Supabase2",
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "cAsFCRAMg8tGIVH4",
+            "name": "Bearer Auth account"
+          }
+        }
       },
       {
         "parameters": {
@@ -730,9 +738,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version f569045f",
+    "name": "Version ba7a24f7",
     "description": "",
-    "autosaved": false
+    "autosaved": true
   },
   "tags": [
     {
