@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-26T12:17:50.323Z",
+  "updatedAt": "2026-01-27T17:55:22.804Z",
   "createdAt": "2026-01-26T09:40:02.977Z",
   "id": "hxJlA1ehlYsp5vxetqE5u",
   "name": "Publicación Diaria IA con Gemini - Instagram & LinkedIn",
@@ -253,7 +253,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://graph.facebook.com/v18.0/{{ $env.INSTAGRAM_ACCOUNT_ID }}/media",
+        "url": "https://graph.facebook.com/v18.0/17841521338228887/media",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "facebookGraphApi",
         "sendQuery": true,
@@ -265,7 +265,11 @@
             },
             {
               "name": "caption",
-              "value": "={{ $json.copyFinal }}\\n\\n#InteligenciaArtificial #IA #AI #TechTrends #Innovation #Emprendedores #PyMEs"
+              "value": "={ $json.caption }}"
+            },
+            {
+              "name": "media_type",
+              "value": "IMAGE"
             }
           ]
         },
@@ -279,6 +283,12 @@
         1664,
         512
       ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "2z3Lfj4izTSf6Qad",
+          "name": "Facebook Graph account"
+        }
+      },
       "notes": "Crea un contenedor de imagen en Instagram"
     },
     {
@@ -306,6 +316,12 @@
         1856,
         512
       ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "2z3Lfj4izTSf6Qad",
+          "name": "Facebook Graph account"
+        }
+      },
       "notes": "Publica el contenedor en Instagram"
     },
     {
@@ -336,8 +352,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1664,
-        704
+        1648,
+        736
       ],
       "notes": "Publica en LinkedIn"
     },
@@ -357,8 +373,116 @@
           "cachedResultName": "IMÁGENES PAR PUBLICAR"
         },
         "columns": {
-          "mappingMode": "defineBelow",
-          "value": {}
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Tema",
+              "displayName": "Tema",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "✅ Publicado",
+                  "value": "✅ Publicado"
+                },
+                {
+                  "name": "Borrador",
+                  "value": "Borrador"
+                },
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Copy Final",
+              "displayName": "Copy Final",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Imagen",
+              "displayName": "Imagen",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "URL de Imagen",
+              "displayName": "URL de Imagen",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha Publicación",
+              "displayName": "Fecha Publicación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Última vez modificado",
+              "displayName": "Última vez modificado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
@@ -562,11 +686,6 @@
             "node": "Instagram - Crear Container",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "LinkedIn - Publicar",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -595,13 +714,7 @@
     },
     "LinkedIn - Publicar": {
       "main": [
-        [
-          {
-            "node": "Airtable - Guardar y Marcar Publicado",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Genera una imagen": {
@@ -647,7 +760,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "7ae350ae-0001-47c1-b717-465769c4ec89",
+  "versionId": "90c722b5-d647-4f99-ae09-56e84a59adb8",
   "activeVersionId": null,
   "triggerCount": 0,
   "shared": [
