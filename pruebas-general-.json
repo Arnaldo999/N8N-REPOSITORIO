@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-22T00:36:46.032Z",
+  "updatedAt": "2026-01-28T12:44:50.214Z",
   "createdAt": "2026-01-21T22:13:29.123Z",
   "id": "iI6fwLWQVXWgZr6o8Zst7",
   "name": "PRUEBAS GENERAL",
@@ -135,7 +135,7 @@
       "name": "Create a record",
       "credentials": {
         "airtableTokenApi": {
-          "id": "sywun0Gcrxcs4PbC",
+          "id": "Sbd5Vje0VhbncPBI",
           "name": "Airtable Personal Access Token account"
         }
       }
@@ -192,6 +192,19 @@
       ],
       "id": "295dcd4c-42b3-4dc2-b94f-5ea0772b5d0d",
       "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3b51ad78-4c07-4f8a-884a-3eed334f3807",
+      "name": "Information Extractor"
     }
   ],
   "connections": {
@@ -216,6 +229,17 @@
           }
         ]
       ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -227,7 +251,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "1d399cd6-b160-41dc-bc27-a5001e1a46d5",
+  "versionId": "e962a49f-5a0a-4a91-8a43-de02e080563b",
   "activeVersionId": null,
   "triggerCount": 0,
   "shared": [
