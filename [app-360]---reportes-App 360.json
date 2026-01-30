@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-28T14:05:14.601Z",
+  "updatedAt": "2026-01-30T00:03:16.865Z",
   "createdAt": "2026-01-23T13:30:30.892Z",
   "id": "CgBb94Jif_sUJbd4XOk_b",
   "name": "[App 360] - Reportes",
@@ -169,8 +169,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        1824,
-        -640
+        832,
+        -688
       ],
       "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
       "name": "Webhook2",
@@ -192,8 +192,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        2256,
-        -640
+        1264,
+        -688
       ],
       "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
       "name": "Obtener Comerciante",
@@ -216,8 +216,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        2864,
-        -640
+        1872,
+        -688
       ],
       "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
       "name": "Enviar Reporte",
@@ -236,8 +236,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        3040,
-        -640
+        2048,
+        -688
       ],
       "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
       "name": "Respond to Webhook4"
@@ -246,14 +246,14 @@
       "parameters": {
         "content": "## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.",
         "height": 800,
-        "width": 1616,
+        "width": 1888,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1632,
-        -1072
+        672,
+        -1088
       ],
       "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
       "name": "Sticky Note13"
@@ -281,8 +281,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2032,
-        -640
+        1040,
+        -688
       ],
       "id": "9468b9de-7661-4365-affd-b9e30997293b",
       "name": "Preparar Fechas"
@@ -294,8 +294,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2672,
-        -640
+        1680,
+        -688
       ],
       "id": "97330213-f5aa-4dba-917c-7def06e38011",
       "name": "Preparar Reporte"
@@ -327,8 +327,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        2464,
-        -640
+        1472,
+        -688
       ],
       "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
       "name": "Obtener Reporte",
@@ -341,245 +341,7 @@
     },
     {
       "parameters": {
-        "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
-        "height": 816,
-        "width": 1616,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -32,
-        -1088
-      ],
-      "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "registro-comerciante",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "id": "bea64729-5314-4cde-b4d4-f68659f2f39e",
-      "name": "Webhook Registro",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [
-        256,
-        -608
-      ],
-      "webhookId": "registro-comerciante-v1"
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "tableId": "comercios",
-        "returnAll": true
-      },
-      "id": "2be1858d-89c2-4f32-9470-044c98de5840",
-      "name": "Obtener Todos los Comercios",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [
-        464,
-        -608
-      ],
-      "credentials": {
-        "supabaseApi": {
-          "id": "VE7fLcHe01BYK4SQ",
-          "name": "Supabase account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
-      },
-      "id": "faecd98b-a8bc-49c8-98d0-d544d541e415",
-      "name": "Generar Slug y URL",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        688,
-        -608
-      ]
-    },
-    {
-      "parameters": {
-        "sendTo": "={{ $json.email }}",
-        "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
-        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
-        "options": {
-          "appendAttribution": false
-        }
-      },
-      "id": "a1cf0260-79a6-4787-9f0b-6ee5e120e764",
-      "name": "Enviar Email Bienvenida",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        1136,
-        -720
-      ],
-      "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "bhcg3bKbJJpDmkCY",
-          "name": "Gmail account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
-        "options": {}
-      },
-      "id": "af9c5b6b-fe43-4f91-8a46-3cee1dd24c7b",
-      "name": "Responder",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [
-        1360,
-        -720
-      ]
-    },
-    {
-      "parameters": {
-        "tableId": "comercios",
-        "fieldsUi": {
-          "fieldValues": [
-            {
-              "fieldId": "slug",
-              "fieldValue": "={{ $json.slug }}"
-            },
-            {
-              "fieldId": "pin",
-              "fieldValue": "={{ $json.pin }}"
-            },
-            {
-              "fieldId": "nombre_local",
-              "fieldValue": "={{ $json.nombre_local }}"
-            },
-            {
-              "fieldId": "email",
-              "fieldValue": "={{ $json.email }}"
-            },
-            {
-              "fieldId": "whatsapp",
-              "fieldValue": "={{ $json.whatsapp }}"
-            },
-            {
-              "fieldId": "tipo_negocio",
-              "fieldValue": "={{ $json.tipo_negocio }}"
-            },
-            {
-              "fieldId": "direccion",
-              "fieldValue": "={{ $json.direccion }}"
-            },
-            {
-              "fieldId": "ciudad",
-              "fieldValue": "={{ $json.ciudad }}"
-            },
-            {
-              "fieldId": "activo",
-              "fieldValue": "={{ $json.activo }}"
-            },
-            {
-              "fieldId": "url_app",
-              "fieldValue": "={{ $json.url_app }}"
-            }
-          ]
-        }
-      },
-      "id": "159c989f-d31b-49d0-9264-ea3a524f9464",
-      "name": "Guardar en Supabase3",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [
-        912,
-        -720
-      ],
-      "credentials": {
-        "supabaseApi": {
-          "id": "VE7fLcHe01BYK4SQ",
-          "name": "Supabase account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "databaseId": {
-          "__rl": true,
-          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
-          "mode": "list",
-          "cachedResultName": "BD APP COMERCIANTES",
-          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
-        },
-        "propertiesUi": {
-          "propertyValues": [
-            {
-              "key": "ID Comerciante|rich_text",
-              "textContent": "={{ $json.slug }}"
-            },
-            {
-              "key": "Nombre_Local|rich_text",
-              "textContent": "={{ $json.nombre_local }}"
-            },
-            {
-              "key": "Whatsapp|rich_text",
-              "textContent": "={{ $json.whatsapp }}"
-            },
-            {
-              "key": "Email|rich_text",
-              "textContent": "={{ $json.email }}"
-            },
-            {
-              "key": "Ciudad|multi_select",
-              "multiSelectValue": "={{$json.ciudad}}"
-            },
-            {
-              "key": "Tipo de Cuenta|select",
-              "selectValue": "DEMO"
-            },
-            {
-              "key": "Estado|status",
-              "statusValue": "Activo"
-            },
-            {
-              "key": "Fecha inicio|date",
-              "date": "={{ $json.fecha_inicio }}",
-              "timezone": "America/Argentina/Buenos_Aires"
-            },
-            {
-              "key": "Direccion|rich_text",
-              "textContent": "={{ $json.direccion }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        912,
-        -496
-      ],
-      "id": "8957f8cb-9870-4b2e-a09b-20bdec633eae",
-      "name": "Guardar en Notion",
-      "credentials": {
-        "notionApi": {
-          "id": "KFOa4rMn6SCXCFct",
-          "name": "Notion account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "# 📄 FICHA TÉCNICA: GROWTH & RETENTION\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 IA: Google Gemini (Análisis de Negocio)\n🔗 Integraciones: Gmail, Notion, Supabase\n---------------------------------\nDESCRIPCIÓN:\nMódulo híbrido encargado del ciclo de vida del cliente:\n1. Adquisición (Alta de nuevos comercios).\n2. Retención (Reportes automáticos y mentoría IA).",
+        "content": "# 📄 FICHA TÉCNICA: REPORTES & RETENCIÓN\n**📅 Última Actualización:** 29/01/2026\n**👤 Responsable:** Agencia Arnaldo Ayala\n**🤖 IA:** Google Gemini (Análisis de Negocio)\n**🔗 Integraciones:** Gmail, Notion, Supabase\n\n## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.\n\n## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ LÓGICA:**\n1. Se activa automáticamente a las 7:00 AM.\n2. Consulta el rendimiento del comercio en la base de datos.\n3. Gemini redacta un consejo de negocios personalizado.\n4. Envía el correo motivacional al cliente.",
         "height": 1776,
         "width": 672,
         "color": 7
@@ -587,8 +349,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -960,
-        -1072
+        -192,
+        -1088
       ],
       "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
       "name": "Sticky Note1"
@@ -738,66 +500,6 @@
           }
         ]
       ]
-    },
-    "Webhook Registro": {
-      "main": [
-        [
-          {
-            "node": "Obtener Todos los Comercios",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Obtener Todos los Comercios": {
-      "main": [
-        [
-          {
-            "node": "Generar Slug y URL",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generar Slug y URL": {
-      "main": [
-        [
-          {
-            "node": "Guardar en Notion",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Guardar en Supabase3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Enviar Email Bienvenida": {
-      "main": [
-        [
-          {
-            "node": "Responder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Guardar en Supabase3": {
-      "main": [
-        [
-          {
-            "node": "Enviar Email Bienvenida",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "settings": {
@@ -807,9 +509,9 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "b0667ecb-8192-47dd-bfda-5e35e646ce5c",
-  "activeVersionId": "b0667ecb-8192-47dd-bfda-5e35e646ce5c",
-  "triggerCount": 3,
+  "versionId": "5a50c3af-4d72-4fc3-9330-a9a5118ecc05",
+  "activeVersionId": "638263a5-e7f9-48f4-83c0-73e9c7209023",
+  "triggerCount": 2,
   "shared": [
     {
       "updatedAt": "2026-01-23T13:30:30.893Z",
@@ -820,9 +522,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-28T14:05:19.000Z",
-    "createdAt": "2026-01-28T14:05:14.603Z",
-    "versionId": "b0667ecb-8192-47dd-bfda-5e35e646ce5c",
+    "updatedAt": "2026-01-29T23:27:44.000Z",
+    "createdAt": "2026-01-29T23:27:40.671Z",
+    "versionId": "638263a5-e7f9-48f4-83c0-73e9c7209023",
     "workflowId": "CgBb94Jif_sUJbd4XOk_b",
     "nodes": [
       {
@@ -988,8 +690,8 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          1824,
-          -640
+          832,
+          -688
         ],
         "id": "5d92aaee-26ff-49cd-a5e3-402787168947",
         "name": "Webhook2",
@@ -1011,8 +713,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          2256,
-          -640
+          1264,
+          -688
         ],
         "id": "7a3fb9f7-29ba-48c3-a8f1-ff0b597817cc",
         "name": "Obtener Comerciante",
@@ -1035,8 +737,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.2,
         "position": [
-          2864,
-          -640
+          1872,
+          -688
         ],
         "id": "e2478b77-2acf-4e92-aed6-2061f71ecd45",
         "name": "Enviar Reporte",
@@ -1055,8 +757,8 @@
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
         "position": [
-          3040,
-          -640
+          2048,
+          -688
         ],
         "id": "b83c68eb-d8ee-497d-8b38-1c6335d74b95",
         "name": "Respond to Webhook4"
@@ -1065,14 +767,14 @@
         "parameters": {
           "content": "## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.",
           "height": 800,
-          "width": 1616,
+          "width": 1888,
           "color": 5
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          1632,
-          -1072
+          672,
+          -1088
         ],
         "id": "b84afa1a-d8f5-470a-b812-4fbd02400541",
         "name": "Sticky Note13"
@@ -1100,8 +802,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2032,
-          -640
+          1040,
+          -688
         ],
         "id": "9468b9de-7661-4365-affd-b9e30997293b",
         "name": "Preparar Fechas"
@@ -1113,8 +815,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          2672,
-          -640
+          1680,
+          -688
         ],
         "id": "97330213-f5aa-4dba-917c-7def06e38011",
         "name": "Preparar Reporte"
@@ -1146,8 +848,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          2464,
-          -640
+          1472,
+          -688
         ],
         "id": "56f54ec8-61cd-437f-9ea0-da28b21dad22",
         "name": "Obtener Reporte",
@@ -1155,244 +857,6 @@
           "httpBearerAuth": {
             "id": "cAsFCRAMg8tGIVH4",
             "name": "Bearer Auth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
-          "height": 816,
-          "width": 1616,
-          "color": 4
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          -32,
-          -1088
-        ],
-        "id": "8b225bce-be7f-4fd6-8031-b99dfde17b83",
-        "name": "Sticky Note2"
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "registro-comerciante",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "id": "bea64729-5314-4cde-b4d4-f68659f2f39e",
-        "name": "Webhook Registro",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          256,
-          -608
-        ],
-        "webhookId": "registro-comerciante-v1"
-      },
-      {
-        "parameters": {
-          "operation": "getAll",
-          "tableId": "comercios",
-          "returnAll": true
-        },
-        "id": "2be1858d-89c2-4f32-9470-044c98de5840",
-        "name": "Obtener Todos los Comercios",
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          464,
-          -608
-        ],
-        "credentials": {
-          "supabaseApi": {
-            "id": "VE7fLcHe01BYK4SQ",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
-        },
-        "id": "faecd98b-a8bc-49c8-98d0-d544d541e415",
-        "name": "Generar Slug y URL",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          688,
-          -608
-        ]
-      },
-      {
-        "parameters": {
-          "sendTo": "={{ $json.email }}",
-          "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
-          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
-          "options": {
-            "appendAttribution": false
-          }
-        },
-        "id": "a1cf0260-79a6-4787-9f0b-6ee5e120e764",
-        "name": "Enviar Email Bienvenida",
-        "type": "n8n-nodes-base.gmail",
-        "typeVersion": 2.1,
-        "position": [
-          1136,
-          -720
-        ],
-        "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
-        "credentials": {
-          "gmailOAuth2": {
-            "id": "bhcg3bKbJJpDmkCY",
-            "name": "Gmail account 2"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
-          "options": {}
-        },
-        "id": "af9c5b6b-fe43-4f91-8a46-3cee1dd24c7b",
-        "name": "Responder",
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          1360,
-          -720
-        ]
-      },
-      {
-        "parameters": {
-          "tableId": "comercios",
-          "fieldsUi": {
-            "fieldValues": [
-              {
-                "fieldId": "slug",
-                "fieldValue": "={{ $json.slug }}"
-              },
-              {
-                "fieldId": "pin",
-                "fieldValue": "={{ $json.pin }}"
-              },
-              {
-                "fieldId": "nombre_local",
-                "fieldValue": "={{ $json.nombre_local }}"
-              },
-              {
-                "fieldId": "email",
-                "fieldValue": "={{ $json.email }}"
-              },
-              {
-                "fieldId": "whatsapp",
-                "fieldValue": "={{ $json.whatsapp }}"
-              },
-              {
-                "fieldId": "tipo_negocio",
-                "fieldValue": "={{ $json.tipo_negocio }}"
-              },
-              {
-                "fieldId": "direccion",
-                "fieldValue": "={{ $json.direccion }}"
-              },
-              {
-                "fieldId": "ciudad",
-                "fieldValue": "={{ $json.ciudad }}"
-              },
-              {
-                "fieldId": "activo",
-                "fieldValue": "={{ $json.activo }}"
-              },
-              {
-                "fieldId": "url_app",
-                "fieldValue": "={{ $json.url_app }}"
-              }
-            ]
-          }
-        },
-        "id": "159c989f-d31b-49d0-9264-ea3a524f9464",
-        "name": "Guardar en Supabase3",
-        "type": "n8n-nodes-base.supabase",
-        "typeVersion": 1,
-        "position": [
-          912,
-          -720
-        ],
-        "credentials": {
-          "supabaseApi": {
-            "id": "VE7fLcHe01BYK4SQ",
-            "name": "Supabase account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "resource": "databasePage",
-          "databaseId": {
-            "__rl": true,
-            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
-            "mode": "list",
-            "cachedResultName": "BD APP COMERCIANTES",
-            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
-          },
-          "propertiesUi": {
-            "propertyValues": [
-              {
-                "key": "ID Comerciante|rich_text",
-                "textContent": "={{ $json.slug }}"
-              },
-              {
-                "key": "Nombre_Local|rich_text",
-                "textContent": "={{ $json.nombre_local }}"
-              },
-              {
-                "key": "Whatsapp|rich_text",
-                "textContent": "={{ $json.whatsapp }}"
-              },
-              {
-                "key": "Email|rich_text",
-                "textContent": "={{ $json.email }}"
-              },
-              {
-                "key": "Ciudad|multi_select",
-                "multiSelectValue": "={{$json.ciudad}}"
-              },
-              {
-                "key": "Tipo de Cuenta|select",
-                "selectValue": "DEMO"
-              },
-              {
-                "key": "Estado|status",
-                "statusValue": "Activo"
-              },
-              {
-                "key": "Fecha inicio|date",
-                "date": "={{ $json.fecha_inicio }}",
-                "timezone": "America/Argentina/Buenos_Aires"
-              },
-              {
-                "key": "Direccion|rich_text",
-                "textContent": "={{ $json.direccion }}"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.notion",
-        "typeVersion": 2.2,
-        "position": [
-          912,
-          -496
-        ],
-        "id": "8957f8cb-9870-4b2e-a09b-20bdec633eae",
-        "name": "Guardar en Notion",
-        "credentials": {
-          "notionApi": {
-            "id": "KFOa4rMn6SCXCFct",
-            "name": "Notion account 2"
           }
         }
       },
@@ -1406,7 +870,7 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          -960,
+          -272,
           -1072
         ],
         "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
@@ -1557,70 +1021,10 @@
             }
           ]
         ]
-      },
-      "Webhook Registro": {
-        "main": [
-          [
-            {
-              "node": "Obtener Todos los Comercios",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Obtener Todos los Comercios": {
-        "main": [
-          [
-            {
-              "node": "Generar Slug y URL",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Generar Slug y URL": {
-        "main": [
-          [
-            {
-              "node": "Guardar en Notion",
-              "type": "main",
-              "index": 0
-            },
-            {
-              "node": "Guardar en Supabase3",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Enviar Email Bienvenida": {
-        "main": [
-          [
-            {
-              "node": "Responder",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Guardar en Supabase3": {
-        "main": [
-          [
-            {
-              "node": "Enviar Email Bienvenida",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version b0667ecb",
+    "name": "Version 638263a5",
     "description": "",
     "autosaved": true
   },
