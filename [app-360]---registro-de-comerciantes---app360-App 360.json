@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-30T01:18:46.769Z",
+  "updatedAt": "2026-01-30T01:48:15.640Z",
   "createdAt": "2026-01-29T23:25:05.212Z",
   "id": "59X5vNm9Wq523IWHb5I_I",
   "name": "[App 360] - Registro de Comerciantes - App360",
@@ -414,6 +414,22 @@
           "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
         },
         "limit": 100,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Tipo de Cuenta|select",
+              "condition": "equals",
+              "selectValue": "DEFINITIVA"
+            },
+            {
+              "key": "Bienvenida  a DEFINITIVA|select",
+              "condition": "equals",
+              "selectValue": "No Enviada"
+            }
+          ]
+        },
         "options": {}
       },
       "id": "de769e88-c488-425c-a5ba-102ddea74881",
@@ -433,7 +449,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['ID Comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
+        "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['$input.first().json.property_id_comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
       },
       "id": "7eeea8b5-ff1f-4e18-904d-2eba76eb0650",
       "name": "💻 Generar Nuevo PIN",
@@ -705,7 +721,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+  "versionId": "dfd35518-b963-41fc-b1cd-c703321ef367",
   "activeVersionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
   "triggerCount": 3,
   "shared": [
