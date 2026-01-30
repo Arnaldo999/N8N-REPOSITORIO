@@ -1,0 +1,38 @@
+{
+  "updatedAt": "2026-01-30T00:03:59.000Z",
+  "createdAt": "2026-01-29T13:41:24.034Z",
+  "id": "ao3R8FjbPJyaT9KcoQxxf",
+  "name": "[App 360] - Aviso por Vencimiento",
+  "active": false,
+  "isArchived": true,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "98400327-5863-4d95-96ff-4b734aeffa17",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-29T13:41:24.038Z",
+      "createdAt": "2026-01-29T13:41:24.038Z",
+      "role": "workflow:owner",
+      "workflowId": "ao3R8FjbPJyaT9KcoQxxf",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "updatedAt": "2026-01-23T14:01:22.970Z",
+      "createdAt": "2026-01-23T14:01:22.970Z",
+      "id": "gy1rAhYFoAQXIZ9u",
+      "name": "App 360"
+    }
+  ]
+}
