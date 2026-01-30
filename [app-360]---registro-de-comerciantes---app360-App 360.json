@@ -1,0 +1,1429 @@
+{
+  "updatedAt": "2026-01-30T01:18:46.769Z",
+  "createdAt": "2026-01-29T23:25:05.212Z",
+  "id": "59X5vNm9Wq523IWHb5I_I",
+  "name": "[App 360] - Registro de Comerciantes - App360",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
+        "height": 816,
+        "width": 1616,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "86b6ee08-9701-4cf0-8b18-39eeb594983b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registro-comerciante",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8184df87-8ab5-4afe-91f1-5edf01c22871",
+      "name": "Webhook Registro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        144,
+        688
+      ],
+      "webhookId": "registro-comerciante-v1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "comercios",
+        "returnAll": true
+      },
+      "id": "0feb6735-1dcb-416a-aad9-54ce897572e4",
+      "name": "Obtener Todos los Comercios",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        352,
+        688
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+      },
+      "id": "5f39b38a-9f32-4c61-bc7f-faa29d2bc259",
+      "name": "Generar Slug y URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "abe1558b-79e6-4045-ab0a-2b15f98b44a1",
+      "name": "Enviar Email Bienvenida",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        576
+      ],
+      "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bhcg3bKbJJpDmkCY",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
+        "options": {}
+      },
+      "id": "971a1c6e-30e4-4554-90dd-3298029c72f0",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "comercios",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "slug",
+              "fieldValue": "={{ $json.slug }}"
+            },
+            {
+              "fieldId": "pin",
+              "fieldValue": "={{ $json.pin }}"
+            },
+            {
+              "fieldId": "nombre_local",
+              "fieldValue": "={{ $json.nombre_local }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.email }}"
+            },
+            {
+              "fieldId": "whatsapp",
+              "fieldValue": "={{ $json.whatsapp }}"
+            },
+            {
+              "fieldId": "tipo_negocio",
+              "fieldValue": "={{ $json.tipo_negocio }}"
+            },
+            {
+              "fieldId": "direccion",
+              "fieldValue": "={{ $json.direccion }}"
+            },
+            {
+              "fieldId": "ciudad",
+              "fieldValue": "={{ $json.ciudad }}"
+            },
+            {
+              "fieldId": "activo",
+              "fieldValue": "={{ $json.activo }}"
+            },
+            {
+              "fieldId": "url_app",
+              "fieldValue": "={{ $json.url_app }}"
+            }
+          ]
+        }
+      },
+      "id": "251045ed-a4d6-4e33-b491-31b84d4f168d",
+      "name": "Guardar en Supabase3",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        800,
+        576
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "BD APP COMERCIANTES",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "ID Comerciante|rich_text",
+              "textContent": "={{ $json.slug }}"
+            },
+            {
+              "key": "Nombre_Local|rich_text",
+              "textContent": "={{ $json.nombre_local }}"
+            },
+            {
+              "key": "Whatsapp|rich_text",
+              "textContent": "={{ $json.whatsapp }}"
+            },
+            {
+              "key": "Email|rich_text",
+              "textContent": "={{ $json.email }}"
+            },
+            {
+              "key": "Ciudad|multi_select",
+              "multiSelectValue": "={{$json.ciudad}}"
+            },
+            {
+              "key": "Tipo de Cuenta|select",
+              "selectValue": "DEMO"
+            },
+            {
+              "key": "Estado|status",
+              "statusValue": "Activo"
+            },
+            {
+              "key": "Fecha inicio|date",
+              "date": "={{ $json.fecha_inicio }}",
+              "timezone": "America/Argentina/Buenos_Aires"
+            },
+            {
+              "key": "Direccion|rich_text",
+              "textContent": "={{ $json.direccion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        800
+      ],
+      "id": "1f7400dd-bbae-456b-b94c-9f624fa07541",
+      "name": "Guardar en Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "triggerAtMinute": 9
+            }
+          ]
+        }
+      },
+      "id": "1bd593e3-818c-4756-a8b2-e2a704794872",
+      "name": "⏰ Cada Día 9:00 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1984,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "Database Page",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "limit": 100,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Dias Restantes Demo|formula",
+              "condition": "equals",
+              "returnType": "number",
+              "numberValue": 2
+            },
+            {
+              "key": "Aviso de 2 Dias|select",
+              "condition": "equals",
+              "selectValue": "No Enviada"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9f877166-5bda-4359-b60e-62675d9c0f05",
+      "name": "📋 Obtener Clientes DEMO (2 días restantes)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2208,
+        1456
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.property_email }}",
+        "subject": "=⏳{{ $json.property_nombre_local }} - Tu prueba de App360 termina en 2 días ",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 30px; \n      text-align: center; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .alert-box { \n      background: #fff3cd; \n      border-left: 4px solid #ffc107; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .button { \n      display: inline-block; \n      background: #25D366; \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>⏳ ¡Tu Prueba Está Por Vencer!</h1>\n    </div>\n    <div class=\"content\">\n      <h2>Hola {{ $json.property_nombre_local }},</h2>\n      \n      <div class=\"alert-box\">\n        <strong>⚠️ AVISO IMPORTANTE:</strong> Te quedan solo <strong>2 días</strong> de tu período de prueba gratuito de App360.\n      </div>\n      \n      <p>Durante estos días has experimentado cómo App360 puede transformar la gestión de tu negocio:</p>\n      <ul>\n        <li>✅ Control de inventario en tiempo real</li>\n        <li>✅ Registro de ventas y gastos</li>\n        <li>✅ Reportes automáticos por WhatsApp</li>\n        <li>✅ Acceso desde cualquier dispositivo</li>\n      </ul>\n      \n      <p><strong>Para asegurar tu acceso de por vida</strong> y seguir disfrutando de todas estas herramientas, contáctame ahora:</p>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20quiero%20pagar%20la%20App360%20-%20Mi%20ID%20es%20{{ $json.property_id_comerciante}}%20-%20{{$json.property_nombre_local}}\" class=\"button\">💬 Pagar Ahora por WhatsApp</a>\n      </div>\n      \n      <p style=\"margin-top: 20px; font-size: 14px; color: #666;\">Si ya realizaste el pago, ignora este mensaje. El acceso se activará automáticamente.</p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Este es un correo automático. No responder.</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "d324b59a-2ec7-4e87-bd06-15c2a8eb6c45",
+      "name": "📧 Enviar Correo: Vence en 2 Días",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2416,
+        1456
+      ],
+      "webhookId": "71950ab0-480b-40f0-8e67-af2f14a862e0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bhcg3bKbJJpDmkCY",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('📋 Obtener Clientes DEMO (2 días restantes)').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Aviso de 2 Dias|select",
+              "selectValue": "Enviada"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0f17ef55-2183-4eaa-b376-b729f59727b8",
+      "name": "✅ Marcar 'Aviso de 2 Dias' = Enviada",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        1456
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 ACTIVACIÓN DEFINITIVA\n**Objetivo:** Automatizar la entrega del servicio final tras confirmar el pago del cliente.\n\n**⚙️ LÓGICA:**\n1. **Confirmación:** Recibe la señal de pago exitoso (Webhook).\n2. **Actualización CRM:** Cambia el estado del comercio de **DEMO** a **DEFINITIVA** en Notion.\n3. **Seguridad:** Genera la nueva contraseña de acceso final para la App.\n4. **Entrega:** Envía el correo de bienvenida definitiva con las nuevas credenciales y confirmación de activación.",
+        "height": 816,
+        "width": 1616
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        208
+      ],
+      "id": "d7ab8c82-7410-4d76-a5ac-8fd28a758a9d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "678a4b48-a065-4b04-b8cb-5535e027d53d",
+      "name": "⏰ Cada 15 Minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1904,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+          "mode": "list",
+          "cachedResultName": "Database Page",
+          "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+        },
+        "limit": 100,
+        "options": {}
+      },
+      "id": "de769e88-c488-425c-a5ba-102ddea74881",
+      "name": "📋 Obtener Clientes DEFINITIVA sin Bienvenida",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2128,
+        592
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['ID Comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
+      },
+      "id": "7eeea8b5-ff1f-4e18-904d-2eba76eb0650",
+      "name": "💻 Generar Nuevo PIN",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "comerciantes"
+      },
+      "id": "861ce566-3502-4255-ac36-1072c986e9dc",
+      "name": "🗄️ Actualizar PIN en Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        592
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Generar Nuevo PIN').item.json.email }}",
+        "subject": "🎉 ¡Bienvenido a App360 de Por Vida! - {{ $('Generar Nuevo PIN').item.json.nombre_local }}",
+        "message": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 40px; \n      text-align: center; \n    }\n    .badge { \n      display: inline-block; \n      background: rgba(255,255,255,0.2); \n      padding: 8px 16px; \n      border-radius: 20px; \n      font-size: 14px; \n      margin-top: 10px; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .success-box { \n      background: #d4edda; \n      border-left: 4px solid #28a745; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .access-box { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 8px; \n      margin: 20px 0; \n      border: 2px solid #667eea; \n    }\n    .credentials { \n      background: white; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 10px 0; \n      border: 1px solid #ddd; \n    }\n    .credential-label { \n      color: #666; \n      font-size: 12px; \n      text-transform: uppercase; \n      margin-bottom: 5px; \n    }\n    .credential-value { \n      font-size: 18px; \n      font-weight: bold; \n      color: #333; \n      font-family: 'Courier New', monospace; \n    }\n    .features { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 5px; \n      margin: 20px 0; \n    }\n    .feature-item { \n      padding: 10px 0; \n      border-bottom: 1px solid #e0e0e0; \n    }\n    .feature-item:last-child { \n      border-bottom: none; \n    }\n    .button { \n      display: inline-block; \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n    .contact-info { \n      background: #fff3cd; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 20px 0; \n      text-align: center; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu pago ha sido confirmado y tu cuenta ha sido activada de forma permanente. ¡Bienvenido a App360!\n      </div>\n      \n      <h3>🔐 Tus Nuevas Credenciales de Acceso:</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.id_comerciante }}</div>\n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 Nuevo PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.nuevo_pin }}</div>\n        </div>\n        <p style=\"font-size: 12px; color: #666; margin-top: 15px;\">💡 Tip: Guarda estos datos en un lugar seguro. Puedes cambiar tu PIN desde la app cuando quieras.</p>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n      \n      <h3 style=\"margin-top: 30px;\">🎁 Lo que incluye tu acceso de por vida:</h3>\n      <div class=\"features\">\n        <div class=\"feature-item\">\n          <strong>✅ Gestión de Inventario Ilimitada</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Agrega todos los productos que necesites, sin límites</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Registro de Ventas y Gastos</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Control total de tu flujo de efectivo en tiempo real</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Reportes Automáticos por WhatsApp</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Recibe tu cierre de caja diario sin hacer nada</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Acceso Multi-Dispositivo</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Ingresa desde cualquier celular, tablet o computadora</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Actualizaciones Gratuitas</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Todas las mejoras futuras incluidas sin costo adicional</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Soporte Técnico Personalizado</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Estoy disponible para ayudarte cuando lo necesites</span>\n        </div>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        Escríbeme por WhatsApp en cualquier momento:<br>\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20necesito%20ayuda%20con%20App360%20-%20{{ $('Generar Nuevo PIN').item.json.id_comerciante }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n      \n      <p style=\"margin-top: 30px; text-align: center; color: #666;\">\n        Gracias por confiar en App360 para la gestión de tu negocio. 🙌<br>\n        <strong style=\"color: #667eea;\">¡Éxitos en tu emprendimiento!</strong>\n      </p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Acceso de Por Vida Activado ✨</p>\n      <p>Fecha de activación: {{ $('Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "2942c529-6b1f-47f3-ac81-2160988842ee",
+      "name": "📧 Enviar Correo: Bienvenida DEFINITIVA",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2784,
+        592
+      ],
+      "webhookId": "07854f2f-facc-4940-8ecd-c310c3937741",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bhcg3bKbJJpDmkCY",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "dc087b7f-3166-4687-b2e8-7ba3c2abb85f",
+      "name": "✅ Marcar 'Bienvenida a DEFINITIVA' = Enviada",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        3008,
+        592
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "KFOa4rMn6SCXCFct",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⏰ RETENCIÓN: AVISO DE VENCIMIENTO\n**Objetivo:** Notificar al cliente 48 horas antes de que expire su demo para incentivar la conversión.\n\n**⚙️ LÓGICA:**\n1. **Monitoreo:** Revisa diariamente la fecha de vencimiento en Notion.\n2. **Filtro Temporal:** Detecta los comercios que vencen exactamente en 2 días.\n3. **Comunicación:** Dispara un correo automático con el recordatorio y el enlace de pago.\n4. **Seguimiento:** Deja constancia en el log del cliente sobre el aviso enviado.",
+        "height": 816,
+        "width": 1616,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        1104
+      ],
+      "id": "22f6e1e3-05e1-41f1-a256-de6c727b49fe",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# 📄 FICHA TÉCNICA: REGISTRO DE COMERCIANTES\n**📅 Última Actualización:** 29/01/2026\n**👤 Responsable:** Agencia Arnaldo Ayala\n**🔗 Integraciones:** Notion, Gmail, Pasarela de Pagos\n\n## 📝 GESTIÓN DE ALTAS Y CICLO DE VIDA\n**Objetivo:** Automatizar el registro y la conversión de usuarios demo a definitivos.\n\n**⚙️ LÓGICA:**\n1. Crea el registro en Notion con estado inicial **DEMO**.\n2. Envía correo de aviso faltando 2 días para el vencimiento de la prueba.\n3. Al detectar el pago, cambia el estado a **DEFINITIVA** en Notion.\n4. Envía correo automático con la nueva contraseña y acceso activo.",
+        "height": 1632,
+        "width": 784,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        208
+      ],
+      "id": "f5b86825-4029-4a0c-86d5-efa6c7bc3152",
+      "name": "Sticky Note3"
+    }
+  ],
+  "connections": {
+    "Webhook Registro": {
+      "main": [
+        [
+          {
+            "node": "Obtener Todos los Comercios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Todos los Comercios": {
+      "main": [
+        [
+          {
+            "node": "Generar Slug y URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Slug y URL": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Notion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar en Supabase3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Bienvenida": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Supabase3": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Cada Día 9:00 AM": {
+      "main": [
+        [
+          {
+            "node": "📋 Obtener Clientes DEMO (2 días restantes)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Obtener Clientes DEMO (2 días restantes)": {
+      "main": [
+        [
+          {
+            "node": "📧 Enviar Correo: Vence en 2 Días",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Enviar Correo: Vence en 2 Días": {
+      "main": [
+        [
+          {
+            "node": "✅ Marcar 'Aviso de 2 Dias' = Enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Cada 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "📋 Obtener Clientes DEFINITIVA sin Bienvenida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Obtener Clientes DEFINITIVA sin Bienvenida": {
+      "main": [
+        [
+          {
+            "node": "💻 Generar Nuevo PIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💻 Generar Nuevo PIN": {
+      "main": [
+        [
+          {
+            "node": "🗄️ Actualizar PIN en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗄️ Actualizar PIN en Supabase": {
+      "main": [
+        [
+          {
+            "node": "📧 Enviar Correo: Bienvenida DEFINITIVA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📧 Enviar Correo: Bienvenida DEFINITIVA": {
+      "main": [
+        [
+          {
+            "node": "✅ Marcar 'Bienvenida a DEFINITIVA' = Enviada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+  "activeVersionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2026-01-29T23:25:05.215Z",
+      "createdAt": "2026-01-29T23:25:05.215Z",
+      "role": "workflow:owner",
+      "workflowId": "59X5vNm9Wq523IWHb5I_I",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-30T01:20:43.000Z",
+    "createdAt": "2026-01-30T01:18:46.770Z",
+    "versionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+    "workflowId": "59X5vNm9Wq523IWHb5I_I",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## 🚀 ONBOARDING (NUEVOS CLIENTES)\n**Objetivo:** Alta automática sin intervención manual.\n\n**📥 INPUT:**\n- Datos del Formulario Web (Nombre, WhatsApp, etc).\n\n**⚙️ AUTOMATIZACIÓN:**\n1. **Identidad:** Genera Slug único (C001...) y PIN.\n2. **CRM:** Crea la ficha del cliente en Notion.\n3. **App:** Habilita el acceso en Supabase.\n4. **Bienvenida:** Envía credenciales por Email.",
+          "height": 816,
+          "width": 1616,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          0,
+          208
+        ],
+        "id": "86b6ee08-9701-4cf0-8b18-39eeb594983b",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "registro-comerciante",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "8184df87-8ab5-4afe-91f1-5edf01c22871",
+        "name": "Webhook Registro",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          144,
+          688
+        ],
+        "webhookId": "registro-comerciante-v1"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "tableId": "comercios",
+          "returnAll": true
+        },
+        "id": "0feb6735-1dcb-416a-aad9-54ce897572e4",
+        "name": "Obtener Todos los Comercios",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          352,
+          688
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+        },
+        "id": "5f39b38a-9f32-4c61-bc7f-faa29d2bc259",
+        "name": "Generar Slug y URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          688
+        ]
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email }}",
+          "subject": "🎉 ¡Bienvenido/a al Sistema de Gestión de Transacciones!",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body {\n      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n      line-height: 1.6;\n      color: #1a1a1a;\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n      background-color: #f0f2f5;\n    }\n    .container {\n      background-color: white;\n      border-radius: 15px;\n      padding: 30px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.08);\n    }\n    .header {\n      text-align: center;\n      border-bottom: 2px solid #00ff88;\n      padding-bottom: 20px;\n      margin-bottom: 25px;\n    }\n    h1 {\n      color: #008f4c;\n      font-size: 26px;\n      margin: 0;\n    }\n    .greeting {\n      font-size: 17px;\n      color: #444;\n      margin-bottom: 20px;\n    }\n    .button-container {\n      text-align: center;\n      margin: 35px 0;\n    }\n    .app-button {\n      display: inline-block;\n      padding: 20px 45px;\n      background: linear-gradient(135deg, #00ff88, #008f4c);\n      color: white !important;\n      text-decoration: none;\n      border-radius: 15px;\n      font-size: 1.3rem;\n      font-weight: 800;\n      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);\n      transition: all 0.3s;\n    }\n    .feature-card {\n      background-color: #f8f9fa;\n      border-radius: 10px;\n      padding: 15px;\n      margin-bottom: 15px;\n      border-left: 5px solid #00d4ff;\n    }\n    .feature-title {\n      font-weight: bold;\n      color: #0056b3;\n      display: block;\n      margin-bottom: 5px;\n    }\n    .access-box {\n      background-color: #fff9c4;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 2px dashed #fbc02d;\n    }\n    .highlight-box {\n      background-color: #e3f2fd;\n      padding: 20px;\n      border-radius: 10px;\n      margin: 25px 0;\n      border: 1px dashed #00d4ff;\n    }\n    .footer {\n      text-align: center;\n      color: #888;\n      font-size: 12px;\n      margin-top: 35px;\n      border-top: 1px solid #eee;\n      padding-top: 20px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n        <h1>¡Bienvenido/a {{ $json.nombre_local }}! 🚀</h1>\n    </div>\n    \n    <p class=\"greeting\">\n      Hola, soy <strong>Arnaldo Ayala</strong>. Hemos activado tu sistema profesional para que lleves el control total de tu negocio de forma automatizada.\n    </p>\n\n    <div class=\"access-box\">\n      <h3 style=\"margin-top: 0; color: #bc5100;\">🔑 Tus Datos de Acceso:</h3>\n      <p style=\"font-size: 18px; margin: 10px 0;\">\n        <strong>ID de Comercio:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.slug }}</span><br>\n        <strong>Tu PIN Secreto:</strong> <span style=\"color: #008f4c; font-weight: bold;\">{{ $json.pin }}</span>\n      </p>\n      <small>Utiliza estos datos para iniciar sesión en tu App.</small>\n    </div>\n\n    <div class=\"button-container\">\n      <a href=\"{{ $json.url_app }}\" class=\"app-button\">ENTRAR A MI SISTEMA</a>\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 20px;\">🛡️ Tu Panel de Control 360°</h2>\n    \n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📦 Gestión de Inventario Inteligente</span>\n      Podrás cargar tus productos con <strong>código, nombre y precio</strong>. Al momento de vender, ¡solo tendrás que seleccionarlos!\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">📜 Historial con \"Superpoderes\"</span>\n      Consulta todas tus ventas y gastos. <strong>¿Te equivocaste en un registro?</strong> No te preocupes: puedes <strong>editar o eliminar</strong> cualquier movimiento en segundos.\n    </div>\n\n    <div class=\"feature-card\">\n      <span class=\"feature-title\">💡 Consejos Estratégicos</span>\n      Periódicamente recibirás en tu correo <strong>consejos útiles y estrategias de marketing</strong> para ayudarte a escalar tus ventas usando IA.\n    </div>\n\n    <div class=\"highlight-box\">\n      <strong>💡 Recomendación de Oro:</strong> Si estás en Pc arriba al lado del buscador tendras el boton para descargar la App, o presiona los \"tres puntitos\" de tu navegador móvil y selecciona <strong>\"Descargar Aplicacion\"</strong>. Así tendrás el Sistema en tu celular.\n    </div>\n\n    <h2 style=\"color: #008f4c; font-size: 18px;\">💬 Soporte Directo</h2>\n    <p style=\"font-size: 14px;\">\n      Si necesitas ayuda para cargar tu inventario o ajustar algún detalle:<br>\n      <strong>WhatsApp:</strong> <a href=\"https://wa.me/5493765384843\" style=\"color: #00d4ff; font-weight: bold;\">+54 9 3765 38-4843</a>\n    </p>\n\n    <p style=\"margin-top: 30px; font-weight: bold; color: #444;\">\n      ¡A darle con todo a esas ventas! 📈<br><br>\n      Arnaldo Ayala<br>\n      <span style=\"color: #008f4c; font-weight: normal;\">Estratega en IA y Marketing</span>\n    </p>\n\n    <div class=\"footer\">\n      <p>Agencia Arnaldo Ayala - Automatización para Comerciantes</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "id": "abe1558b-79e6-4045-ab0a-2b15f98b44a1",
+        "name": "Enviar Email Bienvenida",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          1056,
+          576
+        ],
+        "webhookId": "ba902d0d-f549-4d43-a6e0-055e7665a804",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "bhcg3bKbJJpDmkCY",
+            "name": "Gmail account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {\n  \"success\": true, \n  \"message\": \"Comerciante registrado exitosamente\", \n  \"slug\": $('Generar Slug y URL').first().json.slug, \n  \"url_app\": $('Generar Slug y URL').first().json.url_app \n} }}",
+          "options": {}
+        },
+        "id": "971a1c6e-30e4-4554-90dd-3298029c72f0",
+        "name": "Responder",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1248,
+          576
+        ]
+      },
+      {
+        "parameters": {
+          "tableId": "comercios",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "slug",
+                "fieldValue": "={{ $json.slug }}"
+              },
+              {
+                "fieldId": "pin",
+                "fieldValue": "={{ $json.pin }}"
+              },
+              {
+                "fieldId": "nombre_local",
+                "fieldValue": "={{ $json.nombre_local }}"
+              },
+              {
+                "fieldId": "email",
+                "fieldValue": "={{ $json.email }}"
+              },
+              {
+                "fieldId": "whatsapp",
+                "fieldValue": "={{ $json.whatsapp }}"
+              },
+              {
+                "fieldId": "tipo_negocio",
+                "fieldValue": "={{ $json.tipo_negocio }}"
+              },
+              {
+                "fieldId": "direccion",
+                "fieldValue": "={{ $json.direccion }}"
+              },
+              {
+                "fieldId": "ciudad",
+                "fieldValue": "={{ $json.ciudad }}"
+              },
+              {
+                "fieldId": "activo",
+                "fieldValue": "={{ $json.activo }}"
+              },
+              {
+                "fieldId": "url_app",
+                "fieldValue": "={{ $json.url_app }}"
+              }
+            ]
+          }
+        },
+        "id": "251045ed-a4d6-4e33-b491-31b84d4f168d",
+        "name": "Guardar en Supabase3",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          800,
+          576
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "databaseId": {
+            "__rl": true,
+            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+            "mode": "list",
+            "cachedResultName": "BD APP COMERCIANTES",
+            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+          },
+          "propertiesUi": {
+            "propertyValues": [
+              {
+                "key": "ID Comerciante|rich_text",
+                "textContent": "={{ $json.slug }}"
+              },
+              {
+                "key": "Nombre_Local|rich_text",
+                "textContent": "={{ $json.nombre_local }}"
+              },
+              {
+                "key": "Whatsapp|rich_text",
+                "textContent": "={{ $json.whatsapp }}"
+              },
+              {
+                "key": "Email|rich_text",
+                "textContent": "={{ $json.email }}"
+              },
+              {
+                "key": "Ciudad|multi_select",
+                "multiSelectValue": "={{$json.ciudad}}"
+              },
+              {
+                "key": "Tipo de Cuenta|select",
+                "selectValue": "DEMO"
+              },
+              {
+                "key": "Estado|status",
+                "statusValue": "Activo"
+              },
+              {
+                "key": "Fecha inicio|date",
+                "date": "={{ $json.fecha_inicio }}",
+                "timezone": "America/Argentina/Buenos_Aires"
+              },
+              {
+                "key": "Direccion|rich_text",
+                "textContent": "={{ $json.direccion }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          800,
+          800
+        ],
+        "id": "1f7400dd-bbae-456b-b94c-9f624fa07541",
+        "name": "Guardar en Notion",
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "triggerAtMinute": 9
+              }
+            ]
+          }
+        },
+        "id": "1bd593e3-818c-4756-a8b2-e2a704794872",
+        "name": "⏰ Cada Día 9:00 AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          1984,
+          1456
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "operation": "getAll",
+          "databaseId": {
+            "__rl": true,
+            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+            "mode": "list",
+            "cachedResultName": "Database Page",
+            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+          },
+          "limit": 100,
+          "filterType": "manual",
+          "matchType": "allFilters",
+          "filters": {
+            "conditions": [
+              {
+                "key": "Dias Restantes Demo|formula",
+                "condition": "equals",
+                "returnType": "number",
+                "numberValue": 2
+              },
+              {
+                "key": "Aviso de 2 Dias|select",
+                "condition": "equals",
+                "selectValue": "No Enviada"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "9f877166-5bda-4359-b60e-62675d9c0f05",
+        "name": "📋 Obtener Clientes DEMO (2 días restantes)",
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          2208,
+          1456
+        ],
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.property_email }}",
+          "subject": "=⏳{{ $json.property_nombre_local }} - Tu prueba de App360 termina en 2 días ",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 30px; \n      text-align: center; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .alert-box { \n      background: #fff3cd; \n      border-left: 4px solid #ffc107; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .button { \n      display: inline-block; \n      background: #25D366; \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>⏳ ¡Tu Prueba Está Por Vencer!</h1>\n    </div>\n    <div class=\"content\">\n      <h2>Hola {{ $json.property_nombre_local }},</h2>\n      \n      <div class=\"alert-box\">\n        <strong>⚠️ AVISO IMPORTANTE:</strong> Te quedan solo <strong>2 días</strong> de tu período de prueba gratuito de App360.\n      </div>\n      \n      <p>Durante estos días has experimentado cómo App360 puede transformar la gestión de tu negocio:</p>\n      <ul>\n        <li>✅ Control de inventario en tiempo real</li>\n        <li>✅ Registro de ventas y gastos</li>\n        <li>✅ Reportes automáticos por WhatsApp</li>\n        <li>✅ Acceso desde cualquier dispositivo</li>\n      </ul>\n      \n      <p><strong>Para asegurar tu acceso de por vida</strong> y seguir disfrutando de todas estas herramientas, contáctame ahora:</p>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20quiero%20pagar%20la%20App360%20-%20Mi%20ID%20es%20{{ $json.property_id_comerciante}}%20-%20{{$json.property_nombre_local}}\" class=\"button\">💬 Pagar Ahora por WhatsApp</a>\n      </div>\n      \n      <p style=\"margin-top: 20px; font-size: 14px; color: #666;\">Si ya realizaste el pago, ignora este mensaje. El acceso se activará automáticamente.</p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Este es un correo automático. No responder.</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {}
+        },
+        "id": "d324b59a-2ec7-4e87-bd06-15c2a8eb6c45",
+        "name": "📧 Enviar Correo: Vence en 2 Días",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          2416,
+          1456
+        ],
+        "webhookId": "71950ab0-480b-40f0-8e67-af2f14a862e0",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "bhcg3bKbJJpDmkCY",
+            "name": "Gmail account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "operation": "update",
+          "pageId": {
+            "__rl": true,
+            "value": "={{ $('📋 Obtener Clientes DEMO (2 días restantes)').item.json.id }}",
+            "mode": "id"
+          },
+          "propertiesUi": {
+            "propertyValues": [
+              {
+                "key": "Aviso de 2 Dias|select",
+                "selectValue": "Enviada"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "0f17ef55-2183-4eaa-b376-b729f59727b8",
+        "name": "✅ Marcar 'Aviso de 2 Dias' = Enviada",
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          2640,
+          1456
+        ],
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## 🚀 ACTIVACIÓN DEFINITIVA\n**Objetivo:** Automatizar la entrega del servicio final tras confirmar el pago del cliente.\n\n**⚙️ LÓGICA:**\n1. **Confirmación:** Recibe la señal de pago exitoso (Webhook).\n2. **Actualización CRM:** Cambia el estado del comercio de **DEMO** a **DEFINITIVA** en Notion.\n3. **Seguridad:** Genera la nueva contraseña de acceso final para la App.\n4. **Entrega:** Envía el correo de bienvenida definitiva con las nuevas credenciales y confirmación de activación.",
+          "height": 816,
+          "width": 1616
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1712,
+          208
+        ],
+        "id": "d7ab8c82-7410-4d76-a5ac-8fd28a758a9d",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 15
+              }
+            ]
+          }
+        },
+        "id": "678a4b48-a065-4b04-b8cb-5535e027d53d",
+        "name": "⏰ Cada 15 Minutos",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          1904,
+          592
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "operation": "getAll",
+          "databaseId": {
+            "__rl": true,
+            "value": "2ed668bb-053e-803d-8a53-dae4b76d8508",
+            "mode": "list",
+            "cachedResultName": "Database Page",
+            "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
+          },
+          "limit": 100,
+          "options": {}
+        },
+        "id": "de769e88-c488-425c-a5ba-102ddea74881",
+        "name": "📋 Obtener Clientes DEFINITIVA sin Bienvenida",
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          2128,
+          592
+        ],
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['ID Comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
+        },
+        "id": "7eeea8b5-ff1f-4e18-904d-2eba76eb0650",
+        "name": "💻 Generar Nuevo PIN",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2352,
+          592
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableId": "comerciantes"
+        },
+        "id": "861ce566-3502-4255-ac36-1072c986e9dc",
+        "name": "🗄️ Actualizar PIN en Supabase",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          2576,
+          592
+        ],
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $('Generar Nuevo PIN').item.json.email }}",
+          "subject": "🎉 ¡Bienvenido a App360 de Por Vida! - {{ $('Generar Nuevo PIN').item.json.nombre_local }}",
+          "message": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 40px; \n      text-align: center; \n    }\n    .badge { \n      display: inline-block; \n      background: rgba(255,255,255,0.2); \n      padding: 8px 16px; \n      border-radius: 20px; \n      font-size: 14px; \n      margin-top: 10px; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .success-box { \n      background: #d4edda; \n      border-left: 4px solid #28a745; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .access-box { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 8px; \n      margin: 20px 0; \n      border: 2px solid #667eea; \n    }\n    .credentials { \n      background: white; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 10px 0; \n      border: 1px solid #ddd; \n    }\n    .credential-label { \n      color: #666; \n      font-size: 12px; \n      text-transform: uppercase; \n      margin-bottom: 5px; \n    }\n    .credential-value { \n      font-size: 18px; \n      font-weight: bold; \n      color: #333; \n      font-family: 'Courier New', monospace; \n    }\n    .features { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 5px; \n      margin: 20px 0; \n    }\n    .feature-item { \n      padding: 10px 0; \n      border-bottom: 1px solid #e0e0e0; \n    }\n    .feature-item:last-child { \n      border-bottom: none; \n    }\n    .button { \n      display: inline-block; \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n    .contact-info { \n      background: #fff3cd; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 20px 0; \n      text-align: center; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu pago ha sido confirmado y tu cuenta ha sido activada de forma permanente. ¡Bienvenido a App360!\n      </div>\n      \n      <h3>🔐 Tus Nuevas Credenciales de Acceso:</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.id_comerciante }}</div>\n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 Nuevo PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.nuevo_pin }}</div>\n        </div>\n        <p style=\"font-size: 12px; color: #666; margin-top: 15px;\">💡 Tip: Guarda estos datos en un lugar seguro. Puedes cambiar tu PIN desde la app cuando quieras.</p>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n      \n      <h3 style=\"margin-top: 30px;\">🎁 Lo que incluye tu acceso de por vida:</h3>\n      <div class=\"features\">\n        <div class=\"feature-item\">\n          <strong>✅ Gestión de Inventario Ilimitada</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Agrega todos los productos que necesites, sin límites</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Registro de Ventas y Gastos</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Control total de tu flujo de efectivo en tiempo real</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Reportes Automáticos por WhatsApp</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Recibe tu cierre de caja diario sin hacer nada</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Acceso Multi-Dispositivo</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Ingresa desde cualquier celular, tablet o computadora</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Actualizaciones Gratuitas</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Todas las mejoras futuras incluidas sin costo adicional</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Soporte Técnico Personalizado</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Estoy disponible para ayudarte cuando lo necesites</span>\n        </div>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        Escríbeme por WhatsApp en cualquier momento:<br>\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20necesito%20ayuda%20con%20App360%20-%20{{ $('Generar Nuevo PIN').item.json.id_comerciante }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n      \n      <p style=\"margin-top: 30px; text-align: center; color: #666;\">\n        Gracias por confiar en App360 para la gestión de tu negocio. 🙌<br>\n        <strong style=\"color: #667eea;\">¡Éxitos en tu emprendimiento!</strong>\n      </p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Acceso de Por Vida Activado ✨</p>\n      <p>Fecha de activación: {{ $('Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {}
+        },
+        "id": "2942c529-6b1f-47f3-ac81-2160988842ee",
+        "name": "📧 Enviar Correo: Bienvenida DEFINITIVA",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          2784,
+          592
+        ],
+        "webhookId": "07854f2f-facc-4940-8ecd-c310c3937741",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "bhcg3bKbJJpDmkCY",
+            "name": "Gmail account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "databasePage",
+          "operation": "update",
+          "pageId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "id": "dc087b7f-3166-4687-b2e8-7ba3c2abb85f",
+        "name": "✅ Marcar 'Bienvenida a DEFINITIVA' = Enviada",
+        "type": "n8n-nodes-base.notion",
+        "typeVersion": 2.2,
+        "position": [
+          3008,
+          592
+        ],
+        "credentials": {
+          "notionApi": {
+            "id": "KFOa4rMn6SCXCFct",
+            "name": "Notion account 2"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## ⏰ RETENCIÓN: AVISO DE VENCIMIENTO\n**Objetivo:** Notificar al cliente 48 horas antes de que expire su demo para incentivar la conversión.\n\n**⚙️ LÓGICA:**\n1. **Monitoreo:** Revisa diariamente la fecha de vencimiento en Notion.\n2. **Filtro Temporal:** Detecta los comercios que vencen exactamente en 2 días.\n3. **Comunicación:** Dispara un correo automático con el recordatorio y el enlace de pago.\n4. **Seguimiento:** Deja constancia en el log del cliente sobre el aviso enviado.",
+          "height": 816,
+          "width": 1616,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1712,
+          1104
+        ],
+        "id": "22f6e1e3-05e1-41f1-a256-de6c727b49fe",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "# 📄 FICHA TÉCNICA: REGISTRO DE COMERCIANTES\n**📅 Última Actualización:** 29/01/2026\n**👤 Responsable:** Agencia Arnaldo Ayala\n**🔗 Integraciones:** Notion, Gmail, Pasarela de Pagos\n\n## 📝 GESTIÓN DE ALTAS Y CICLO DE VIDA\n**Objetivo:** Automatizar el registro y la conversión de usuarios demo a definitivos.\n\n**⚙️ LÓGICA:**\n1. Crea el registro en Notion con estado inicial **DEMO**.\n2. Envía correo de aviso faltando 2 días para el vencimiento de la prueba.\n3. Al detectar el pago, cambia el estado a **DEFINITIVA** en Notion.\n4. Envía correo automático con la nueva contraseña y acceso activo.",
+          "height": 1632,
+          "width": 784,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -896,
+          208
+        ],
+        "id": "f5b86825-4029-4a0c-86d5-efa6c7bc3152",
+        "name": "Sticky Note3"
+      }
+    ],
+    "connections": {
+      "Webhook Registro": {
+        "main": [
+          [
+            {
+              "node": "Obtener Todos los Comercios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Obtener Todos los Comercios": {
+        "main": [
+          [
+            {
+              "node": "Generar Slug y URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generar Slug y URL": {
+        "main": [
+          [
+            {
+              "node": "Guardar en Notion",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Guardar en Supabase3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Email Bienvenida": {
+        "main": [
+          [
+            {
+              "node": "Responder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Guardar en Supabase3": {
+        "main": [
+          [
+            {
+              "node": "Enviar Email Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "⏰ Cada Día 9:00 AM": {
+        "main": [
+          [
+            {
+              "node": "📋 Obtener Clientes DEMO (2 días restantes)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📋 Obtener Clientes DEMO (2 días restantes)": {
+        "main": [
+          [
+            {
+              "node": "📧 Enviar Correo: Vence en 2 Días",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📧 Enviar Correo: Vence en 2 Días": {
+        "main": [
+          [
+            {
+              "node": "✅ Marcar 'Aviso de 2 Dias' = Enviada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "⏰ Cada 15 Minutos": {
+        "main": [
+          [
+            {
+              "node": "📋 Obtener Clientes DEFINITIVA sin Bienvenida",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📋 Obtener Clientes DEFINITIVA sin Bienvenida": {
+        "main": [
+          [
+            {
+              "node": "💻 Generar Nuevo PIN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "💻 Generar Nuevo PIN": {
+        "main": [
+          [
+            {
+              "node": "🗄️ Actualizar PIN en Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🗄️ Actualizar PIN en Supabase": {
+        "main": [
+          [
+            {
+              "node": "📧 Enviar Correo: Bienvenida DEFINITIVA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📧 Enviar Correo: Bienvenida DEFINITIVA": {
+        "main": [
+          [
+            {
+              "node": "✅ Marcar 'Bienvenida a DEFINITIVA' = Enviada",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 399d9b44",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-23T14:01:22.970Z",
+      "createdAt": "2026-01-23T14:01:22.970Z",
+      "id": "gy1rAhYFoAQXIZ9u",
+      "name": "App 360"
+    }
+  ]
+}
