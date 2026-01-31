@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-30T00:03:16.865Z",
+  "updatedAt": "2026-01-30T12:43:58.752Z",
   "createdAt": "2026-01-23T13:30:30.892Z",
   "id": "CgBb94Jif_sUJbd4XOk_b",
   "name": "[App 360] - Reportes",
@@ -21,8 +21,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        720,
-        480
+        704,
+        208
       ]
     },
     {
@@ -34,8 +34,8 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        1168,
-        480
+        1152,
+        208
       ],
       "notes": "Procesa cada comercio uno por uno"
     },
@@ -53,8 +53,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        2144,
-        400
+        2128,
+        128
       ],
       "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
       "credentials": {
@@ -72,14 +72,14 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        2400,
-        480
+        2384,
+        208
       ]
     },
     {
       "parameters": {
         "content": "## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ EL PROCESO:**\n1. **Trigger:** Se despierta a las 7 AM.\n2. **Loop:** Recorre cada comercio activo.\n3. **Análisis:** Calcula ventas de ayer.\n4. **Consultor IA:** Gemini redacta un consejo de negocios personalizado según el rendimiento.\n5. **Entrega:** Envía email motivacional.",
-        "height": 880,
+        "height": 784,
         "width": 1904,
         "color": 6
       },
@@ -102,8 +102,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        928,
-        480
+        912,
+        208
       ],
       "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
       "name": "Obtener Comercios Activos",
@@ -119,8 +119,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1504,
-        400
+        1488,
+        128
       ],
       "id": "85626aec-f854-45ba-9e44-1f934bd55196",
       "name": "Wait 5 s",
@@ -147,8 +147,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
       "position": [
-        1760,
-        400
+        1744,
+        128
       ],
       "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
       "name": "Message a model",
@@ -342,7 +342,7 @@
     {
       "parameters": {
         "content": "# 📄 FICHA TÉCNICA: REPORTES & RETENCIÓN\n**📅 Última Actualización:** 29/01/2026\n**👤 Responsable:** Agencia Arnaldo Ayala\n**🤖 IA:** Google Gemini (Análisis de Negocio)\n**🔗 Integraciones:** Gmail, Notion, Supabase\n\n## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.\n\n## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ LÓGICA:**\n1. Se activa automáticamente a las 7:00 AM.\n2. Consulta el rendimiento del comercio en la base de datos.\n3. Gemini redacta un consejo de negocios personalizado.\n4. Envía el correo motivacional al cliente.",
-        "height": 1776,
+        "height": 1648,
         "width": 672,
         "color": 7
       },
@@ -509,8 +509,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "5a50c3af-4d72-4fc3-9330-a9a5118ecc05",
-  "activeVersionId": "638263a5-e7f9-48f4-83c0-73e9c7209023",
+  "versionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
+  "activeVersionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
   "triggerCount": 2,
   "shared": [
     {
@@ -522,9 +522,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-29T23:27:44.000Z",
-    "createdAt": "2026-01-29T23:27:40.671Z",
-    "versionId": "638263a5-e7f9-48f4-83c0-73e9c7209023",
+    "updatedAt": "2026-01-30T12:44:01.000Z",
+    "createdAt": "2026-01-30T12:43:58.753Z",
+    "versionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
     "workflowId": "CgBb94Jif_sUJbd4XOk_b",
     "nodes": [
       {
@@ -542,8 +542,8 @@
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
         "position": [
-          720,
-          480
+          704,
+          208
         ]
       },
       {
@@ -555,8 +555,8 @@
         "type": "n8n-nodes-base.splitInBatches",
         "typeVersion": 3,
         "position": [
-          1168,
-          480
+          1152,
+          208
         ],
         "notes": "Procesa cada comercio uno por uno"
       },
@@ -574,8 +574,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.2,
         "position": [
-          2144,
-          400
+          2128,
+          128
         ],
         "webhookId": "678fd532-6073-41a8-b72c-715820d3add0",
         "credentials": {
@@ -593,14 +593,14 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          2400,
-          480
+          2384,
+          208
         ]
       },
       {
         "parameters": {
           "content": "## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ EL PROCESO:**\n1. **Trigger:** Se despierta a las 7 AM.\n2. **Loop:** Recorre cada comercio activo.\n3. **Análisis:** Calcula ventas de ayer.\n4. **Consultor IA:** Gemini redacta un consejo de negocios personalizado según el rendimiento.\n5. **Entrega:** Envía email motivacional.",
-          "height": 880,
+          "height": 784,
           "width": 1904,
           "color": 6
         },
@@ -623,8 +623,8 @@
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
         "position": [
-          928,
-          480
+          912,
+          208
         ],
         "id": "38bb038f-c29a-44c6-99a1-30822fc9b081",
         "name": "Obtener Comercios Activos",
@@ -640,8 +640,8 @@
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
         "position": [
-          1504,
-          400
+          1488,
+          128
         ],
         "id": "85626aec-f854-45ba-9e44-1f934bd55196",
         "name": "Wait 5 s",
@@ -668,8 +668,8 @@
         "type": "@n8n/n8n-nodes-langchain.googleGemini",
         "typeVersion": 1.1,
         "position": [
-          1760,
-          400
+          1744,
+          128
         ],
         "id": "bc4d1dd7-3a9c-48fa-a4c3-9977c0b9cf5e",
         "name": "Message a model",
@@ -862,16 +862,16 @@
       },
       {
         "parameters": {
-          "content": "# 📄 FICHA TÉCNICA: GROWTH & RETENTION\n---------------------------------\n📅 Última Actualización: 23/01/2026\n👤 Responsable: Agencia Arnaldo Ayala\n🤖 IA: Google Gemini (Análisis de Negocio)\n🔗 Integraciones: Gmail, Notion, Supabase\n---------------------------------\nDESCRIPCIÓN:\nMódulo híbrido encargado del ciclo de vida del cliente:\n1. Adquisición (Alta de nuevos comercios).\n2. Retención (Reportes automáticos y mentoría IA).",
-          "height": 1776,
+          "content": "# 📄 FICHA TÉCNICA: REPORTES & RETENCIÓN\n**📅 Última Actualización:** 29/01/2026\n**👤 Responsable:** Agencia Arnaldo Ayala\n**🤖 IA:** Google Gemini (Análisis de Negocio)\n**🔗 Integraciones:** Gmail, Notion, Supabase\n\n## 📊 GENERADOR DE REPORTES (A DEMANDA)\n**Objetivo:** Enviar resumen cuando el usuario lo pide.\n\n**⚙️ LÓGICA:**\n1. Recibe el rango de fechas solicitado.\n2. Genera un HTML dinámico con tablas y totales.\n3. Envía el reporte PDF/HTML al correo del usuario.\n\n## 🧠 MENTORÍA AUTOMATIZADA (7:00 AM)\n**Objetivo:** Fidelizar al cliente con valor diario.\n\n**⚙️ LÓGICA:**\n1. Se activa automáticamente a las 7:00 AM.\n2. Consulta el rendimiento del comercio en la base de datos.\n3. Gemini redacta un consejo de negocios personalizado.\n4. Envía el correo motivacional al cliente.",
+          "height": 1648,
           "width": 672,
           "color": 7
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          -272,
-          -1072
+          -192,
+          -1088
         ],
         "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
         "name": "Sticky Note1"
@@ -1024,7 +1024,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 638263a5",
+    "name": "Version a693f952",
     "description": "",
     "autosaved": true
   },
