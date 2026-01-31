@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-30T01:48:15.640Z",
+  "updatedAt": "2026-01-30T13:22:32.205Z",
   "createdAt": "2026-01-29T23:25:05.212Z",
   "id": "59X5vNm9Wq523IWHb5I_I",
   "name": "[App 360] - Registro de Comerciantes - App360",
@@ -62,7 +62,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+        "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR EL OBJETO ACTUALIZADO\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos para Notion (NUEVAS COLUMNAS AQUÍ)\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    aviso_2_dias: \"No Enviado\",          // <-- Nueva columna\n    bienvenida_definitiva: \"No Enviado\",  // <-- Nueva columna\n    \n    // Datos para el Email\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
       },
       "id": "5f39b38a-9f32-4c61-bc7f-faa29d2bc259",
       "name": "Generar Slug y URL",
@@ -218,12 +218,20 @@
             },
             {
               "key": "Fecha inicio|date",
-              "date": "={{ $json.fecha_inicio }}",
+              "date": "={{ $json.fecha_inicio_iso }}",
               "timezone": "America/Argentina/Buenos_Aires"
             },
             {
               "key": "Direccion|rich_text",
               "textContent": "={{ $json.direccion }}"
+            },
+            {
+              "key": "Aviso de 2 Dias|select",
+              "selectValue": "No Enviada"
+            },
+            {
+              "key": "Bienvenida  a DEFINITIVA|select",
+              "selectValue": "No Enviada"
             }
           ]
         },
@@ -449,7 +457,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['$input.first().json.property_id_comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
+        "jsCode": "// 1. Capturamos TODOS los items que vienen de Notion\nconst items = $input.all();\n\n// 2. Procesamos cada item uno por uno usando .map\nreturn items.map(item => {\n  const cliente = item.json;\n\n  // Limpiamos el ID\n  const idLimpio = cliente.property_id_comerciante.trim().toUpperCase();\n\n  // Generamos un PIN único para ESTE cliente\n  const nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n  // Configuramos fechas\n  const ahora = new Date();\n  const fechaEmail = ahora.toLocaleDateString('es-AR', {\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric'\n  });\n  const fechaNotion = ahora.toISOString().split('T')[0];\n\n  // Retornamos el formato que n8n espera para cada item\n  return {\n    json: {\n      id_comerciante: idLimpio,\n      nuevo_pin: nuevoPin,\n      url_app: 'https://app.arnaldoayalaestratega.com',\n      fecha_activacion: fechaEmail,\n      fecha_para_notion: fechaNotion,\n      notion_page_id: cliente.id,\n      email: cliente.property_email,\n      nombre_local: cliente.property_nombre_local\n    }\n  };\n});"
       },
       "id": "7eeea8b5-ff1f-4e18-904d-2eba76eb0650",
       "name": "💻 Generar Nuevo PIN",
@@ -463,7 +471,25 @@
     {
       "parameters": {
         "operation": "update",
-        "tableId": "comerciantes"
+        "tableId": "comercios",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.id_comerciante }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "pin",
+              "fieldValue": "={{ $json.nuevo_pin }}"
+            }
+          ]
+        }
       },
       "id": "861ce566-3502-4255-ac36-1072c986e9dc",
       "name": "🗄️ Actualizar PIN en Supabase",
@@ -482,10 +508,12 @@
     },
     {
       "parameters": {
-        "sendTo": "={{ $('Generar Nuevo PIN').item.json.email }}",
-        "subject": "🎉 ¡Bienvenido a App360 de Por Vida! - {{ $('Generar Nuevo PIN').item.json.nombre_local }}",
-        "message": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 40px; \n      text-align: center; \n    }\n    .badge { \n      display: inline-block; \n      background: rgba(255,255,255,0.2); \n      padding: 8px 16px; \n      border-radius: 20px; \n      font-size: 14px; \n      margin-top: 10px; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .success-box { \n      background: #d4edda; \n      border-left: 4px solid #28a745; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .access-box { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 8px; \n      margin: 20px 0; \n      border: 2px solid #667eea; \n    }\n    .credentials { \n      background: white; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 10px 0; \n      border: 1px solid #ddd; \n    }\n    .credential-label { \n      color: #666; \n      font-size: 12px; \n      text-transform: uppercase; \n      margin-bottom: 5px; \n    }\n    .credential-value { \n      font-size: 18px; \n      font-weight: bold; \n      color: #333; \n      font-family: 'Courier New', monospace; \n    }\n    .features { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 5px; \n      margin: 20px 0; \n    }\n    .feature-item { \n      padding: 10px 0; \n      border-bottom: 1px solid #e0e0e0; \n    }\n    .feature-item:last-child { \n      border-bottom: none; \n    }\n    .button { \n      display: inline-block; \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n    .contact-info { \n      background: #fff3cd; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 20px 0; \n      text-align: center; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu pago ha sido confirmado y tu cuenta ha sido activada de forma permanente. ¡Bienvenido a App360!\n      </div>\n      \n      <h3>🔐 Tus Nuevas Credenciales de Acceso:</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.id_comerciante }}</div>\n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 Nuevo PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.nuevo_pin }}</div>\n        </div>\n        <p style=\"font-size: 12px; color: #666; margin-top: 15px;\">💡 Tip: Guarda estos datos en un lugar seguro. Puedes cambiar tu PIN desde la app cuando quieras.</p>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n      \n      <h3 style=\"margin-top: 30px;\">🎁 Lo que incluye tu acceso de por vida:</h3>\n      <div class=\"features\">\n        <div class=\"feature-item\">\n          <strong>✅ Gestión de Inventario Ilimitada</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Agrega todos los productos que necesites, sin límites</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Registro de Ventas y Gastos</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Control total de tu flujo de efectivo en tiempo real</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Reportes Automáticos por WhatsApp</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Recibe tu cierre de caja diario sin hacer nada</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Acceso Multi-Dispositivo</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Ingresa desde cualquier celular, tablet o computadora</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Actualizaciones Gratuitas</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Todas las mejoras futuras incluidas sin costo adicional</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Soporte Técnico Personalizado</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Estoy disponible para ayudarte cuando lo necesites</span>\n        </div>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        Escríbeme por WhatsApp en cualquier momento:<br>\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20necesito%20ayuda%20con%20App360%20-%20{{ $('Generar Nuevo PIN').item.json.id_comerciante }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n      \n      <p style=\"margin-top: 30px; text-align: center; color: #666;\">\n        Gracias por confiar en App360 para la gestión de tu negocio. 🙌<br>\n        <strong style=\"color: #667eea;\">¡Éxitos en tu emprendimiento!</strong>\n      </p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Acceso de Por Vida Activado ✨</p>\n      <p>Fecha de activación: {{ $('Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
-        "options": {}
+        "sendTo": "={{ $json.email }}",
+        "subject": "=🎉 ¡Bienvenido a App360 de Por Vida! -  {{ $json.nombre_local }}",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }\n    .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }\n    .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-top: 10px; }\n    .content { padding: 30px; color: #333; }\n    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 5px; }\n    .access-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #667eea; }\n    .credentials { background: white; padding: 15px; border-radius: 5px; margin: 10px 0; border: 1px solid #ddd; }\n    .credential-label { color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }\n    .credential-value { font-size: 18px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; }\n    .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }\n    .congrats-card { background: #eef2ff; border-radius: 10px; padding: 20px; text-align: center; margin-top: 30px; border: 1px dashed #667eea; }\n    .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }\n    .contact-info { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('💻 Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu cuenta ha sido activada de forma permanente.\n      </div>\n      \n      <h3>🔐 Tus Credenciales (Confirmadas en Sistema):</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $json.slug }}</div> \n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $json.pin }}</div>\n        </div>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('💻 Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n\n      <div class=\"congrats-card\">\n        <p style=\"font-size: 18px; margin: 0; color: #4338ca;\"><strong>¡Haz tomado la Mejor desición! 🤝</strong></p>\n        <p style=\"font-size: 15px; color: #4b5563; line-height: 1.5; margin-top: 10px;\">\n          Hoy no solo compraste un software, acabas de profesionalizar tu negocio para siempre. Invertir en herramientas que te ahorran tiempo es el secreto de los grandes comerciantes. ¡Bienvenido a la familia de <strong>App360</strong>, estamos para ayudarte a crecer!\n        </p>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        WhatsApp: <a href=\"https://wa.me/5493765384843?text=Ayuda%20App360%20-%20{{ $json.slug }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Activado el: {{ $('💻 Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
       },
       "id": "2942c529-6b1f-47f3-ac81-2160988842ee",
       "name": "📧 Enviar Correo: Bienvenida DEFINITIVA",
@@ -509,8 +537,21 @@
         "operation": "update",
         "pageId": {
           "__rl": true,
-          "value": "={{ $json.id }}",
+          "value": "={{ $('💻 Generar Nuevo PIN').item.json.notion_page_id }}",
           "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Bienvenida  a DEFINITIVA|select",
+              "selectValue": "Enviada"
+            },
+            {
+              "key": "fecha_activacion|date",
+              "date": "={{ $('💻 Generar Nuevo PIN').item.json.fecha_para_notion }}",
+              "timezone": "America/Argentina/Buenos_Aires"
+            }
+          ]
         },
         "options": {}
       },
@@ -721,8 +762,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "dfd35518-b963-41fc-b1cd-c703321ef367",
-  "activeVersionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+  "versionId": "c5ff2287-1cf5-4d4a-ae92-9e3652489c66",
+  "activeVersionId": "c5ff2287-1cf5-4d4a-ae92-9e3652489c66",
   "triggerCount": 3,
   "shared": [
     {
@@ -734,9 +775,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-30T01:20:43.000Z",
-    "createdAt": "2026-01-30T01:18:46.770Z",
-    "versionId": "399d9b44-2f41-4341-a73b-bb22f4123cf8",
+    "updatedAt": "2026-01-30T13:54:48.000Z",
+    "createdAt": "2026-01-30T13:11:48.421Z",
+    "versionId": "c5ff2287-1cf5-4d4a-ae92-9e3652489c66",
     "workflowId": "59X5vNm9Wq523IWHb5I_I",
     "nodes": [
       {
@@ -795,7 +836,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\n// Asegurate que el nombre 'Webhook Registro' sea exacto al de tu nodo\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios (Búsqueda por nombre de nodo para evitar duplicados)\n// REEMPLAZÁ 'Traer Comercios' por el nombre exacto de tu nodo de Supabase\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR UN SOLO OBJETO (Evita duplicados)\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos extras para Notion\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    \n    // Datos extras para el Email (Legibles)\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
+          "jsCode": "// 1. Capturamos los datos del formulario (Webhook)\nconst body = $('Webhook Registro').first().json.body;\n\n// 2. Traemos la lista de comercios\nconst comercios = $(\"Obtener Todos los Comercios\").all(); \n\n// 3. Función para calcular el ID (C001, C002...)\nfunction generarSiguienteSlug(comerciosExistentes) {\n  if (comerciosExistentes.length === 0) return 'C001';\n  const numeros = comerciosExistentes\n    .map(c => c.json.slug)\n    .filter(slug => slug && slug.startsWith('C'))\n    .map(slug => parseInt(slug.substring(1)))\n    .filter(num => !isNaN(num));\n  if (numeros.length === 0) return 'C001';\n  const maxNumero = Math.max(...numeros);\n  return 'C' + (maxNumero + 1).toString().padStart(3, '0');\n}\n\nconst nuevoSlug = generarSiguienteSlug(comercios);\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\nconst urlApp = `https://app.arnaldoayalaestratega.com`;\n\n// 4. Fechas para Notion y Email\nconst fechaInicio = new Date();\nconst fechaFinDemo = new Date();\nfechaFinDemo.setDate(fechaInicio.getDate() + 7);\n\n// 5. RETORNAR EL OBJETO ACTUALIZADO\nreturn {\n  json: {\n    // Datos para Supabase\n    slug: nuevoSlug,\n    pin: nuevoPin,\n    nombre_local: body.nombre_local,\n    email: body.email,\n    whatsapp: body.whatsapp,\n    tipo_negocio: body.tipo_negocio,\n    direccion: body.direccion,\n    ciudad: body.ciudad,\n    activo: true,\n    url_app: urlApp,\n    \n    // Datos para Notion (NUEVAS COLUMNAS AQUÍ)\n    fecha_inicio_iso: fechaInicio.toISOString(),\n    tipo_cuenta: \"DEMO\",\n    estado_notion: \"Activo\",\n    aviso_2_dias: \"No Enviado\",          // <-- Nueva columna\n    bienvenida_definitiva: \"No Enviado\",  // <-- Nueva columna\n    \n    // Datos para el Email\n    fecha_inicio_texto: fechaInicio.toLocaleDateString('es-AR'),\n    fecha_fin_texto: fechaFinDemo.toLocaleDateString('es-AR')\n  }\n};"
         },
         "id": "5f39b38a-9f32-4c61-bc7f-faa29d2bc259",
         "name": "Generar Slug y URL",
@@ -951,12 +992,20 @@
               },
               {
                 "key": "Fecha inicio|date",
-                "date": "={{ $json.fecha_inicio }}",
+                "date": "={{ $json.fecha_inicio_iso }}",
                 "timezone": "America/Argentina/Buenos_Aires"
               },
               {
                 "key": "Direccion|rich_text",
                 "textContent": "={{ $json.direccion }}"
+              },
+              {
+                "key": "Aviso de 2 Dias|select",
+                "selectValue": "No Enviada"
+              },
+              {
+                "key": "Bienvenida  a DEFINITIVA|select",
+                "selectValue": "No Enviada"
               }
             ]
           },
@@ -1147,6 +1196,22 @@
             "cachedResultUrl": "https://www.notion.so/2ed668bb053e803d8a53dae4b76d8508"
           },
           "limit": 100,
+          "filterType": "manual",
+          "matchType": "allFilters",
+          "filters": {
+            "conditions": [
+              {
+                "key": "Tipo de Cuenta|select",
+                "condition": "equals",
+                "selectValue": "DEFINITIVA"
+              },
+              {
+                "key": "Bienvenida  a DEFINITIVA|select",
+                "condition": "equals",
+                "selectValue": "No Enviada"
+              }
+            ]
+          },
           "options": {}
         },
         "id": "de769e88-c488-425c-a5ba-102ddea74881",
@@ -1166,7 +1231,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// 1. Capturamos los datos del cliente desde Notion\nconst clienteNotion = $input.first().json;\n\n// 2. Extraemos el ID Comerciante (slug) desde las propiedades de Notion\nconst idComercianteObj = clienteNotion.properties['ID Comerciante'];\nlet idComerciante;\n\n// Verificar el tipo de propiedad (puede ser rich_text, title, etc.)\nif (idComercianteObj.rich_text && idComercianteObj.rich_text.length > 0) {\n  idComerciante = idComercianteObj.rich_text[0].text.content;\n} else if (idComercianteObj.title && idComercianteObj.title.length > 0) {\n  idComerciante = idComercianteObj.title[0].text.content;\n} else {\n  throw new Error('No se pudo extraer el ID Comerciante de Notion');\n}\n\n// 3. Generar nuevo PIN de 4 dígitos (misma lógica que usas en registro)\nconst nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n// 4. URL de la app\nconst urlApp = 'https://app.arnaldoayalaestratega.com';\n\n// 5. Fecha de activación\nconst fechaActivacion = new Date();\nconst fechaTexto = fechaActivacion.toLocaleDateString('es-AR', {\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 6. RETORNAR datos necesarios para los siguientes nodos\nreturn {\n  json: {\n    // Para actualizar Supabase\n    id_comerciante: idComerciante,\n    nuevo_pin: nuevoPin,\n    \n    // Para el email\n    url_app: urlApp,\n    fecha_activacion: fechaTexto,\n    \n    // Mantener el Page ID de Notion para el último nodo\n    notion_page_id: clienteNotion.id,\n    \n    // Mantener email para el nodo de Gmail\n    email: clienteNotion.properties.Email.email,\n    nombre_local: clienteNotion.properties.Nombre_Local.title[0].text.content\n  }\n};"
+          "jsCode": "// 1. Capturamos TODOS los items que vienen de Notion\nconst items = $input.all();\n\n// 2. Procesamos cada item uno por uno usando .map\nreturn items.map(item => {\n  const cliente = item.json;\n\n  // Limpiamos el ID\n  const idLimpio = cliente.property_id_comerciante.trim().toUpperCase();\n\n  // Generamos un PIN único para ESTE cliente\n  const nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();\n\n  // Configuramos fechas\n  const ahora = new Date();\n  const fechaEmail = ahora.toLocaleDateString('es-AR', {\n    year: 'numeric',\n    month: 'long',\n    day: 'numeric'\n  });\n  const fechaNotion = ahora.toISOString().split('T')[0];\n\n  // Retornamos el formato que n8n espera para cada item\n  return {\n    json: {\n      id_comerciante: idLimpio,\n      nuevo_pin: nuevoPin,\n      url_app: 'https://app.arnaldoayalaestratega.com',\n      fecha_activacion: fechaEmail,\n      fecha_para_notion: fechaNotion,\n      notion_page_id: cliente.id,\n      email: cliente.property_email,\n      nombre_local: cliente.property_nombre_local\n    }\n  };\n});"
         },
         "id": "7eeea8b5-ff1f-4e18-904d-2eba76eb0650",
         "name": "💻 Generar Nuevo PIN",
@@ -1180,7 +1245,25 @@
       {
         "parameters": {
           "operation": "update",
-          "tableId": "comerciantes"
+          "tableId": "comercios",
+          "matchType": "allFilters",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "condition": "eq",
+                "keyValue": "={{ $json.id_comerciante }}"
+              }
+            ]
+          },
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "pin",
+                "fieldValue": "={{ $json.nuevo_pin }}"
+              }
+            ]
+          }
         },
         "id": "861ce566-3502-4255-ac36-1072c986e9dc",
         "name": "🗄️ Actualizar PIN en Supabase",
@@ -1199,10 +1282,12 @@
       },
       {
         "parameters": {
-          "sendTo": "={{ $('Generar Nuevo PIN').item.json.email }}",
-          "subject": "🎉 ¡Bienvenido a App360 de Por Vida! - {{ $('Generar Nuevo PIN').item.json.nombre_local }}",
-          "message": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { \n      font-family: Arial, sans-serif; \n      background-color: #f4f4f4; \n      margin: 0; \n      padding: 0; \n    }\n    .container { \n      max-width: 600px; \n      margin: 20px auto; \n      background: white; \n      border-radius: 10px; \n      overflow: hidden; \n      box-shadow: 0 2px 10px rgba(0,0,0,0.1); \n    }\n    .header { \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 40px; \n      text-align: center; \n    }\n    .badge { \n      display: inline-block; \n      background: rgba(255,255,255,0.2); \n      padding: 8px 16px; \n      border-radius: 20px; \n      font-size: 14px; \n      margin-top: 10px; \n    }\n    .content { \n      padding: 30px; \n      color: #333; \n    }\n    .success-box { \n      background: #d4edda; \n      border-left: 4px solid #28a745; \n      padding: 15px; \n      margin: 20px 0; \n      border-radius: 5px; \n    }\n    .access-box { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 8px; \n      margin: 20px 0; \n      border: 2px solid #667eea; \n    }\n    .credentials { \n      background: white; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 10px 0; \n      border: 1px solid #ddd; \n    }\n    .credential-label { \n      color: #666; \n      font-size: 12px; \n      text-transform: uppercase; \n      margin-bottom: 5px; \n    }\n    .credential-value { \n      font-size: 18px; \n      font-weight: bold; \n      color: #333; \n      font-family: 'Courier New', monospace; \n    }\n    .features { \n      background: #f8f9fa; \n      padding: 20px; \n      border-radius: 5px; \n      margin: 20px 0; \n    }\n    .feature-item { \n      padding: 10px 0; \n      border-bottom: 1px solid #e0e0e0; \n    }\n    .feature-item:last-child { \n      border-bottom: none; \n    }\n    .button { \n      display: inline-block; \n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); \n      color: white; \n      padding: 15px 30px; \n      text-decoration: none; \n      border-radius: 5px; \n      margin: 20px 0; \n      font-weight: bold; \n    }\n    .footer { \n      background: #f8f9fa; \n      padding: 20px; \n      text-align: center; \n      font-size: 12px; \n      color: #666; \n    }\n    .contact-info { \n      background: #fff3cd; \n      padding: 15px; \n      border-radius: 5px; \n      margin: 20px 0; \n      text-align: center; \n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu pago ha sido confirmado y tu cuenta ha sido activada de forma permanente. ¡Bienvenido a App360!\n      </div>\n      \n      <h3>🔐 Tus Nuevas Credenciales de Acceso:</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.id_comerciante }}</div>\n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 Nuevo PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $('Generar Nuevo PIN').item.json.nuevo_pin }}</div>\n        </div>\n        <p style=\"font-size: 12px; color: #666; margin-top: 15px;\">💡 Tip: Guarda estos datos en un lugar seguro. Puedes cambiar tu PIN desde la app cuando quieras.</p>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n      \n      <h3 style=\"margin-top: 30px;\">🎁 Lo que incluye tu acceso de por vida:</h3>\n      <div class=\"features\">\n        <div class=\"feature-item\">\n          <strong>✅ Gestión de Inventario Ilimitada</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Agrega todos los productos que necesites, sin límites</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Registro de Ventas y Gastos</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Control total de tu flujo de efectivo en tiempo real</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Reportes Automáticos por WhatsApp</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Recibe tu cierre de caja diario sin hacer nada</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Acceso Multi-Dispositivo</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Ingresa desde cualquier celular, tablet o computadora</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Actualizaciones Gratuitas</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Todas las mejoras futuras incluidas sin costo adicional</span>\n        </div>\n        <div class=\"feature-item\">\n          <strong>✅ Soporte Técnico Personalizado</strong><br>\n          <span style=\"font-size: 14px; color: #666;\">Estoy disponible para ayudarte cuando lo necesites</span>\n        </div>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        Escríbeme por WhatsApp en cualquier momento:<br>\n        <a href=\"https://wa.me/5493765384843?text=Hola,%20necesito%20ayuda%20con%20App360%20-%20{{ $('Generar Nuevo PIN').item.json.id_comerciante }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n      \n      <p style=\"margin-top: 30px; text-align: center; color: #666;\">\n        Gracias por confiar en App360 para la gestión de tu negocio. 🙌<br>\n        <strong style=\"color: #667eea;\">¡Éxitos en tu emprendimiento!</strong>\n      </p>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Acceso de Por Vida Activado ✨</p>\n      <p>Fecha de activación: {{ $('Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
-          "options": {}
+          "sendTo": "={{ $json.email }}",
+          "subject": "=🎉 ¡Bienvenido a App360 de Por Vida! -  {{ $json.nombre_local }}",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }\n    .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }\n    .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-top: 10px; }\n    .content { padding: 30px; color: #333; }\n    .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 5px; }\n    .access-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #667eea; }\n    .credentials { background: white; padding: 15px; border-radius: 5px; margin: 10px 0; border: 1px solid #ddd; }\n    .credential-label { color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }\n    .credential-value { font-size: 18px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; }\n    .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }\n    .congrats-card { background: #eef2ff; border-radius: 10px; padding: 20px; text-align: center; margin-top: 30px; border: 1px dashed #667eea; }\n    .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }\n    .contact-info { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>🎉 ¡Pago Confirmado!</h1>\n      <div class=\"badge\">✨ ACCESO DE POR VIDA ACTIVADO ✨</div>\n    </div>\n    <div class=\"content\">\n      <h2>¡Felicitaciones {{ $('💻 Generar Nuevo PIN').item.json.nombre_local }}!</h2>\n      \n      <div class=\"success-box\">\n        <strong>✅ PAGO EXITOSO:</strong> Tu cuenta ha sido activada de forma permanente.\n      </div>\n      \n      <h3>🔐 Tus Credenciales (Confirmadas en Sistema):</h3>\n      <div class=\"access-box\">\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🆔 ID Comerciante</div>\n          <div class=\"credential-value\">{{ $json.slug }}</div> \n        </div>\n        <div class=\"credentials\">\n          <div class=\"credential-label\">🔑 PIN de Acceso</div>\n          <div class=\"credential-value\">{{ $json.pin }}</div>\n        </div>\n      </div>\n      \n      <div style=\"text-align: center;\">\n        <a href=\"{{ $('💻 Generar Nuevo PIN').item.json.url_app }}\" class=\"button\">🚀 Acceder a App360 Ahora</a>\n      </div>\n\n      <div class=\"congrats-card\">\n        <p style=\"font-size: 18px; margin: 0; color: #4338ca;\"><strong>¡Haz tomado la Mejor desición! 🤝</strong></p>\n        <p style=\"font-size: 15px; color: #4b5563; line-height: 1.5; margin-top: 10px;\">\n          Hoy no solo compraste un software, acabas de profesionalizar tu negocio para siempre. Invertir en herramientas que te ahorran tiempo es el secreto de los grandes comerciantes. ¡Bienvenido a la familia de <strong>App360</strong>, estamos para ayudarte a crecer!\n        </p>\n      </div>\n      \n      <div class=\"contact-info\">\n        <strong>💬 ¿Necesitas ayuda?</strong><br>\n        WhatsApp: <a href=\"https://wa.me/5493765384843?text=Ayuda%20App360%20-%20{{ $json.slug }}\" style=\"color: #25D366; font-weight: bold;\">+54 3765 384843</a>\n      </div>\n    </div>\n    <div class=\"footer\">\n      <p>App360 - Sistema de Gestión Comercial</p>\n      <p>Activado el: {{ $('💻 Generar Nuevo PIN').item.json.fecha_activacion }}</p>\n    </div>\n  </div>\n</body>\n</html>",
+          "options": {
+            "appendAttribution": false
+          }
         },
         "id": "2942c529-6b1f-47f3-ac81-2160988842ee",
         "name": "📧 Enviar Correo: Bienvenida DEFINITIVA",
@@ -1226,8 +1311,21 @@
           "operation": "update",
           "pageId": {
             "__rl": true,
-            "value": "={{ $json.id }}",
+            "value": "={{ $('💻 Generar Nuevo PIN').item.json.notion_page_id }}",
             "mode": "id"
+          },
+          "propertiesUi": {
+            "propertyValues": [
+              {
+                "key": "Bienvenida  a DEFINITIVA|select",
+                "selectValue": "Enviada"
+              },
+              {
+                "key": "fecha_activacion|date",
+                "date": "={{ $('💻 Generar Nuevo PIN').item.json.fecha_para_notion }}",
+                "timezone": "America/Argentina/Buenos_Aires"
+              }
+            ]
           },
           "options": {}
         },
@@ -1430,7 +1528,7 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 399d9b44",
+    "name": "Version c5ff2287",
     "description": "",
     "autosaved": true
   },
