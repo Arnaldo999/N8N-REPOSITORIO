@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-30T12:43:58.752Z",
+  "updatedAt": "2026-02-02T22:44:42.822Z",
   "createdAt": "2026-01-23T13:30:30.892Z",
   "id": "CgBb94Jif_sUJbd4XOk_b",
   "name": "[App 360] - Reportes",
@@ -43,7 +43,7 @@
       "parameters": {
         "sendTo": "={{ $('Wait 5 s').item.json.email }}",
         "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
-        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n      <!-- ENLACE DE BAJA DINÁMICO QUE LLAMA AL WEBHOOK -->\n      <a href=\"https://n8n.arnaldoayalaestratega.com/webhook/desuscribir?slug={{ $('Wait 5 s').item.json.slug }}\" class=\"unsub-link\">\n        No quiero recibir más estos consejos\n      </a>\n    </div>\n  </div>\n</body>\n</html>",
         "options": {
           "appendAttribution": false
         }
@@ -97,7 +97,15 @@
         "operation": "getAll",
         "tableId": "comercios",
         "returnAll": true,
-        "filterType": "none"
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "recibir_consejos",
+              "condition": "eq",
+              "keyValue": "={{ true }}"
+            }
+          ]
+        }
       },
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -354,6 +362,102 @@
       ],
       "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
       "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "path": "desuscribir",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3008,
+        -672
+      ],
+      "id": "9feaaa3d-ac8d-49cd-a6a3-0b50c6e16ecf",
+      "name": "Webhook",
+      "webhookId": "73db9bf2-8347-47d6-bba6-9ea020c76d19"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "comercios",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "slug",
+              "condition": "eq",
+              "keyValue": "={{ $json.query.slug }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "slug",
+              "fieldValue": "={{ $json.query.slug }}"
+            },
+            {
+              "fieldId": "recibir_consejos",
+              "fieldValue": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3216,
+        -672
+      ],
+      "id": "c7c64ae5-21fb-42ef-a89f-b99d12c0d6c8",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "VE7fLcHe01BYK4SQ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<div style=\"font-family: sans-serif; text-align: center; padding: 50px;\">\n  <h1 style=\"color: #008f4c;\">¡Suscripción cancelada con éxito!</h1>\n  <p style=\"color: #333; font-size: 18px;\">\n    Lamentamos verte partir. Ya no recibirás los consejos diarios de mentoría de Arnaldo Ayala.\n  </p>\n  <p style=\"color: #888;\">Puedes cerrar esta ventana.</p>\n</div>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "=text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3424,
+        -672
+      ],
+      "id": "5ab99074-b98a-4fe5-840d-38af85404541",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## 🔕 GESTIÓN DE DESUSCRIPCIÓN (MENTORÍA)\n**Objetivo:** Permitir que el comerciante deje de recibir los consejos diarios de forma automática y sencilla.\n\n**⚙️ LÓGICA:**\n1. **Recepción (Webhook):** Escucha la solicitud cuando el usuario hace clic en el enlace de \"Darse de baja\" enviado en el correo de las 7:00 AM.\n2. **Baja Técnica:** Identifica al comercio mediante el parámetro `slug` y actualiza el campo `recibir_consejos` a **false** en la tabla de Supabase.\n3. **Confirmación Visual:** El sistema responde con una página HTML personalizada confirmando que la suscripción ha sido cancelada con éxito.\n4. **Filtro de Envío:** El flujo principal de mentoría ahora ignorará a este usuario en su próxima ejecución diaria.",
+        "height": 784,
+        "width": 1520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2624,
+        -1088
+      ],
+      "id": "3fc93373-36e6-4d32-94ef-4d213f0e06e0",
+      "name": "Sticky Note"
     }
   ],
   "connections": {
@@ -500,6 +604,28 @@
           }
         ]
       ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -507,11 +633,13 @@
     "availableInMCP": false
   },
   "staticData": null,
-  "meta": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "pinData": {},
-  "versionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
-  "activeVersionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
-  "triggerCount": 2,
+  "versionId": "75136eb0-6450-4eea-b2e6-e32aa12db49c",
+  "activeVersionId": "75136eb0-6450-4eea-b2e6-e32aa12db49c",
+  "triggerCount": 3,
   "shared": [
     {
       "updatedAt": "2026-01-23T13:30:30.893Z",
@@ -522,9 +650,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-30T12:44:01.000Z",
-    "createdAt": "2026-01-30T12:43:58.753Z",
-    "versionId": "a693f952-371a-4aa6-a0ce-15c4266057b0",
+    "updatedAt": "2026-02-02T22:48:01.000Z",
+    "createdAt": "2026-02-02T22:44:42.823Z",
+    "versionId": "75136eb0-6450-4eea-b2e6-e32aa12db49c",
     "workflowId": "CgBb94Jif_sUJbd4XOk_b",
     "nodes": [
       {
@@ -564,7 +692,7 @@
         "parameters": {
           "sendTo": "={{ $('Wait 5 s').item.json.email }}",
           "subject": "=🚀 Consejo del Dia {{ $('Wait 5 s').item.json.nombre_local }}: Ideas para una Mejor Gestión",
-          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n    </div>\n  </div>\n</body>\n</html>",
+          "message": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    .container { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }\n    .header { color: #008f4c; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; }\n    .content { line-height: 1.6; color: #333; font-size: 16px; margin-bottom: 30px; }\n    .button-wrapper { text-align: center; margin-top: 20px; }\n    .btn { display: inline-block; padding: 12px 25px; margin: 10px; color: white !important; text-decoration: none; border-radius: 8px; font-weight: bold; }\n    .btn-ws { background-color: #25D366; }\n    .btn-web { background-color: #008f4c; }\n    /* Estilo para el nuevo botón */\n    .btn-ig { background-color: #E1306C; } \n    .footer { font-size: 12px; color: #888; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">¡Hola, {{ $('Wait 5 s').item.json.nombre_local }}! 💡</div>\n    \n    <div class=\"content\">\n      {{ $json.content.parts[0].text }}\n    </div>\n\n    <div class=\"button-wrapper\">\n      <a href=\"https://instagram.com/arnaldoestratega\" class=\"btn btn-ig\">Seguir en Instagram</a>\n      <a href=\"https://wa.me/543765384843\" class=\"btn btn-ws\">Escribirme al WhatsApp</a>\n      <a href=\"https://arnaldoayalaestratega.com\" class=\"btn btn-web\">Visitar mi Sitio Web</a>\n    </div>\n\n    <div class=\"footer\">\n      Agencia Arnaldo Ayala - Consultoría en IA y Marketing<br>\n      Este es un mensaje de mentoría diaria para tu negocio.\n      <!-- ENLACE DE BAJA DINÁMICO QUE LLAMA AL WEBHOOK -->\n      <a href=\"https://n8n.arnaldoayalaestratega.com/webhook/desuscribir?slug={{ $('Wait 5 s').item.json.slug }}\" class=\"unsub-link\">\n        No quiero recibir más estos consejos\n      </a>\n    </div>\n  </div>\n</body>\n</html>",
           "options": {
             "appendAttribution": false
           }
@@ -618,7 +746,15 @@
           "operation": "getAll",
           "tableId": "comercios",
           "returnAll": true,
-          "filterType": "none"
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "recibir_consejos",
+                "condition": "eq",
+                "keyValue": "={{ true }}"
+              }
+            ]
+          }
         },
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
@@ -875,6 +1011,102 @@
         ],
         "id": "84477a3c-2b6b-462b-8edf-e0516a5c4ee5",
         "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "path": "desuscribir",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          3008,
+          -672
+        ],
+        "id": "9feaaa3d-ac8d-49cd-a6a3-0b50c6e16ecf",
+        "name": "Webhook",
+        "webhookId": "73db9bf2-8347-47d6-bba6-9ea020c76d19"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableId": "comercios",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "slug",
+                "condition": "eq",
+                "keyValue": "={{ $json.query.slug }}"
+              }
+            ]
+          },
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "slug",
+                "fieldValue": "={{ $json.query.slug }}"
+              },
+              {
+                "fieldId": "recibir_consejos",
+                "fieldValue": "false"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          3216,
+          -672
+        ],
+        "id": "c7c64ae5-21fb-42ef-a89f-b99d12c0d6c8",
+        "name": "Update a row",
+        "credentials": {
+          "supabaseApi": {
+            "id": "VE7fLcHe01BYK4SQ",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "<div style=\"font-family: sans-serif; text-align: center; padding: 50px;\">\n  <h1 style=\"color: #008f4c;\">¡Suscripción cancelada con éxito!</h1>\n  <p style=\"color: #333; font-size: 18px;\">\n    Lamentamos verte partir. Ya no recibirás los consejos diarios de mentoría de Arnaldo Ayala.\n  </p>\n  <p style=\"color: #888;\">Puedes cerrar esta ventana.</p>\n</div>",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "=text/html"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          3424,
+          -672
+        ],
+        "id": "5ab99074-b98a-4fe5-840d-38af85404541",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "content": "## 🔕 GESTIÓN DE DESUSCRIPCIÓN (MENTORÍA)\n**Objetivo:** Permitir que el comerciante deje de recibir los consejos diarios de forma automática y sencilla.\n\n**⚙️ LÓGICA:**\n1. **Recepción (Webhook):** Escucha la solicitud cuando el usuario hace clic en el enlace de \"Darse de baja\" enviado en el correo de las 7:00 AM.\n2. **Baja Técnica:** Identifica al comercio mediante el parámetro `slug` y actualiza el campo `recibir_consejos` a **false** en la tabla de Supabase.\n3. **Confirmación Visual:** El sistema responde con una página HTML personalizada confirmando que la suscripción ha sido cancelada con éxito.\n4. **Filtro de Envío:** El flujo principal de mentoría ahora ignorará a este usuario en su próxima ejecución diaria.",
+          "height": 784,
+          "width": 1520
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2624,
+          -1088
+        ],
+        "id": "3fc93373-36e6-4d32-94ef-4d213f0e06e0",
+        "name": "Sticky Note"
       }
     ],
     "connections": {
@@ -1021,10 +1253,32 @@
             }
           ]
         ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Update a row",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update a row": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version a693f952",
+    "name": "Version 75136eb0",
     "description": "",
     "autosaved": true
   },
