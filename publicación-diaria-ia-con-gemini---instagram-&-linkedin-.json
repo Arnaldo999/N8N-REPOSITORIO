@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-27T17:55:22.804Z",
+  "updatedAt": "2026-02-04T10:34:45.835Z",
   "createdAt": "2026-01-26T09:40:02.977Z",
   "id": "hxJlA1ehlYsp5vxetqE5u",
   "name": "Publicación Diaria IA con Gemini - Instagram & LinkedIn",
@@ -254,8 +254,8 @@
       "parameters": {
         "method": "POST",
         "url": "https://graph.facebook.com/v18.0/17841521338228887/media",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "facebookGraphApi",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -287,6 +287,10 @@
         "facebookGraphApi": {
           "id": "2z3Lfj4izTSf6Qad",
           "name": "Facebook Graph account"
+        },
+        "httpBearerAuth": {
+          "id": "1yR8YAGEoQtmXW9j",
+          "name": "Bearer Auth account"
         }
       },
       "notes": "Crea un contenedor de imagen en Instagram"
@@ -760,7 +764,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "90c722b5-d647-4f99-ae09-56e84a59adb8",
+  "versionId": "3891a398-aa7b-43e5-9c19-a230f5e8060d",
   "activeVersionId": null,
   "triggerCount": 0,
   "shared": [
