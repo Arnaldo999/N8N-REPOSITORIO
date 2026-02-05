@@ -1,0 +1,162 @@
+{
+  "updatedAt": "2026-02-04T13:45:46.326Z",
+  "createdAt": "2026-02-04T08:26:42.151Z",
+  "id": "cip2LZkH3siXnhiDYTkcg",
+  "name": "Main-LeadManagement-Inmobiliaria",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📝 Workflow: Gestión de Leads Inmobiliarios\n\n**Variables de entorno requeridas:**\n- AIRTABLE_BASE_ID\n- AGENT_NOTIFICATION_PHONE\n- TELEGRAM_ERROR_WEBHOOK_URL",
+        "height": 395,
+        "width": 450
+      },
+      "id": "3bafa3e4-42a1-42da-83f0-2a35bdd6fc6b",
+      "name": "Documentación",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c150d897-77c4-422e-a99d-059c549e7973",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        432,
+        416
+      ],
+      "webhookId": "inmobiliaria-lead-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  try {\n    const data = item.json.body || item.json;\n    \n    const nombre = data.nombre || 'Lead Sin Nombre';\n    const telefono = data.telefono || '';\n    const email = data.email || null;\n    const id_propiedad = data.id_propiedad || 'N/A';\n    const mensaje = data.mensaje || 'Consulta desde formulario';\n    const fuente = data.fuente_lead || 'Web';\n    \n    if (!telefono) {\n      throw new Error('Falta teléfono del lead');\n    }\n    \n    return {\n      json: {\n        nombre: nombre,\n        telefono: telefono,\n        email: email,\n        id_propiedad: id_propiedad,\n        mensaje: mensaje,\n        fuente_lead: fuente,\n        timestamp: new Date().toISOString()\n      }\n    };\n  } catch (error) {\n    return {\n      json: {\n        error: true,\n        error_message: error.message,\n        original_data: item.json\n      }\n    };\n  }\n});"
+      },
+      "id": "ff0b7c8e-5a8a-472c-88f1-2d191b0afb96",
+      "name": "Parse Lead Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/={{ $env.AIRTABLE_BASE_ID }}/Leads",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"fields\": {\n    \"Nombre\": $json.nombre,\n    \"Telefono\": $json.telefono,\n    \"Email\": $json.email,\n    \"ID_Propiedad\": $json.id_propiedad,\n    \"Mensaje\": $json.mensaje,\n    \"Fuente\": $json.fuente_lead,\n    \"Estado\": \"1. Nuevo\",\n    \"Fecha_Registro\": $json.timestamp\n  }\n} }}",
+        "options": {}
+      },
+      "id": "f6e2a689-fb93-4960-a15f-9faf825dc64a",
+      "name": "Guardar en Airtable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"Lead registrado correctamente\",\n  \"lead_id\": $json.id\n} }}",
+        "options": {}
+      },
+      "id": "91250eb7-8a6a-483d-8949-fbc7af1377bc",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        416
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Guardar en Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Airtable": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "e22be404-ea38-45b1-82d7-e7958324afc0",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-04T08:26:42.154Z",
+      "createdAt": "2026-02-04T08:26:42.154Z",
+      "role": "workflow:owner",
+      "workflowId": "cip2LZkH3siXnhiDYTkcg",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "updatedAt": "2026-02-04T13:45:39.160Z",
+      "createdAt": "2026-02-04T13:45:39.160Z",
+      "id": "zwLEu26kTaYPYlqL",
+      "name": "Inmobiliaria Cordoba"
+    }
+  ]
+}
