@@ -1,0 +1,885 @@
+{
+  "updatedAt": "2026-02-05T21:59:21.463Z",
+  "createdAt": "2026-02-04T08:26:42.151Z",
+  "id": "cip2LZkH3siXnhiDYTkcg",
+  "name": "Inmobiliaria Cordoba FINAL",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "id": "117e59c8-68e4-4b7a-85fa-2fbbdc739371",
+      "name": "Airtable Todas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5968,
+        6816
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "Pvmr0alLiIms7FuQ",
+          "name": "Bearer token Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Inmobiliaria Cordoba\n\nVersion Final Corregida",
+        "height": 150,
+        "width": 250
+      },
+      "id": "9f586775-e84c-41e2-b990-6dae1ae85fa2",
+      "name": "Nota1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        5088,
+        6240
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "22290636-68dd-480e-96a8-6745c6144cf9",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        5296,
+        6624
+      ],
+      "webhookId": "31513100-fd59-4bd2-8aab-b8237756ff46"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst datos = {\n  from: body.from || 'test',\n  tipo: body.tipo || body.type || 'text',\n  botonId: body.botonId || body.buttonId || '',\n  listaId: body.listaId || body.listId || '',\n  mensaje: body.mensaje || body.text || ''\n};\n\nlet accion = 'bienvenida';\n\nif (datos.botonId === 'menu_ventas') {\n  accion = 'ver_ventas';\n} else if (datos.botonId === 'menu_alquileres') {\n  accion = 'ver_alquileres';\n} else if (datos.listaId && (datos.listaId.startsWith('VENTA-') || datos.listaId.startsWith('ALQUILER-'))) {\n  accion = 'ver_detalle';\n} else if (datos.botonId && datos.botonId.startsWith('me_interesa_')) {\n  accion = 'me_interesa';\n}\n\ndatos.accion = accion;\n\nreturn [{ json: datos }];"
+      },
+      "id": "022b1125-35ce-434f-beeb-8b931850ab79",
+      "name": "Procesar Entrada1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5520,
+        6624
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "bienvenida",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Bienvenida"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "ver_ventas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ventas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "ver_alquileres",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Alquileres"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "ver_detalle",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Detalle"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "me_interesa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "MeInteresa"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3111c606-04da-497c-a31b-3ca72fe317e9",
+      "name": "Router1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        5744,
+        6576
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const from = items[0].json.from;\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'bienvenida',\n  mensaje: 'Hola! Bienvenido a Inmobiliaria Cordoba. Estamos aqui para ayudarte a encontrar tu hogar ideal.',\n  menu: 'Selecciona la categoria que te interesa:',\n  botones: [\n    { id: 'menu_ventas', titulo: 'Comprar' },\n    { id: 'menu_alquileres', titulo: 'Alquilar' }\n  ]\n};\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "56a4cf57-2b5f-4f07-9119-ca5890c06468",
+      "name": "Generar Bienvenida1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5968,
+        6240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "{Categoria} = 'Venta'"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc7d26a2-227a-4fd0-92e8-964e50af4f93",
+      "name": "Airtable Ventas1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5968,
+        6432
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "Pvmr0alLiIms7FuQ",
+          "name": "Bearer token Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filterByFormula",
+              "value": "{Categoria} = 'Alquiler'"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "76f621ba-115e-4fcc-8ab3-c02e47b60a95",
+      "name": "Airtable Alquileres1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5968,
+        6624
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "Pvmr0alLiIms7FuQ",
+          "name": "Bearer token Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\n\nconst propiedades = records.map(r => ({\n  id: r.fields.ID_Propiedad,\n  nombre: r.fields.Nombre,\n  precio: r.fields.Precio_Texto\n}));\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'lista_ventas',\n  mensaje: 'Propiedades en VENTA disponibles:',\n  instruccion: 'Selecciona una propiedad para ver mas detalles:',\n  cantidad: propiedades.length,\n  propiedades: propiedades\n};\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "43b93cd0-b291-4443-8079-6ad8df8846ca",
+      "name": "Formato Ventas1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6192,
+        6432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\n\nconst propiedades = records.map(r => ({\n  id: r.fields.ID_Propiedad,\n  nombre: r.fields.Nombre,\n  precio: r.fields.Precio_Texto\n}));\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'lista_alquileres',\n  mensaje: 'Propiedades en ALQUILER disponibles:',\n  instruccion: 'Selecciona una propiedad para ver mas detalles:',\n  cantidad: propiedades.length,\n  propiedades: propiedades\n};\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "9d252a90-0b97-4883-9a3a-a86480f6d4c1",
+      "name": "Formato Alquileres1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6192,
+        6624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\nconst listaId = $('Procesar Entrada1').item.json.listaId;\n\n// Buscar la propiedad por ID\nconst propRecord = records.find(r => r.fields.ID_Propiedad === listaId);\nconst prop = propRecord?.fields || {};\n\nconst TELEFONO_DUENO = '+5493512345678';\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'detalle_propiedad',\n  propiedad: {\n    id: prop.ID_Propiedad || 'N/A',\n    nombre: prop.Nombre || 'Propiedad no encontrada',\n    descripcion: prop.Descripcion || 'Sin descripcion',\n    precio: prop.Precio_Texto || 'Consultar',\n    categoria: prop.Categoria || 'N/A',\n    imagen: prop.Imagen_URL || '',\n    maps: prop.Google_Maps_URL || ''\n  },\n  botones: [\n    { id: 'ubicacion_' + prop.ID_Propiedad, titulo: 'Ver Ubicacion', url: prop.Google_Maps_URL || '' },\n    { id: 'me_interesa_' + prop.ID_Propiedad, titulo: 'Me Interesa' }\n  ],\n  telefono_dueno: TELEFONO_DUENO\n};\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "65df512e-c3ff-4f23-98b2-5137f794e357",
+      "name": "Formato Detalle1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6192,
+        6816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const from = $('Procesar Entrada1').item.json.from;\nconst botonId = $('Procesar Entrada1').item.json.botonId;\nconst propiedadId = botonId.replace('me_interesa_', '');\n\nconst TELEFONO_DUENO = '+5493512345678';\nconst NOMBRE_DUENO = 'Carlos Garcia';\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'derivacion',\n  mensaje: 'Excelente eleccion! ' + NOMBRE_DUENO + ', nuestro asesor, se pondra en contacto con vos a la brevedad.',\n  contacto_directo: 'Tambien podes contactarlo directamente:',\n  whatsapp_dueno: 'https://wa.me/' + TELEFONO_DUENO.replace('+', ''),\n  propiedad_id: propiedadId,\n  telefono_dueno: TELEFONO_DUENO,\n  nombre_dueno: NOMBRE_DUENO\n};\n\nreturn [{ json: respuesta }];"
+      },
+      "id": "c8e2ca22-a3e6-438c-b3fb-67e179d7c262",
+      "name": "Me Interesa1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5968,
+        7008
+      ]
+    }
+  ],
+  "connections": {
+    "Airtable Todas": {
+      "main": [
+        [
+          {
+            "node": "Formato Detalle1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Procesar Entrada1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Entrada1": {
+      "main": [
+        [
+          {
+            "node": "Router1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router1": {
+      "main": [
+        [
+          {
+            "node": "Generar Bienvenida1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable Ventas1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable Alquileres1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable Todas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Me Interesa1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Ventas1": {
+      "main": [
+        [
+          {
+            "node": "Formato Ventas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Alquileres1": {
+      "main": [
+        [
+          {
+            "node": "Formato Alquileres1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b77b589f-9eaa-44e3-a8bc-ddfc88358590",
+  "activeVersionId": "b77b589f-9eaa-44e3-a8bc-ddfc88358590",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-04T08:26:42.154Z",
+      "createdAt": "2026-02-04T08:26:42.154Z",
+      "role": "workflow:owner",
+      "workflowId": "cip2LZkH3siXnhiDYTkcg",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-05T21:59:25.000Z",
+    "createdAt": "2026-02-05T21:59:21.464Z",
+    "versionId": "b77b589f-9eaa-44e3-a8bc-ddfc88358590",
+    "workflowId": "cip2LZkH3siXnhiDYTkcg",
+    "nodes": [
+      {
+        "parameters": {
+          "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
+          "options": {}
+        },
+        "id": "117e59c8-68e4-4b7a-85fa-2fbbdc739371",
+        "name": "Airtable Todas",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          5968,
+          6816
+        ],
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "Pvmr0alLiIms7FuQ",
+            "name": "Bearer token Airtable"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Inmobiliaria Cordoba\n\nVersion Final Corregida",
+          "height": 150,
+          "width": 250
+        },
+        "id": "9f586775-e84c-41e2-b990-6dae1ae85fa2",
+        "name": "Nota1",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          5088,
+          6240
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inmobiliaria",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "22290636-68dd-480e-96a8-6745c6144cf9",
+        "name": "Webhook2",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          5296,
+          6624
+        ],
+        "webhookId": "31513100-fd59-4bd2-8aab-b8237756ff46"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst datos = {\n  from: body.from || 'test',\n  tipo: body.tipo || body.type || 'text',\n  botonId: body.botonId || body.buttonId || '',\n  listaId: body.listaId || body.listId || '',\n  mensaje: body.mensaje || body.text || ''\n};\n\nlet accion = 'bienvenida';\n\nif (datos.botonId === 'menu_ventas') {\n  accion = 'ver_ventas';\n} else if (datos.botonId === 'menu_alquileres') {\n  accion = 'ver_alquileres';\n} else if (datos.listaId && (datos.listaId.startsWith('VENTA-') || datos.listaId.startsWith('ALQUILER-'))) {\n  accion = 'ver_detalle';\n} else if (datos.botonId && datos.botonId.startsWith('me_interesa_')) {\n  accion = 'me_interesa';\n}\n\ndatos.accion = accion;\n\nreturn [{ json: datos }];"
+        },
+        "id": "022b1125-35ce-434f-beeb-8b931850ab79",
+        "name": "Procesar Entrada1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5520,
+          6624
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.accion }}",
+                      "rightValue": "bienvenida",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Bienvenida"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.accion }}",
+                      "rightValue": "ver_ventas",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Ventas"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.accion }}",
+                      "rightValue": "ver_alquileres",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Alquileres"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.accion }}",
+                      "rightValue": "ver_detalle",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Detalle"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "loose"
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.accion }}",
+                      "rightValue": "me_interesa",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "MeInteresa"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "3111c606-04da-497c-a31b-3ca72fe317e9",
+        "name": "Router1",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          5744,
+          6576
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const from = items[0].json.from;\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'bienvenida',\n  mensaje: 'Hola! Bienvenido a Inmobiliaria Cordoba. Estamos aqui para ayudarte a encontrar tu hogar ideal.',\n  menu: 'Selecciona la categoria que te interesa:',\n  botones: [\n    { id: 'menu_ventas', titulo: 'Comprar' },\n    { id: 'menu_alquileres', titulo: 'Alquilar' }\n  ]\n};\n\nreturn [{ json: respuesta }];"
+        },
+        "id": "56a4cf57-2b5f-4f07-9119-ca5890c06468",
+        "name": "Generar Bienvenida1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5968,
+          6240
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "filterByFormula",
+                "value": "{Categoria} = 'Venta'"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "bc7d26a2-227a-4fd0-92e8-964e50af4f93",
+        "name": "Airtable Ventas1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          5968,
+          6432
+        ],
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "Pvmr0alLiIms7FuQ",
+            "name": "Bearer token Airtable"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://api.airtable.com/v0/appOtaugxqlokFjkC/Propiedades",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "filterByFormula",
+                "value": "{Categoria} = 'Alquiler'"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "76f621ba-115e-4fcc-8ab3-c02e47b60a95",
+        "name": "Airtable Alquileres1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          5968,
+          6624
+        ],
+        "credentials": {
+          "httpBearerAuth": {
+            "id": "Pvmr0alLiIms7FuQ",
+            "name": "Bearer token Airtable"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\n\nconst propiedades = records.map(r => ({\n  id: r.fields.ID_Propiedad,\n  nombre: r.fields.Nombre,\n  precio: r.fields.Precio_Texto\n}));\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'lista_ventas',\n  mensaje: 'Propiedades en VENTA disponibles:',\n  instruccion: 'Selecciona una propiedad para ver mas detalles:',\n  cantidad: propiedades.length,\n  propiedades: propiedades\n};\n\nreturn [{ json: respuesta }];"
+        },
+        "id": "43b93cd0-b291-4443-8079-6ad8df8846ca",
+        "name": "Formato Ventas1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          6192,
+          6432
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\n\nconst propiedades = records.map(r => ({\n  id: r.fields.ID_Propiedad,\n  nombre: r.fields.Nombre,\n  precio: r.fields.Precio_Texto\n}));\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'lista_alquileres',\n  mensaje: 'Propiedades en ALQUILER disponibles:',\n  instruccion: 'Selecciona una propiedad para ver mas detalles:',\n  cantidad: propiedades.length,\n  propiedades: propiedades\n};\n\nreturn [{ json: respuesta }];"
+        },
+        "id": "9d252a90-0b97-4883-9a3a-a86480f6d4c1",
+        "name": "Formato Alquileres1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          6192,
+          6624
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const records = items[0].json.records || [];\nconst from = $('Procesar Entrada1').item.json.from;\nconst listaId = $('Procesar Entrada1').item.json.listaId;\n\n// Buscar la propiedad por ID\nconst propRecord = records.find(r => r.fields.ID_Propiedad === listaId);\nconst prop = propRecord?.fields || {};\n\nconst TELEFONO_DUENO = '+5493512345678';\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'detalle_propiedad',\n  propiedad: {\n    id: prop.ID_Propiedad || 'N/A',\n    nombre: prop.Nombre || 'Propiedad no encontrada',\n    descripcion: prop.Descripcion || 'Sin descripcion',\n    precio: prop.Precio_Texto || 'Consultar',\n    categoria: prop.Categoria || 'N/A',\n    imagen: prop.Imagen_URL || '',\n    maps: prop.Google_Maps_URL || ''\n  },\n  botones: [\n    { id: 'ubicacion_' + prop.ID_Propiedad, titulo: 'Ver Ubicacion', url: prop.Google_Maps_URL || '' },\n    { id: 'me_interesa_' + prop.ID_Propiedad, titulo: 'Me Interesa' }\n  ],\n  telefono_dueno: TELEFONO_DUENO\n};\n\nreturn [{ json: respuesta }];"
+        },
+        "id": "65df512e-c3ff-4f23-98b2-5137f794e357",
+        "name": "Formato Detalle1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          6192,
+          6816
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const from = $('Procesar Entrada1').item.json.from;\nconst botonId = $('Procesar Entrada1').item.json.botonId;\nconst propiedadId = botonId.replace('me_interesa_', '');\n\nconst TELEFONO_DUENO = '+5493512345678';\nconst NOMBRE_DUENO = 'Carlos Garcia';\n\nconst respuesta = {\n  to: from,\n  tipo_respuesta: 'derivacion',\n  mensaje: 'Excelente eleccion! ' + NOMBRE_DUENO + ', nuestro asesor, se pondra en contacto con vos a la brevedad.',\n  contacto_directo: 'Tambien podes contactarlo directamente:',\n  whatsapp_dueno: 'https://wa.me/' + TELEFONO_DUENO.replace('+', ''),\n  propiedad_id: propiedadId,\n  telefono_dueno: TELEFONO_DUENO,\n  nombre_dueno: NOMBRE_DUENO\n};\n\nreturn [{ json: respuesta }];"
+        },
+        "id": "c8e2ca22-a3e6-438c-b3fb-67e179d7c262",
+        "name": "Me Interesa1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5968,
+          7008
+        ]
+      }
+    ],
+    "connections": {
+      "Airtable Todas": {
+        "main": [
+          [
+            {
+              "node": "Formato Detalle1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook2": {
+        "main": [
+          [
+            {
+              "node": "Procesar Entrada1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Procesar Entrada1": {
+        "main": [
+          [
+            {
+              "node": "Router1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Router1": {
+        "main": [
+          [
+            {
+              "node": "Generar Bienvenida1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Airtable Ventas1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Airtable Alquileres1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Airtable Todas",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Me Interesa1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Airtable Ventas1": {
+        "main": [
+          [
+            {
+              "node": "Formato Ventas1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Airtable Alquileres1": {
+        "main": [
+          [
+            {
+              "node": "Formato Alquileres1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version b77b589f",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-02-04T13:45:39.160Z",
+      "createdAt": "2026-02-04T13:45:39.160Z",
+      "id": "zwLEu26kTaYPYlqL",
+      "name": "Inmobiliaria Cordoba"
+    }
+  ]
+}
