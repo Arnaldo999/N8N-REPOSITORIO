@@ -1,0 +1,135 @@
+{
+  "updatedAt": "2026-02-05T23:19:10.758Z",
+  "createdAt": "2026-02-05T23:12:31.305Z",
+  "id": "fIESP-RkdbSCvcqrjgGE2",
+  "name": "Demo ETL - System IA",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "etl-demo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e105ff70-78a3-4c2d-aa19-afbe0f2665b3",
+      "name": "Recibir Datos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        496
+      ],
+      "webhookId": "065d7ad0-e8c0-424b-ad9a-26feb822ed52"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst antes = {\n  descripcion: body.descripcion || '',\n  monto: body.monto || 0,\n  fecha: body.fecha || '',\n  proveedor: body.proveedor || ''\n};\n\nlet descripcion = (antes.descripcion || '').trim();\ndescripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1).toLowerCase();\n\nlet monto = parseFloat(String(antes.monto).replace(/[^0-9.-]/g, '')) || 0;\n\nlet fecha = '';\nif (antes.fecha) {\n  try {\n    let f = antes.fecha;\n    if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}$/)) {\n      const p = f.split(/[\\/\\-]/);\n      f = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');\n    }\n    fecha = new Date(f).toISOString().split('T')[0];\n  } catch(e) {\n    fecha = new Date().toISOString().split('T')[0];\n  }\n} else {\n  fecha = new Date().toISOString().split('T')[0];\n}\n\nconst proveedor = (antes.proveedor || 'NO ESPECIFICADO').trim().toUpperCase();\n\nlet categoria = 'Otros';\nconst desc = descripcion.toLowerCase();\nif (desc.includes('oficina') || desc.includes('material')) categoria = 'Operativo';\nelse if (desc.includes('publicidad') || desc.includes('marketing') || desc.includes('anuncio')) categoria = 'Marketing';\nelse if (desc.includes('software') || desc.includes('servidor') || desc.includes('tech')) categoria = 'Tecnologia';\nelse if (desc.includes('sueldo') || desc.includes('salario')) categoria = 'RRHH';\nelse if (desc.includes('luz') || desc.includes('agua') || desc.includes('alquiler')) categoria = 'Administracion';\nelse if (desc.includes('venta') || desc.includes('comision')) categoria = 'Ventas';\n\nconst despues = { descripcion, monto, fecha, proveedor, categoria };\n\nconst UMBRAL = 500;\nlet alerta = null;\nif (monto > UMBRAL) {\n  alerta = {\n    tipo: 'GASTO_ALTO',\n    mensaje: 'Gasto de $' + monto + ' supera umbral de $' + UMBRAL,\n    enviar_whatsapp: true\n  };\n}\n\nreturn [{\n  json: {\n    exito: true,\n    transformacion: { antes, despues },\n    alerta: alerta,\n    listo_para_powerbi: true\n  }\n}];"
+      },
+      "id": "17d5fd5a-53dc-468d-8cba-1533a7da784c",
+      "name": "Procesar y Clasificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        496
+      ]
+    }
+  ],
+  "connections": {
+    "Recibir Datos": {
+      "main": [
+        [
+          {
+            "node": "Procesar y Clasificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "afe7fe8b-ce22-4e96-adaf-d9fc94a43e36",
+  "activeVersionId": "afe7fe8b-ce22-4e96-adaf-d9fc94a43e36",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-05T23:12:31.308Z",
+      "createdAt": "2026-02-05T23:12:31.308Z",
+      "role": "workflow:owner",
+      "workflowId": "fIESP-RkdbSCvcqrjgGE2",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-05T23:21:53.000Z",
+    "createdAt": "2026-02-05T23:19:10.758Z",
+    "versionId": "afe7fe8b-ce22-4e96-adaf-d9fc94a43e36",
+    "workflowId": "fIESP-RkdbSCvcqrjgGE2",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "etl-demo",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "e105ff70-78a3-4c2d-aa19-afbe0f2665b3",
+        "name": "Recibir Datos",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          -896,
+          496
+        ],
+        "webhookId": "065d7ad0-e8c0-424b-ad9a-26feb822ed52"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst antes = {\n  descripcion: body.descripcion || '',\n  monto: body.monto || 0,\n  fecha: body.fecha || '',\n  proveedor: body.proveedor || ''\n};\n\nlet descripcion = (antes.descripcion || '').trim();\ndescripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1).toLowerCase();\n\nlet monto = parseFloat(String(antes.monto).replace(/[^0-9.-]/g, '')) || 0;\n\nlet fecha = '';\nif (antes.fecha) {\n  try {\n    let f = antes.fecha;\n    if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}$/)) {\n      const p = f.split(/[\\/\\-]/);\n      f = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');\n    }\n    fecha = new Date(f).toISOString().split('T')[0];\n  } catch(e) {\n    fecha = new Date().toISOString().split('T')[0];\n  }\n} else {\n  fecha = new Date().toISOString().split('T')[0];\n}\n\nconst proveedor = (antes.proveedor || 'NO ESPECIFICADO').trim().toUpperCase();\n\nlet categoria = 'Otros';\nconst desc = descripcion.toLowerCase();\nif (desc.includes('oficina') || desc.includes('material')) categoria = 'Operativo';\nelse if (desc.includes('publicidad') || desc.includes('marketing') || desc.includes('anuncio')) categoria = 'Marketing';\nelse if (desc.includes('software') || desc.includes('servidor') || desc.includes('tech')) categoria = 'Tecnologia';\nelse if (desc.includes('sueldo') || desc.includes('salario')) categoria = 'RRHH';\nelse if (desc.includes('luz') || desc.includes('agua') || desc.includes('alquiler')) categoria = 'Administracion';\nelse if (desc.includes('venta') || desc.includes('comision')) categoria = 'Ventas';\n\nconst despues = { descripcion, monto, fecha, proveedor, categoria };\n\nconst UMBRAL = 500;\nlet alerta = null;\nif (monto > UMBRAL) {\n  alerta = {\n    tipo: 'GASTO_ALTO',\n    mensaje: 'Gasto de $' + monto + ' supera umbral de $' + UMBRAL,\n    enviar_whatsapp: true\n  };\n}\n\nreturn [{\n  json: {\n    exito: true,\n    transformacion: { antes, despues },\n    alerta: alerta,\n    listo_para_powerbi: true\n  }\n}];"
+        },
+        "id": "17d5fd5a-53dc-468d-8cba-1533a7da784c",
+        "name": "Procesar y Clasificar",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -704,
+          496
+        ]
+      }
+    ],
+    "connections": {
+      "Recibir Datos": {
+        "main": [
+          [
+            {
+              "node": "Procesar y Clasificar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version afe7fe8b",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-02-05T23:12:53.101Z",
+      "createdAt": "2026-02-05T23:12:53.101Z",
+      "id": "b5QxEoqqgG0vjbD6",
+      "name": "Power BI"
+    }
+  ]
+}
