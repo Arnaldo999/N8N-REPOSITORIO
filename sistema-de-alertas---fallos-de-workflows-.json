@@ -1,0 +1,346 @@
+{
+  "updatedAt": "2026-02-06T09:12:25.627Z",
+  "createdAt": "2026-01-16T22:34:44.714Z",
+  "id": "OTaNh8sYwCG7cI8uiAKQR",
+  "name": "Sistema de Alertas - Fallos de Workflows",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "48b85803-0d33-478f-94a0-25228417b686",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "863363759",
+        "text": "=🚨 *FALLO DETECTADO* 🚨\n\n📂 *Workflow:* {{ $json.workflow.name }}\n❌ *Error:* {{ $json.execution.error.message }}\n🕒 *Hora:* {{ $now.format('HH:mm:ss') }}\n\n🔗 [Revisar ejecución]({{ $json.execution.url }})",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "879952e1-50e0-4f17-a7fb-42441794e135",
+      "name": "Telegram - Alerta",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        80
+      ],
+      "webhookId": "25374e40-7ec2-4a99-beab-94325b06dac3",
+      "credentials": {
+        "telegramApi": {
+          "id": "GP3pEeqwousPhui1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "arnaldoayala222@gmail.com",
+        "subject": "=⚠️ ERROR n8n: {{ $json.workflow.name }}",
+        "message": "🚨 FALLO DETECTADO 🚨  Se ha producido un error en un flujo de n8n.  Para ver los detalles y solucionarlo, ve a la sección de \"Executions\" en tu panel: https://n8n.arnaldoayalaestratega.com/executions",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        80
+      ],
+      "id": "27f00bcb-d0cd-4103-a1e4-6b353be57308",
+      "name": "Send a message",
+      "webhookId": "0c2ab3ad-37c8-4e22-a851-dd91abf3e25f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hRodmfLyiI5TNo4a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🚨 Sistema de Alertas\n\nEste workflow captura errores de TODOS los workflows\ny te notifica por WhatsApp/Email",
+        "width": 320
+      },
+      "id": "e8161e05-08a7-4432-a8cc-9f7b9dd9afbe",
+      "name": "Nota",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const error = items[0].json;\n\n// Extraer información del error\nconst info = {\n  workflow_nombre: error.workflow?.name || 'Desconocido',\n  workflow_id: error.workflow?.id || 'N/A',\n  nodo_error: error.execution?.error?.node?.name || 'Desconocido',\n  mensaje_error: error.execution?.error?.message || 'Sin mensaje',\n  timestamp: new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }),\n  execution_id: error.execution?.id || 'N/A',\n  execution_url: error.execution?.url || ''\n};\n\n// Determinar severidad\nlet severidad = '🟡 MEDIO';\nconst mensajeLower = info.mensaje_error.toLowerCase();\n\nif (mensajeLower.includes('timeout') || mensajeLower.includes('connection')) {\n  severidad = '🟠 ALTO';\n} else if (mensajeLower.includes('authentication') || mensajeLower.includes('unauthorized')) {\n  severidad = '🔴 CRÍTICO';\n} else if (mensajeLower.includes('rate limit')) {\n  severidad = '🟡 MEDIO';\n}\n\n// Crear mensaje para WhatsApp\nconst mensajeWhatsApp = `🚨 *ERROR EN WORKFLOW*\\n\\n` +\n  `📋 *Workflow:* ${info.workflow_nombre}\\n` +\n  `❌ *Nodo:* ${info.nodo_error}\\n` +\n  `⚠️ *Severidad:* ${severidad}\\n` +\n  `📝 *Error:* ${info.mensaje_error.substring(0, 200)}\\n` +\n  `🕐 *Hora:* ${info.timestamp}\\n` +\n  `🔗 *ID:* ${info.execution_id}`;\n\n// Crear mensaje para Email (más detallado)\nconst mensajeEmail = `\n<h2>🚨 Error en Workflow</h2>\n<table style=\"border-collapse: collapse; width: 100%;\">\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Workflow:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${info.workflow_nombre}</td></tr>\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Nodo con error:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${info.nodo_error}</td></tr>\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Severidad:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${severidad}</td></tr>\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Mensaje:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${info.mensaje_error}</td></tr>\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Hora:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${info.timestamp}</td></tr>\n  <tr><td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Execution ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">${info.execution_id}</td></tr>\n</table>\n<br>\n<a href=\"${info.execution_url}\" style=\"background: #ff4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Ver Ejecución en n8n</a>\n`;\n\nreturn [{\n  json: {\n    ...info,\n    severidad,\n    mensaje_whatsapp: mensajeWhatsApp,\n    mensaje_email: mensajeEmail,\n    asunto_email: `🚨 Error: ${info.workflow_nombre} - ${info.nodo_error}`\n  }\n}];"
+      },
+      "id": "f83f525d-81f3-4f89-b0ef-3dca00656ba4",
+      "name": "Formatear Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v18.0/TU_PHONE_ID/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"TU_NUMERO_PERSONAL\",\n  \"type\": \"text\",\n  \"text\": { \"body\": {{ JSON.stringify($json.mensaje_whatsapp) }} }\n}",
+        "options": {}
+      },
+      "id": "65f48f37-0606-43cf-9d06-0e796689d2aa",
+      "name": "Alerta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        512
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "subject": "={{ $json.asunto_email }}",
+        "options": {}
+      },
+      "id": "10127243-c0a0-4fa8-8f2d-0344bd6b3c03",
+      "name": "Alerta Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        704
+      ],
+      "webhookId": "5e4988cf-4ada-4343-b813-6226375733ea",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": {{ JSON.stringify($json.mensaje_whatsapp) }},\n  \"username\": \"System IA Alertas\",\n  \"icon_emoji\": \":rotating_light:\"\n}",
+        "options": {}
+      },
+      "id": "5d9ea2d9-ed64-4ecf-961d-4c44128c0ab3",
+      "name": "Alerta Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        912
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://TU_PROYECTO.supabase.co/rest/v1/error_logs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_nombre\": {{ JSON.stringify($json.workflow_nombre) }},\n  \"workflow_id\": {{ JSON.stringify($json.workflow_id) }},\n  \"nodo_error\": {{ JSON.stringify($json.nodo_error) }},\n  \"mensaje_error\": {{ JSON.stringify($json.mensaje_error) }},\n  \"severidad\": {{ JSON.stringify($json.severidad) }},\n  \"execution_id\": {{ JSON.stringify($json.execution_id) }},\n  \"created_at\": {{ JSON.stringify($json.timestamp) }}\n}",
+        "options": {}
+      },
+      "id": "ef0f1389-77b8-4cab-ba05-a74465e03a3c",
+      "name": "Guardar en Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        608
+      ],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Alerta": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Error": {
+      "main": [
+        [
+          {
+            "node": "Alerta WhatsApp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Alerta Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Alerta Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar en Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "OTaNh8sYwCG7cI8uiAKQR"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "eda99dfa-85d0-46ea-b705-d558918bb27b",
+  "activeVersionId": "84c2ee34-c1e8-4d41-b7ce-41c5432c3cbb",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-16T22:34:44.717Z",
+      "createdAt": "2026-01-16T22:34:44.717Z",
+      "role": "workflow:owner",
+      "workflowId": "OTaNh8sYwCG7cI8uiAKQR",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-17T00:54:07.000Z",
+    "createdAt": "2026-01-17T00:54:05.285Z",
+    "versionId": "84c2ee34-c1e8-4d41-b7ce-41c5432c3cbb",
+    "workflowId": "OTaNh8sYwCG7cI8uiAKQR",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "48b85803-0d33-478f-94a0-25228417b686",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "chatId": "863363759",
+          "text": "=🚨 *FALLO DETECTADO* 🚨\n\n📂 *Workflow:* {{ $json.workflow.name }}\n❌ *Error:* {{ $json.execution.error.message }}\n🕒 *Hora:* {{ $now.format('HH:mm:ss') }}\n\n🔗 [Revisar ejecución]({{ $json.execution.url }})",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "879952e1-50e0-4f17-a7fb-42441794e135",
+        "name": "Telegram - Alerta",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.1,
+        "position": [
+          192,
+          80
+        ],
+        "webhookId": "25374e40-7ec2-4a99-beab-94325b06dac3",
+        "credentials": {
+          "telegramApi": {
+            "id": "GP3pEeqwousPhui1",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "arnaldoayala222@gmail.com",
+          "subject": "=⚠️ ERROR n8n: {{ $json.workflow.name }}",
+          "message": "🚨 FALLO DETECTADO 🚨  Se ha producido un error en un flujo de n8n.  Para ver los detalles y solucionarlo, ve a la sección de \"Executions\" en tu panel: https://n8n.arnaldoayalaestratega.com/executions",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          400,
+          80
+        ],
+        "id": "27f00bcb-d0cd-4103-a1e4-6b353be57308",
+        "name": "Send a message",
+        "webhookId": "0c2ab3ad-37c8-4e22-a851-dd91abf3e25f",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "hRodmfLyiI5TNo4a",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Telegram - Alerta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram - Alerta": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 84c2ee34",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
