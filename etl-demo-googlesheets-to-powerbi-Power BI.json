@@ -1,0 +1,386 @@
+{
+  "updatedAt": "2026-02-06T09:44:51.701Z",
+  "createdAt": "2026-02-05T23:12:31.305Z",
+  "id": "fIESP-RkdbSCvcqrjgGE2",
+  "name": "ETL-Demo-GoogleSheets-to-PowerBI",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "etl-demo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e105ff70-78a3-4c2d-aa19-afbe0f2665b3",
+      "name": "Recibir Datos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        496
+      ],
+      "webhookId": "065d7ad0-e8c0-424b-ad9a-26feb822ed52"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst antes = {\n  descripcion: body.descripcion || '',\n  monto: body.monto || 0,\n  fecha: body.fecha || '',\n  proveedor: body.proveedor || ''\n};\n\nlet descripcion = (antes.descripcion || '').trim();\ndescripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1).toLowerCase();\n\nlet monto = parseFloat(String(antes.monto).replace(/[^0-9.-]/g, '')) || 0;\n\nlet fecha = '';\nif (antes.fecha) {\n  try {\n    let f = antes.fecha;\n    if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}$/)) {\n      const p = f.split(/[\\/\\-]/);\n      f = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');\n    }\n    fecha = new Date(f).toISOString().split('T')[0];\n  } catch(e) {\n    fecha = new Date().toISOString().split('T')[0];\n  }\n} else {\n  fecha = new Date().toISOString().split('T')[0];\n}\n\nconst proveedor = (antes.proveedor || 'NO ESPECIFICADO').trim().toUpperCase();\n\nlet categoria = 'Otros';\nconst desc = descripcion.toLowerCase();\nif (desc.includes('oficina') || desc.includes('material')) categoria = 'Operativo';\nelse if (desc.includes('publicidad') || desc.includes('marketing') || desc.includes('anuncio')) categoria = 'Marketing';\nelse if (desc.includes('software') || desc.includes('servidor') || desc.includes('tech')) categoria = 'Tecnologia';\nelse if (desc.includes('sueldo') || desc.includes('salario')) categoria = 'RRHH';\nelse if (desc.includes('luz') || desc.includes('agua') || desc.includes('alquiler')) categoria = 'Administracion';\nelse if (desc.includes('venta') || desc.includes('comision')) categoria = 'Ventas';\n\nconst despues = { descripcion, monto, fecha, proveedor, categoria };\n\nconst UMBRAL = 500;\nlet alerta = null;\nif (monto > UMBRAL) {\n  alerta = {\n    tipo: 'GASTO_ALTO',\n    mensaje: 'Gasto de $' + monto + ' supera umbral de $' + UMBRAL,\n    enviar_whatsapp: true\n  };\n}\n\nreturn [{\n  json: {\n    exito: true,\n    transformacion: { antes, despues },\n    alerta: alerta,\n    listo_para_powerbi: true\n  }\n}];"
+      },
+      "id": "17d5fd5a-53dc-468d-8cba-1533a7da784c",
+      "name": "Procesar y Clasificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "f8915ed3-c9de-4bdc-91d0-8fe1e1f1d2bd",
+      "name": "⏰ Cada 15 Minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$vars.GOOGLE_SHEET_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "DatosBrutos"
+        },
+        "options": {}
+      },
+      "id": "8ac50855-c4af-489e-aae9-8ecb4eb4e7fc",
+      "name": "📊 Leer Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1552,
+        928
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2QctyMFw1wVvz97x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// 🧠 MOTOR ETL + IA - Limpieza y Categorización\n// ============================================\n\nconst resultados = [];\n\nfor (const item of items) {\n  const row = item.json;\n  \n  // --- DATOS ORIGINALES (SUCIOS) ---\n  const antes = {\n    id: row.id || row.ID || '',\n    descripcion: row.descripcion || row.Descripcion || row.DESCRIPCION || '',\n    monto: row.monto || row.Monto || row.MONTO || 0,\n    fecha: row.fecha || row.Fecha || row.FECHA || '',\n    proveedor: row.proveedor || row.Proveedor || row.PROVEEDOR || '',\n    tipo: row.tipo || row.Tipo || 'gasto'\n  };\n\n  // --- LIMPIEZA DE DESCRIPCIÓN ---\n  let descripcion = String(antes.descripcion || '').trim();\n  // Normalizar: Primera letra mayúscula, resto minúscula\n  descripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1).toLowerCase();\n  // Eliminar caracteres especiales extraños\n  descripcion = descripcion.replace(/[\\r\\n\\t]/g, ' ').replace(/\\s+/g, ' ');\n\n  // --- LIMPIEZA DE MONTO ---\n  let montoStr = String(antes.monto);\n  // Quitar símbolos de moneda, espacios, comas como separador de miles\n  montoStr = montoStr.replace(/[$€£¥]/g, '').replace(/\\s/g, '');\n  // Manejar formato europeo (1.234,56) vs americano (1,234.56)\n  if (montoStr.includes(',') && montoStr.includes('.')) {\n    if (montoStr.lastIndexOf(',') > montoStr.lastIndexOf('.')) {\n      // Formato europeo: 1.234,56\n      montoStr = montoStr.replace(/\\./g, '').replace(',', '.');\n    } else {\n      // Formato americano: 1,234.56\n      montoStr = montoStr.replace(/,/g, '');\n    }\n  } else if (montoStr.includes(',')) {\n    // Podría ser decimal o miles\n    const parts = montoStr.split(',');\n    if (parts[parts.length - 1].length === 2) {\n      montoStr = montoStr.replace(',', '.');\n    } else {\n      montoStr = montoStr.replace(/,/g, '');\n    }\n  }\n  let monto = parseFloat(montoStr) || 0;\n  monto = Math.round(monto * 100) / 100;\n\n  // --- ESTANDARIZACIÓN DE FECHA ---\n  let fecha = '';\n  if (antes.fecha) {\n    try {\n      let f = String(antes.fecha).trim();\n      \n      // Formato: DD/MM/YYYY o DD-MM-YYYY\n      if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}$/)) {\n        const p = f.split(/[\\/\\-]/);\n        f = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');\n      }\n      // Formato: MM/DD/YYYY (americano)\n      else if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{2}$/)) {\n        const p = f.split(/[\\/\\-]/);\n        const year = parseInt(p[2]) > 50 ? '19' + p[2] : '20' + p[2];\n        f = year + '-' + p[0].padStart(2,'0') + '-' + p[1].padStart(2,'0');\n      }\n      // Formato texto: \"25 enero 2025\" o \"enero 25, 2025\"\n      else if (f.match(/[a-zA-Z]/)) {\n        const meses = {\n          'enero':1,'febrero':2,'marzo':3,'abril':4,'mayo':5,'junio':6,\n          'julio':7,'agosto':8,'septiembre':9,'octubre':10,'noviembre':11,'diciembre':12,\n          'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,\n          'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12\n        };\n        const lower = f.toLowerCase();\n        for (const [mes, num] of Object.entries(meses)) {\n          if (lower.includes(mes)) {\n            const nums = f.match(/\\d+/g);\n            if (nums && nums.length >= 2) {\n              const day = nums[0].length <= 2 ? nums[0] : nums[1];\n              const year = nums.find(n => n.length === 4) || new Date().getFullYear();\n              f = year + '-' + String(num).padStart(2,'0') + '-' + day.padStart(2,'0');\n              break;\n            }\n          }\n        }\n      }\n      \n      const dateObj = new Date(f);\n      if (!isNaN(dateObj.getTime())) {\n        fecha = dateObj.toISOString().split('T')[0];\n      } else {\n        fecha = new Date().toISOString().split('T')[0];\n      }\n    } catch(e) {\n      fecha = new Date().toISOString().split('T')[0];\n    }\n  } else {\n    fecha = new Date().toISOString().split('T')[0];\n  }\n\n  // --- NORMALIZAR PROVEEDOR ---\n  let proveedor = String(antes.proveedor || '').trim().toUpperCase();\n  if (!proveedor || proveedor === 'NULL' || proveedor === 'N/A' || proveedor === '-') {\n    proveedor = 'NO ESPECIFICADO';\n  }\n  // Limpiar caracteres extraños\n  proveedor = proveedor.replace(/[^A-ZÁÉÍÓÚÑ0-9\\s\\.\\-]/gi, '').substring(0, 50);\n\n  // --- 🧠 CATEGORIZACIÓN SEMÁNTICA CON IA ---\n  let categoria = 'Otros';\n  const desc = descripcion.toLowerCase();\n  \n  const categorias = {\n    'Operativo': ['oficina', 'material', 'papeleria', 'insumo', 'suministro', 'limpieza', 'mantenimiento'],\n    'Marketing': ['publicidad', 'marketing', 'anuncio', 'facebook', 'google ads', 'campaña', 'ads', 'instagram', 'tiktok', 'influencer', 'branding'],\n    'Tecnologia': ['software', 'servidor', 'tech', 'licencia', 'saas', 'hosting', 'dominio', 'cloud', 'aws', 'azure', 'computadora', 'laptop'],\n    'RRHH': ['sueldo', 'salario', 'nomina', 'bono', 'aguinaldo', 'vacaciones', 'capacitacion', 'recursos humanos', 'contratacion'],\n    'Administracion': ['luz', 'agua', 'alquiler', 'renta', 'telefono', 'internet', 'electricidad', 'gas', 'seguro', 'impuesto'],\n    'Ventas': ['venta', 'comision', 'ingreso', 'factura', 'cliente', 'revenue', 'ganancia'],\n    'Viajes': ['viaje', 'avion', 'hotel', 'uber', 'taxi', 'gasolina', 'transporte', 'vuelo', 'hospedaje', 'viaticos'],\n    'Servicios': ['consultoria', 'asesoria', 'servicio', 'freelance', 'legal', 'contador', 'abogado', 'auditoria']\n  };\n\n  for (const [cat, keywords] of Object.entries(categorias)) {\n    if (keywords.some(kw => desc.includes(kw))) {\n      categoria = cat;\n      break;\n    }\n  }\n\n  // --- TIPO DE TRANSACCIÓN ---\n  const tipo = String(antes.tipo || 'gasto').toLowerCase();\n  const esingreso = tipo.includes('ingreso') || tipo.includes('venta') || \n                     desc.includes('venta') || desc.includes('ingreso') || desc.includes('pago recibido');\n\n  // --- 🚨 SISTEMA DE ALERTAS ---\n  const UMBRAL_GASTO_ALTO = 500;\n  const UMBRAL_VENTA_BAJA = 1000;\n  \n  let alerta = null;\n  let requiere_alerta = false;\n\n  if (!esingreso && monto > UMBRAL_GASTO_ALTO) {\n    alerta = {\n      tipo: 'GASTO_ALTO',\n      mensaje: '⚠️ ALERTA: Gasto de $' + monto.toFixed(2) + ' supera umbral de $' + UMBRAL_GASTO_ALTO,\n      urgencia: 'alta',\n      accion_sugerida: 'Revisar y aprobar gasto con gerencia'\n    };\n    requiere_alerta = true;\n  } else if (esingreso && monto < UMBRAL_VENTA_BAJA) {\n    alerta = {\n      tipo: 'VENTA_BAJA', \n      mensaje: '📉 ALERTA: Venta de $' + monto.toFixed(2) + ' por debajo del umbral de $' + UMBRAL_VENTA_BAJA,\n      urgencia: 'media',\n      accion_sugerida: 'Analizar estrategia de pricing'\n    };\n    requiere_alerta = true;\n  }\n\n  // --- DATOS LIMPIOS (DESPUÉS) ---\n  resultados.push({\n    json: {\n      // Identificador único\n      id_registro: 'ETL-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),\n      id_original: antes.id,\n      \n      // Datos limpios\n      descripcion: descripcion,\n      monto: monto,\n      fecha: fecha,\n      proveedor: proveedor,\n      categoria: categoria,\n      tipo: esingreso ? 'ingreso' : 'gasto',\n      \n      // Metadata\n      procesado_en: new Date().toISOString(),\n      fuente: 'Google Sheets',\n      \n      // Alertas\n      alerta: alerta,\n      requiere_alerta: requiere_alerta,\n      \n      // Estado\n      listo_para_powerbi: true,\n      version_etl: '2.0'\n    }\n  });\n}\n\nreturn resultados;"
+      },
+      "id": "e2647a27-5fc7-4ca6-b778-6eac8d37112a",
+      "name": "🧠 ETL + Categorización IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$vars.GOOGLE_SHEET_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "DatosLimpios"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.id_registro }}",
+            "Fecha": "={{ $json.fecha }}",
+            "Descripcion": "={{ $json.descripcion }}",
+            "Monto": "={{ $json.monto }}",
+            "Proveedor": "={{ $json.proveedor }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Tipo": "={{ $json.tipo }}",
+            "Procesado": "={{ $json.procesado_en }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "66e935c6-c7c4-4a8e-b2b0-22fd17432289",
+      "name": "📤 Guardar en Hoja Limpia",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1072,
+        928
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2QctyMFw1wVvz97x",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.requiere_alerta }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "af85bf1c-33a3-4d45-a9ba-c0d27cb0e1fd",
+      "name": "🚨 ¿Requiere Alerta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "phoneNumberId": "={{$vars.WHATSAPP_PHONE_ID}}",
+        "recipientPhoneNumber": "={{$vars.NUMERO_GERENTE}}"
+      },
+      "id": "0119b9c6-f288-4668-a5fd-2ac94d1848ed",
+      "name": "📱 Enviar WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        816
+      ],
+      "webhookId": "5f54319b-9dfe-4fd7-acc0-2440d5781826"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f6b62798-5176-4e68-92fc-ca481a2783f6",
+      "name": "✅ Sin Alerta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -592,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Respuesta final del pipeline\nreturn [{\n  json: {\n    exito: true,\n    mensaje: 'Pipeline ETL ejecutado correctamente',\n    registros_procesados: items.length,\n    timestamp: new Date().toISOString(),\n    proximo_run: 'En 15 minutos',\n    listo_para_powerbi: true\n  }\n}];"
+      },
+      "id": "ed4a32d9-ada9-480d-bcd8-5c05a0b1abda",
+      "name": "✨ Respuesta Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        928
+      ]
+    }
+  ],
+  "connections": {
+    "Recibir Datos": {
+      "main": [
+        [
+          {
+            "node": "Procesar y Clasificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⏰ Cada 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "📊 Leer Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Leer Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "🧠 ETL + Categorización IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 ETL + Categorización IA": {
+      "main": [
+        [
+          {
+            "node": "📤 Guardar en Hoja Limpia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📤 Guardar en Hoja Limpia": {
+      "main": [
+        [
+          {
+            "node": "🚨 ¿Requiere Alerta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚨 ¿Requiere Alerta?": {
+      "main": [
+        [
+          {
+            "node": "📱 Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "✅ Sin Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📱 Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "✨ Respuesta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Sin Alerta": {
+      "main": [
+        [
+          {
+            "node": "✨ Respuesta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "0f6a954f-e5f7-4ed3-8250-53b2a2355e38",
+  "activeVersionId": "afe7fe8b-ce22-4e96-adaf-d9fc94a43e36",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-05T23:12:31.308Z",
+      "createdAt": "2026-02-05T23:12:31.308Z",
+      "role": "workflow:owner",
+      "workflowId": "fIESP-RkdbSCvcqrjgGE2",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-05T23:21:53.000Z",
+    "createdAt": "2026-02-05T23:19:10.758Z",
+    "versionId": "afe7fe8b-ce22-4e96-adaf-d9fc94a43e36",
+    "workflowId": "fIESP-RkdbSCvcqrjgGE2",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "etl-demo",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "e105ff70-78a3-4c2d-aa19-afbe0f2665b3",
+        "name": "Recibir Datos",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          -896,
+          496
+        ],
+        "webhookId": "065d7ad0-e8c0-424b-ad9a-26feb822ed52"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = items[0].json.body || items[0].json;\n\nconst antes = {\n  descripcion: body.descripcion || '',\n  monto: body.monto || 0,\n  fecha: body.fecha || '',\n  proveedor: body.proveedor || ''\n};\n\nlet descripcion = (antes.descripcion || '').trim();\ndescripcion = descripcion.charAt(0).toUpperCase() + descripcion.slice(1).toLowerCase();\n\nlet monto = parseFloat(String(antes.monto).replace(/[^0-9.-]/g, '')) || 0;\n\nlet fecha = '';\nif (antes.fecha) {\n  try {\n    let f = antes.fecha;\n    if (f.match(/^\\d{1,2}[\\/\\-]\\d{1,2}[\\/\\-]\\d{4}$/)) {\n      const p = f.split(/[\\/\\-]/);\n      f = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');\n    }\n    fecha = new Date(f).toISOString().split('T')[0];\n  } catch(e) {\n    fecha = new Date().toISOString().split('T')[0];\n  }\n} else {\n  fecha = new Date().toISOString().split('T')[0];\n}\n\nconst proveedor = (antes.proveedor || 'NO ESPECIFICADO').trim().toUpperCase();\n\nlet categoria = 'Otros';\nconst desc = descripcion.toLowerCase();\nif (desc.includes('oficina') || desc.includes('material')) categoria = 'Operativo';\nelse if (desc.includes('publicidad') || desc.includes('marketing') || desc.includes('anuncio')) categoria = 'Marketing';\nelse if (desc.includes('software') || desc.includes('servidor') || desc.includes('tech')) categoria = 'Tecnologia';\nelse if (desc.includes('sueldo') || desc.includes('salario')) categoria = 'RRHH';\nelse if (desc.includes('luz') || desc.includes('agua') || desc.includes('alquiler')) categoria = 'Administracion';\nelse if (desc.includes('venta') || desc.includes('comision')) categoria = 'Ventas';\n\nconst despues = { descripcion, monto, fecha, proveedor, categoria };\n\nconst UMBRAL = 500;\nlet alerta = null;\nif (monto > UMBRAL) {\n  alerta = {\n    tipo: 'GASTO_ALTO',\n    mensaje: 'Gasto de $' + monto + ' supera umbral de $' + UMBRAL,\n    enviar_whatsapp: true\n  };\n}\n\nreturn [{\n  json: {\n    exito: true,\n    transformacion: { antes, despues },\n    alerta: alerta,\n    listo_para_powerbi: true\n  }\n}];"
+        },
+        "id": "17d5fd5a-53dc-468d-8cba-1533a7da784c",
+        "name": "Procesar y Clasificar",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -704,
+          496
+        ]
+      }
+    ],
+    "connections": {
+      "Recibir Datos": {
+        "main": [
+          [
+            {
+              "node": "Procesar y Clasificar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version afe7fe8b",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-02-05T23:12:53.101Z",
+      "createdAt": "2026-02-05T23:12:53.101Z",
+      "id": "b5QxEoqqgG0vjbD6",
+      "name": "Power BI"
+    }
+  ]
+}
