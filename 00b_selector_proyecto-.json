@@ -1,0 +1,853 @@
+{
+  "updatedAt": "2026-02-06T12:03:27.035Z",
+  "createdAt": "2026-02-06T11:56:22.904Z",
+  "id": "djmCMDmA5sFLW_8FzMqrT",
+  "name": "00B_SELECTOR_PROYECTO",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "router-master",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7a5da0f7-d1ee-4c5d-80ff-5e5a7205a92e",
+      "name": "Webhook Entrada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        272
+      ],
+      "webhookId": "e4d4cc36-3c1d-482f-bd5e-cd13052c52a4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer datos del mensaje (formato Chatwoot)\nconst body = $input.first().json;\n\n// Datos del mensaje\nconst conversationId = body.conversation?.id || body.id;\nconst mensaje = body.content?.body || body.message?.content || body.content || '';\nconst senderId = body.sender?.id || body.contact?.id || 'unknown';\nconst senderName = body.sender?.name || body.contact?.name || 'Usuario';\nconst messageType = body.message_type || 'incoming';\nconst inboxId = body.inbox?.id || body.inbox_id;\n\n// Solo procesar mensajes entrantes (no los que enviamos nosotros)\nconst esEntrante = messageType === 'incoming' || body.event === 'message_created';\n\n// Detectar comandos especiales\nconst esComandoSalir = mensaje.toLowerCase().includes('/salir') || \n                       mensaje.toLowerCase().includes('/menu') ||\n                       mensaje.toLowerCase() === 'salir' ||\n                       mensaje.toLowerCase() === 'menu';\n\nconst esSeleccionProyecto = ['1', '2', '3', '4', '5'].includes(mensaje.trim());\n\nreturn {\n  conversationId,\n  mensaje: mensaje.trim(),\n  mensajeLower: mensaje.toLowerCase().trim(),\n  senderId,\n  senderName,\n  inboxId,\n  esEntrante,\n  esComandoSalir,\n  esSeleccionProyecto,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "262d737f-a515-408f-97ad-3633dc3f3cf3",
+      "name": "Extraer Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "es-entrante",
+              "leftValue": "={{ $json.esEntrante }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7f117b5c-3213-49cb-9b32-2f81e862673c",
+      "name": "¿Es Entrante?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "leftValue": "={{ $json.esComandoSalir }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d541586a-abf9-4334-9933-e328661979e3",
+      "name": "¿Comando Salir?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        176,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {},
+          "conditions": [
+            {
+              "leftValue": "={{ $json.esSeleccionProyecto }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d409104b-567b-4f83-9791-9d46ea0e2ad9",
+      "name": "¿Selección 1-5?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        384,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $('Extraer Datos').item.json.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "d0349fc3-0e34-4a49-b57d-e616ae9e2fb1",
+      "name": "Obtener Etiquetas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const labels = $input.first().json.payload || $input.first().json || [];\nconst datos = $('Extraer Datos').item.json;\n\n// Buscar etiqueta de proyecto\nconst proyectoLabels = {\n  'proyecto_etl': 'etl',\n  'proyecto_inmob': 'inmob', \n  'proyecto_pizza': 'pizza',\n  'proyecto_reservas': 'reservas',\n  'proyecto_soporte': 'soporte'\n};\n\nlet proyectoActivo = 'ninguno';\nlet etiquetaEncontrada = '';\n\nfor (const label of labels) {\n  const labelName = typeof label === 'string' ? label : label.name || label.title;\n  if (proyectoLabels[labelName]) {\n    proyectoActivo = proyectoLabels[labelName];\n    etiquetaEncontrada = labelName;\n    break;\n  }\n}\n\nreturn {\n  ...datos,\n  labels,\n  proyectoActivo,\n  etiquetaEncontrada,\n  tieneProyecto: proyectoActivo !== 'ninguno'\n};"
+      },
+      "id": "e15e7fe9-41bc-4fd8-89a0-f66d66d822f2",
+      "name": "Procesar Etiquetas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proyectoActivo }}",
+                    "rightValue": "etl",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ETL"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proyectoActivo }}",
+                    "rightValue": "inmob",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INMOB"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proyectoActivo }}",
+                    "rightValue": "pizza",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "PIZZA"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proyectoActivo }}",
+                    "rightValue": "ninguno",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "MENU"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "26f66084-9467-4c00-a23b-5a7aa73d589e",
+      "name": "Switch Proyecto",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        976,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/webhook/proyecto-etl",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "conversationId",
+              "value": "={{ $json.conversationId }}"
+            },
+            {
+              "name": "mensaje",
+              "value": "={{ $json.mensaje }}"
+            },
+            {
+              "name": "senderId",
+              "value": "={{ $json.senderId }}"
+            },
+            {
+              "name": "senderName",
+              "value": "={{ $json.senderName }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "a9c3f048-feea-4029-b716-663fadc7e8f0",
+      "name": "→ Proyecto ETL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        160
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/webhook/proyecto-inmob",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "conversationId",
+              "value": "={{ $json.conversationId }}"
+            },
+            {
+              "name": "mensaje",
+              "value": "={{ $json.mensaje }}"
+            },
+            {
+              "name": "senderId",
+              "value": "={{ $json.senderId }}"
+            },
+            {
+              "name": "senderName",
+              "value": "={{ $json.senderName }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "8892ddc9-d8af-4652-8f7f-51cf9dcc3e77",
+      "name": "→ Proyecto Inmob",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        320
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.N8N_WEBHOOK_URL }}/webhook/proyecto-pizza",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "conversationId",
+              "value": "={{ $json.conversationId }}"
+            },
+            {
+              "name": "mensaje",
+              "value": "={{ $json.mensaje }}"
+            },
+            {
+              "name": "senderId",
+              "value": "={{ $json.senderId }}"
+            },
+            {
+              "name": "senderName",
+              "value": "={{ $json.senderName }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "6752902f-a7c4-425d-93b2-9af6437c3da7",
+      "name": "→ Proyecto Pizza",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        464
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $json.conversationId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"🏠 *AGENCIA AYALA - LABS*\\n\\n¡Hola {{ $json.senderName }}! 👋\\n\\nElige una demo para explorar:\\n\\n1️⃣ 📊 *ETL + Power BI* - Limpieza de datos\\n2️⃣ 🏠 *Inmobiliaria* - Gestión de propiedades\\n3️⃣ 🍕 *Pizzería* - Pedidos automáticos\\n4️⃣ 📅 *Reservas* - Sistema de citas\\n5️⃣ 🎧 *Soporte* - Tickets automáticos\\n\\n_Escribe el número de tu elección_\",\n  \"message_type\": \"outgoing\",\n  \"private\": false\n}",
+        "options": {}
+      },
+      "id": "1e5fe168-fb1f-448f-88f2-bc47d3c87cea",
+      "name": "Mostrar Menú",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "30ff7d48-dbae-4291-9c82-7cee28672891",
+      "name": "Response OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "selector-proyecto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "10e608e9-8e82-4308-a50a-0b750108c745",
+      "name": "Webhook Selector",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        912
+      ],
+      "webhookId": "f9cdb192-34c1-4625-9eec-b50f8934a0e6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mensaje }}",
+                    "rightValue": "1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ETL"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mensaje }}",
+                    "rightValue": "2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "INMOB"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mensaje }}",
+                    "rightValue": "3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "PIZZA"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mensaje }}",
+                    "rightValue": "4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "RESERVAS"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.mensaje }}",
+                    "rightValue": "5",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "SOPORTE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "977c713e-eab1-4093-9add-e3fb5ab10b2a",
+      "name": "Switch Opción",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -192,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $json.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"proyecto_etl\"]}",
+        "options": {}
+      },
+      "id": "6f41f0a5-8774-435c-8e10-1faa7bc230a9",
+      "name": "Etiqueta ETL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $json.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"proyecto_inmob\"]}",
+        "options": {}
+      },
+      "id": "fe6c2468-3ea8-4e65-b7c4-4d4663e61ec5",
+      "name": "Etiqueta Inmob",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $json.conversationId }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"proyecto_pizza\"]}",
+        "options": {}
+      },
+      "id": "90f63714-bf9d-4778-a555-c1e40d3a359f",
+      "name": "Etiqueta Pizza",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        48,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CHATWOOT_URL }}/api/v1/accounts/{{ $env.CHATWOOT_ACCOUNT_ID }}/conversations/{{ $json.conversationId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"📊 *Modo ETL + Power BI activado*\\n\\nAhora puedes enviarme datos para procesar.\\n\\nEjemplo:\\n_gasto: compra oficina $750_\\n\\nEscribe /salir para volver al menú.\",\n  \"message_type\": \"outgoing\"\n}",
+        "options": {}
+      },
+      "id": "c2bbfc9e-956d-43ec-b34b-469efcaf6963",
+      "name": "Confirmar ETL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "3cb6ae79-69a2-44e4-a37e-d3af8d38ac9d",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        912
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Entrada": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos": {
+      "main": [
+        [
+          {
+            "node": "¿Es Entrante?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Entrante?": {
+      "main": [
+        [
+          {
+            "node": "¿Comando Salir?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Comando Salir?": {
+      "main": [
+        [
+          {
+            "node": "Mostrar Menú",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Selección 1-5?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Selección 1-5?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Obtener Etiquetas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Etiquetas": {
+      "main": [
+        [
+          {
+            "node": "Procesar Etiquetas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Etiquetas": {
+      "main": [
+        [
+          {
+            "node": "Switch Proyecto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Proyecto": {
+      "main": [
+        [
+          {
+            "node": "→ Proyecto ETL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "→ Proyecto Inmob",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "→ Proyecto Pizza",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mostrar Menú",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "→ Proyecto ETL": {
+      "main": [
+        [
+          {
+            "node": "Response OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "→ Proyecto Inmob": {
+      "main": [
+        [
+          {
+            "node": "Response OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "→ Proyecto Pizza": {
+      "main": [
+        [
+          {
+            "node": "Response OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mostrar Menú": {
+      "main": [
+        [
+          {
+            "node": "Response OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Selector": {
+      "main": [
+        [
+          {
+            "node": "Switch Opción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Opción": {
+      "main": [
+        [
+          {
+            "node": "Etiqueta ETL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Etiqueta Inmob",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Etiqueta Pizza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Etiqueta ETL": {
+      "main": [
+        [
+          {
+            "node": "Confirmar ETL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar ETL": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "b535c2f2-bf81-4d1f-856a-ddcce12db59a",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-06T11:56:22.909Z",
+      "createdAt": "2026-02-06T11:56:22.909Z",
+      "role": "workflow:owner",
+      "workflowId": "djmCMDmA5sFLW_8FzMqrT",
+      "projectId": "EftYNIwW5VkchSsx"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
