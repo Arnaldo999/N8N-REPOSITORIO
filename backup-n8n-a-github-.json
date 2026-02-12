@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-01-16T23:44:16.282Z",
+  "updatedAt": "2026-02-11T23:00:26.955Z",
   "createdAt": "2026-01-15T13:55:13.023Z",
   "id": "yAFbFe6hcmgQi2fKOaK-r",
   "name": "BACKUP-N8N A GITHUB",
@@ -503,7 +503,7 @@
       }
     ]
   },
-  "versionId": "0191f2dc-af7a-4aea-80b3-9c69b3e8db62",
+  "versionId": "6fc0f028-8d96-4b5e-aaac-61fd14ade735",
   "activeVersionId": "0191f2dc-af7a-4aea-80b3-9c69b3e8db62",
   "triggerCount": 1,
   "shared": [
