@@ -1,0 +1,2675 @@
+{
+  "updatedAt": "2026-04-09T15:17:48.562Z",
+  "createdAt": "2026-04-09T15:01:36.293Z",
+  "id": "fbGdj63Ry7QIw9eL",
+  "name": "🗄️ Backup N8N → GitHub (3 instancias)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "trigger-schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        208
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "trigger-manual",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        384
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "sticky1",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        192
+      ],
+      "parameters": {
+        "content": "### INSTANCIA 1: Arnaldo\nn8n.arnaldoayalaestratega.cloud → N8N-REPOSITORIO",
+        "height": 236,
+        "width": 380,
+        "color": 5
+      }
+    },
+    {
+      "id": "sticky2",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        500
+      ],
+      "parameters": {
+        "content": "### INSTANCIA 2: Mica\nsytem-ia-pruebas-n8n → N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+        "height": 236,
+        "width": 380,
+        "color": 3
+      }
+    },
+    {
+      "id": "sticky3",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        800
+      ],
+      "parameters": {
+        "content": "### INSTANCIA 3: Robert\nn8n.lovbot.ai → N8N-REPOSITORIO-LOVBOT",
+        "height": 236,
+        "width": 380,
+        "color": 4
+      }
+    },
+    {
+      "id": "list-arnaldo",
+      "name": "Lista archivos Arnaldo",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        256
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO",
+          "mode": "name"
+        },
+        "filePath": "="
+      },
+      "alwaysOutputData": true,
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "junta-arnaldo",
+      "name": "Junta Arnaldo",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        160,
+        256
+      ],
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "name"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "api-arnaldo",
+      "name": "API Arnaldo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        256
+      ],
+      "parameters": {
+        "url": "https://n8n.arnaldoayalaestratega.cloud/api/v1/workflows?limit=250",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmM2VjOTRiYi1kNjlmLTQ1NjYtYWZkMi1hNDI1OWM0ZTllMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiN2ZiODE5NDQtMmU3Mi00ZjM3LTg3ODgtNTQ3MTA0NjVkYjQzIiwiaWF0IjoxNzc0NjEzNDgxfQ.0Sil51HrgVx6C-TmaHZl1bOQnrYwiqA5cas5C_jPexs"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "parse-arnaldo",
+      "name": "Parsea Arnaldo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        256
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+      }
+    },
+    {
+      "id": "convert-arnaldo",
+      "name": "Convierte JSON Arnaldo",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        256
+      ],
+      "parameters": {
+        "operation": "toJson",
+        "mode": "each",
+        "options": {
+          "format": true
+        }
+      }
+    },
+    {
+      "id": "base64-arnaldo",
+      "name": "Base64 Arnaldo",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        256
+      ],
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      }
+    },
+    {
+      "id": "set-arnaldo",
+      "name": "Fecha y Nombre Arnaldo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        256
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "commitDate",
+              "type": "string",
+              "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+            },
+            {
+              "id": "a2",
+              "name": "fileName",
+              "type": "string",
+              "value": "={{ $('Parsea Arnaldo').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Arnaldo').item.json.id }}.json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "split-arnaldo",
+      "name": "Separa Arnaldo",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        256
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "if-arnaldo",
+      "name": "¿Existe Arnaldo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        240
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Junta Arnaldo').item.json.name }}",
+              "operation": "contains",
+              "value2": "={{ $('Parsea Arnaldo').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Arnaldo').item.json.id }}.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "update-arnaldo",
+      "name": "Actualizar Arnaldo",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        160
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Arnaldo').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Arnaldo').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Arnaldo').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "create-arnaldo",
+      "name": "Subir Arnaldo",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        352
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Arnaldo').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Arnaldo').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Arnaldo').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "list-mica",
+      "name": "Lista archivos Mica",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        560
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+          "mode": "name"
+        },
+        "filePath": "="
+      },
+      "alwaysOutputData": true,
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "junta-mica",
+      "name": "Junta Mica",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        160,
+        560
+      ],
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "name"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "api-mica",
+      "name": "API Mica",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        560
+      ],
+      "parameters": {
+        "url": "https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host/api/v1/workflows?limit=250",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MmI5ZDg4Ny0zMTgzLTQ2YjEtOWRiNC1jMzhiNTRlZjJjYjYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMjNlZGY4NzQtNDRlZi00OTBiLWFmNDUtMjNiNTQ1NzE3NGJhIiwiaWF0IjoxNzc1NTY0ODAyfQ.l0DPYPUouH_Klwv5oOPRK-tvvmGBKBUjIVXCfCMZcQI"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "parse-mica",
+      "name": "Parsea Mica",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        560
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+      }
+    },
+    {
+      "id": "convert-mica",
+      "name": "Convierte JSON Mica",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        560
+      ],
+      "parameters": {
+        "operation": "toJson",
+        "mode": "each",
+        "options": {
+          "format": true
+        }
+      }
+    },
+    {
+      "id": "base64-mica",
+      "name": "Base64 Mica",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        560
+      ],
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      }
+    },
+    {
+      "id": "set-mica",
+      "name": "Fecha y Nombre Mica",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        560
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m1",
+              "name": "commitDate",
+              "type": "string",
+              "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+            },
+            {
+              "id": "m2",
+              "name": "fileName",
+              "type": "string",
+              "value": "={{ $('Parsea Mica').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Mica').item.json.id }}.json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "split-mica",
+      "name": "Separa Mica",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        560
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "if-mica",
+      "name": "¿Existe Mica?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        544
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Junta Mica').item.json.name }}",
+              "operation": "contains",
+              "value2": "={{ $('Parsea Mica').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Mica').item.json.id }}.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "update-mica",
+      "name": "Actualizar Mica",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        464
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Mica').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Mica').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Mica').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "create-mica",
+      "name": "Subir Mica",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        656
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Mica').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Mica').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Mica').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "list-robert",
+      "name": "Lista archivos Robert",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        864
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-LOVBOT",
+          "mode": "name"
+        },
+        "filePath": "="
+      },
+      "alwaysOutputData": true,
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "junta-robert",
+      "name": "Junta Robert",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        160,
+        864
+      ],
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "name"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "api-robert",
+      "name": "API Robert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        864
+      ],
+      "parameters": {
+        "url": "https://n8n.lovbot.ai/api/v1/workflows?limit=250",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0YTI4ZjUzNS0wNjhtLTQ4ZTgtYWYyOC04ZDY3MTIzMTE1OTkiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzc1NDY5NjcxfQ.XGWv2X_diwMXtBifThjsttpMsCg6BbX0WP78jvbTt-A"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "parse-robert",
+      "name": "Parsea Robert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        864
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+      }
+    },
+    {
+      "id": "convert-robert",
+      "name": "Convierte JSON Robert",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        864
+      ],
+      "parameters": {
+        "operation": "toJson",
+        "mode": "each",
+        "options": {
+          "format": true
+        }
+      }
+    },
+    {
+      "id": "base64-robert",
+      "name": "Base64 Robert",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        864
+      ],
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      }
+    },
+    {
+      "id": "set-robert",
+      "name": "Fecha y Nombre Robert",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        864
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "commitDate",
+              "type": "string",
+              "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+            },
+            {
+              "id": "r2",
+              "name": "fileName",
+              "type": "string",
+              "value": "={{ $('Parsea Robert').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Robert').item.json.id }}.json"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "split-robert",
+      "name": "Separa Robert",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        864
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "if-robert",
+      "name": "¿Existe Robert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        848
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('Junta Robert').item.json.name }}",
+              "operation": "contains",
+              "value2": "={{ $('Parsea Robert').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Robert').item.json.id }}.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "update-robert",
+      "name": "Actualizar Robert",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        768
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-LOVBOT",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Robert').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Robert').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Robert').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    },
+    {
+      "id": "create-robert",
+      "name": "Subir Robert",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        960
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "Arnaldo999",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "N8N-REPOSITORIO-LOVBOT",
+          "mode": "name"
+        },
+        "filePath": "={{ $('Fecha y Nombre Robert').item.json.fileName }}",
+        "fileContent": "={{ $('Base64 Robert').item.json.data }}",
+        "commitMessage": "=backup-{{ $('Fecha y Nombre Robert').item.json.commitDate }}"
+      },
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "githubApi": {
+          "id": "pqG79TfgO0kOZGb7",
+          "name": "GitHub account 3"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Lista archivos Arnaldo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lista archivos Mica",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lista archivos Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Lista archivos Arnaldo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lista archivos Mica",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lista archivos Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista archivos Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Junta Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Junta Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "API Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Parsea Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsea Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Convierte JSON Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convierte JSON Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Base64 Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64 Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Fecha y Nombre Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fecha y Nombre Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Separa Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separa Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "¿Existe Arnaldo?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "¿Existe Arnaldo?": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subir Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Separa Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "Separa Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista archivos Mica": {
+      "main": [
+        [
+          {
+            "node": "Junta Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Junta Mica": {
+      "main": [
+        [
+          {
+            "node": "API Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Mica": {
+      "main": [
+        [
+          {
+            "node": "Parsea Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsea Mica": {
+      "main": [
+        [
+          {
+            "node": "Convierte JSON Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convierte JSON Mica": {
+      "main": [
+        [
+          {
+            "node": "Base64 Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64 Mica": {
+      "main": [
+        [
+          {
+            "node": "Fecha y Nombre Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fecha y Nombre Mica": {
+      "main": [
+        [
+          {
+            "node": "Separa Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separa Mica": {
+      "main": [
+        [
+          {
+            "node": "¿Existe Mica?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "¿Existe Mica?": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Mica",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subir Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Mica": {
+      "main": [
+        [
+          {
+            "node": "Separa Mica",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir Mica": {
+      "main": [
+        [
+          {
+            "node": "Separa Mica",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Mica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista archivos Robert": {
+      "main": [
+        [
+          {
+            "node": "Junta Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Junta Robert": {
+      "main": [
+        [
+          {
+            "node": "API Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Robert": {
+      "main": [
+        [
+          {
+            "node": "Parsea Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsea Robert": {
+      "main": [
+        [
+          {
+            "node": "Convierte JSON Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convierte JSON Robert": {
+      "main": [
+        [
+          {
+            "node": "Base64 Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64 Robert": {
+      "main": [
+        [
+          {
+            "node": "Fecha y Nombre Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fecha y Nombre Robert": {
+      "main": [
+        [
+          {
+            "node": "Separa Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separa Robert": {
+      "main": [
+        [
+          {
+            "node": "¿Existe Robert?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "¿Existe Robert?": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Robert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Subir Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Robert": {
+      "main": [
+        [
+          {
+            "node": "Separa Robert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subir Robert": {
+      "main": [
+        [
+          {
+            "node": "Separa Robert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separa Robert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "6cc4f419-25cb-468d-b7d8-3625df51e6fc",
+  "activeVersionId": "6cc4f419-25cb-468d-b7d8-3625df51e6fc",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-09T15:01:36.293Z",
+      "createdAt": "2026-04-09T15:01:36.293Z",
+      "role": "workflow:owner",
+      "workflowId": "fbGdj63Ry7QIw9eL",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-09T15:17:48.564Z",
+    "createdAt": "2026-04-09T15:17:48.564Z",
+    "versionId": "6cc4f419-25cb-468d-b7d8-3625df51e6fc",
+    "workflowId": "fbGdj63Ry7QIw9eL",
+    "nodes": [
+      {
+        "id": "trigger-schedule",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -304,
+          208
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 23,
+                "triggerAtMinute": 0
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "trigger-manual",
+        "name": "When clicking 'Execute workflow'",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          384
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "sticky1",
+        "name": "Sticky Note1",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -96,
+          192
+        ],
+        "parameters": {
+          "content": "### INSTANCIA 1: Arnaldo\nn8n.arnaldoayalaestratega.cloud → N8N-REPOSITORIO",
+          "height": 236,
+          "width": 380,
+          "color": 5
+        }
+      },
+      {
+        "id": "sticky2",
+        "name": "Sticky Note2",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -96,
+          500
+        ],
+        "parameters": {
+          "content": "### INSTANCIA 2: Mica\nsytem-ia-pruebas-n8n → N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+          "height": 236,
+          "width": 380,
+          "color": 3
+        }
+      },
+      {
+        "id": "sticky3",
+        "name": "Sticky Note3",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -96,
+          800
+        ],
+        "parameters": {
+          "content": "### INSTANCIA 3: Robert\nn8n.lovbot.ai → N8N-REPOSITORIO-LOVBOT",
+          "height": 236,
+          "width": 380,
+          "color": 4
+        }
+      },
+      {
+        "id": "list-arnaldo",
+        "name": "Lista archivos Arnaldo",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          -32,
+          256
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO",
+            "mode": "name"
+          },
+          "filePath": "="
+        },
+        "alwaysOutputData": true,
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "junta-arnaldo",
+        "name": "Junta Arnaldo",
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          160,
+          256
+        ],
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "name"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "api-arnaldo",
+        "name": "API Arnaldo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          384,
+          256
+        ],
+        "parameters": {
+          "url": "https://n8n.arnaldoayalaestratega.cloud/api/v1/workflows?limit=250",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmM2VjOTRiYi1kNjlmLTQ1NjYtYWZkMi1hNDI1OWM0ZTllMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiN2ZiODE5NDQtMmU3Mi00ZjM3LTg3ODgtNTQ3MTA0NjVkYjQzIiwiaWF0IjoxNzc0NjEzNDgxfQ.0Sil51HrgVx6C-TmaHZl1bOQnrYwiqA5cas5C_jPexs"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "parse-arnaldo",
+        "name": "Parsea Arnaldo",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          256
+        ],
+        "parameters": {
+          "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+        }
+      },
+      {
+        "id": "convert-arnaldo",
+        "name": "Convierte JSON Arnaldo",
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          784,
+          256
+        ],
+        "parameters": {
+          "operation": "toJson",
+          "mode": "each",
+          "options": {
+            "format": true
+          }
+        }
+      },
+      {
+        "id": "base64-arnaldo",
+        "name": "Base64 Arnaldo",
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          256
+        ],
+        "parameters": {
+          "operation": "binaryToPropery",
+          "options": {}
+        }
+      },
+      {
+        "id": "set-arnaldo",
+        "name": "Fecha y Nombre Arnaldo",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          256
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "commitDate",
+                "type": "string",
+                "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+              },
+              {
+                "id": "a2",
+                "name": "fileName",
+                "type": "string",
+                "value": "={{ $('Parsea Arnaldo').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Arnaldo').item.json.id }}.json"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "split-arnaldo",
+        "name": "Separa Arnaldo",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 2,
+        "position": [
+          1456,
+          256
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "if-arnaldo",
+        "name": "¿Existe Arnaldo?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          1680,
+          240
+        ],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $('Junta Arnaldo').item.json.name }}",
+                "operation": "contains",
+                "value2": "={{ $('Parsea Arnaldo').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Arnaldo').item.json.id }}.json"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "update-arnaldo",
+        "name": "Actualizar Arnaldo",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          160
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Arnaldo').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Arnaldo').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Arnaldo').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "create-arnaldo",
+        "name": "Subir Arnaldo",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          352
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Arnaldo').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Arnaldo').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Arnaldo').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "list-mica",
+        "name": "Lista archivos Mica",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          -32,
+          560
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+            "mode": "name"
+          },
+          "filePath": "="
+        },
+        "alwaysOutputData": true,
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "junta-mica",
+        "name": "Junta Mica",
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          160,
+          560
+        ],
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "name"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "api-mica",
+        "name": "API Mica",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          384,
+          560
+        ],
+        "parameters": {
+          "url": "https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host/api/v1/workflows?limit=250",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MmI5ZDg4Ny0zMTgzLTQ2YjEtOWRiNC1jMzhiNTRlZjJjYjYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMjNlZGY4NzQtNDRlZi00OTBiLWFmNDUtMjNiNTQ1NzE3NGJhIiwiaWF0IjoxNzc1NTY0ODAyfQ.l0DPYPUouH_Klwv5oOPRK-tvvmGBKBUjIVXCfCMZcQI"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "parse-mica",
+        "name": "Parsea Mica",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          560
+        ],
+        "parameters": {
+          "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+        }
+      },
+      {
+        "id": "convert-mica",
+        "name": "Convierte JSON Mica",
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          784,
+          560
+        ],
+        "parameters": {
+          "operation": "toJson",
+          "mode": "each",
+          "options": {
+            "format": true
+          }
+        }
+      },
+      {
+        "id": "base64-mica",
+        "name": "Base64 Mica",
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          560
+        ],
+        "parameters": {
+          "operation": "binaryToPropery",
+          "options": {}
+        }
+      },
+      {
+        "id": "set-mica",
+        "name": "Fecha y Nombre Mica",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          560
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "m1",
+                "name": "commitDate",
+                "type": "string",
+                "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+              },
+              {
+                "id": "m2",
+                "name": "fileName",
+                "type": "string",
+                "value": "={{ $('Parsea Mica').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Mica').item.json.id }}.json"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "split-mica",
+        "name": "Separa Mica",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 2,
+        "position": [
+          1456,
+          560
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "if-mica",
+        "name": "¿Existe Mica?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          1680,
+          544
+        ],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $('Junta Mica').item.json.name }}",
+                "operation": "contains",
+                "value2": "={{ $('Parsea Mica').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Mica').item.json.id }}.json"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "update-mica",
+        "name": "Actualizar Mica",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          464
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Mica').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Mica').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Mica').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "create-mica",
+        "name": "Subir Mica",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          656
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-SYSTEM-IA-DEMO",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Mica').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Mica').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Mica').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "list-robert",
+        "name": "Lista archivos Robert",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          -32,
+          864
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-LOVBOT",
+            "mode": "name"
+          },
+          "filePath": "="
+        },
+        "alwaysOutputData": true,
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "junta-robert",
+        "name": "Junta Robert",
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          160,
+          864
+        ],
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "name"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "api-robert",
+        "name": "API Robert",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          384,
+          864
+        ],
+        "parameters": {
+          "url": "https://n8n.lovbot.ai/api/v1/workflows?limit=250",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-API-KEY",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0YTI4ZjUzNS0wNjhtLTQ4ZTgtYWYyOC04ZDY3MTIzMTE1OTkiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzc1NDY5NjcxfQ.XGWv2X_diwMXtBifThjsttpMsCg6BbX0WP78jvbTt-A"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "parse-robert",
+        "name": "Parsea Robert",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          864
+        ],
+        "parameters": {
+          "jsCode": "const response = $input.first().json;\nconst workflows = response.data || [];\nreturn workflows.filter(wf => !wf.isArchived).map(wf => ({\n  json: {\n    ...wf,\n    tags: (wf.tags && wf.tags.length > 0) ? wf.tags : [{ id: 'sin-tag', name: 'sin-tag' }]\n  }\n}));"
+        }
+      },
+      {
+        "id": "convert-robert",
+        "name": "Convierte JSON Robert",
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          784,
+          864
+        ],
+        "parameters": {
+          "operation": "toJson",
+          "mode": "each",
+          "options": {
+            "format": true
+          }
+        }
+      },
+      {
+        "id": "base64-robert",
+        "name": "Base64 Robert",
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          864
+        ],
+        "parameters": {
+          "operation": "binaryToPropery",
+          "options": {}
+        }
+      },
+      {
+        "id": "set-robert",
+        "name": "Fecha y Nombre Robert",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1232,
+          864
+        ],
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "r1",
+                "name": "commitDate",
+                "type": "string",
+                "value": "={{ $now.format('dd-MM-yyyy/H:mm') }}"
+              },
+              {
+                "id": "r2",
+                "name": "fileName",
+                "type": "string",
+                "value": "={{ $('Parsea Robert').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Robert').item.json.id }}.json"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "split-robert",
+        "name": "Separa Robert",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 2,
+        "position": [
+          1456,
+          864
+        ],
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        }
+      },
+      {
+        "id": "if-robert",
+        "name": "¿Existe Robert?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          1680,
+          848
+        ],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $('Junta Robert').item.json.name }}",
+                "operation": "contains",
+                "value2": "={{ $('Parsea Robert').item.json.name.replace(/[^a-zA-Z0-9\\-_\\s]/g, '').replace(/\\s+/g, '-').toLowerCase() }}--{{ $('Parsea Robert').item.json.id }}.json"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "update-robert",
+        "name": "Actualizar Robert",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          768
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-LOVBOT",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Robert').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Robert').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Robert').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      },
+      {
+        "id": "create-robert",
+        "name": "Subir Robert",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [
+          1920,
+          960
+        ],
+        "parameters": {
+          "authentication": "accessToken",
+          "resource": "file",
+          "owner": {
+            "__rl": true,
+            "value": "Arnaldo999",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "N8N-REPOSITORIO-LOVBOT",
+            "mode": "name"
+          },
+          "filePath": "={{ $('Fecha y Nombre Robert').item.json.fileName }}",
+          "fileContent": "={{ $('Base64 Robert').item.json.data }}",
+          "commitMessage": "=backup-{{ $('Fecha y Nombre Robert').item.json.commitDate }}"
+        },
+        "onError": "continueErrorOutput",
+        "credentials": {
+          "githubApi": {
+            "id": "pqG79TfgO0kOZGb7",
+            "name": "GitHub account 3"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Lista archivos Arnaldo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Lista archivos Mica",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Lista archivos Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking 'Execute workflow'": {
+        "main": [
+          [
+            {
+              "node": "Lista archivos Arnaldo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Lista archivos Mica",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Lista archivos Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lista archivos Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Junta Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Junta Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "API Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Parsea Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parsea Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Convierte JSON Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convierte JSON Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Base64 Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Base64 Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Fecha y Nombre Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fecha y Nombre Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Separa Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Separa Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "¿Existe Arnaldo?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "¿Existe Arnaldo?": {
+        "main": [
+          [
+            {
+              "node": "Actualizar Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Subir Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Actualizar Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Separa Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Subir Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "Separa Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lista archivos Mica": {
+        "main": [
+          [
+            {
+              "node": "Junta Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Junta Mica": {
+        "main": [
+          [
+            {
+              "node": "API Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Mica": {
+        "main": [
+          [
+            {
+              "node": "Parsea Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parsea Mica": {
+        "main": [
+          [
+            {
+              "node": "Convierte JSON Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convierte JSON Mica": {
+        "main": [
+          [
+            {
+              "node": "Base64 Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Base64 Mica": {
+        "main": [
+          [
+            {
+              "node": "Fecha y Nombre Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fecha y Nombre Mica": {
+        "main": [
+          [
+            {
+              "node": "Separa Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Separa Mica": {
+        "main": [
+          [
+            {
+              "node": "¿Existe Mica?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "¿Existe Mica?": {
+        "main": [
+          [
+            {
+              "node": "Actualizar Mica",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Subir Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Actualizar Mica": {
+        "main": [
+          [
+            {
+              "node": "Separa Mica",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Subir Mica": {
+        "main": [
+          [
+            {
+              "node": "Separa Mica",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Mica",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lista archivos Robert": {
+        "main": [
+          [
+            {
+              "node": "Junta Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Junta Robert": {
+        "main": [
+          [
+            {
+              "node": "API Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "API Robert": {
+        "main": [
+          [
+            {
+              "node": "Parsea Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parsea Robert": {
+        "main": [
+          [
+            {
+              "node": "Convierte JSON Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convierte JSON Robert": {
+        "main": [
+          [
+            {
+              "node": "Base64 Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Base64 Robert": {
+        "main": [
+          [
+            {
+              "node": "Fecha y Nombre Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fecha y Nombre Robert": {
+        "main": [
+          [
+            {
+              "node": "Separa Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Separa Robert": {
+        "main": [
+          [
+            {
+              "node": "¿Existe Robert?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "¿Existe Robert?": {
+        "main": [
+          [
+            {
+              "node": "Actualizar Robert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Subir Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Actualizar Robert": {
+        "main": [
+          [
+            {
+              "node": "Separa Robert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Subir Robert": {
+        "main": [
+          [
+            {
+              "node": "Separa Robert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Separa Robert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
