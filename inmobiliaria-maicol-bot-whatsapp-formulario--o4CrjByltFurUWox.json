@@ -1,0 +1,906 @@
+{
+  "updatedAt": "2026-04-02T01:03:58.125Z",
+  "createdAt": "2026-03-27T13:09:03.723Z",
+  "id": "o4CrjByltFurUWox",
+  "name": "Inmobiliaria Maicol — Bot WhatsApp + Formulario",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria",
+        "options": {}
+      },
+      "id": "a2c1789e-b83b-47ed-8aea-1f8593690577",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "webhookId": "3b45dad2-d87f-4047-8387-91e3dcd5077f"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria-formulario",
+        "options": {}
+      },
+      "id": "webhook-form",
+      "name": "Webhook Formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -96
+      ],
+      "webhookId": "3eb67295-5398-48b3-8bf0-ef0909804380",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://system-ia-agentes.onrender.com/clientes/arnaldo/maicol/whatsapp",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "eb651ed0-4396-4670-a431-6e17761fb99a",
+      "name": "HTTP Request — FastAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "mode": "id",
+          "value": "appaDT7uwHnimVZLM"
+        },
+        "table": {
+          "mode": "id",
+          "value": "tblonoyIMAM5kl2ue"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $('Webhook Formulario').item.json.body.Nombre }}",
+            "Apellido": "={{ $('Webhook Formulario').item.json.body.Apellido }}",
+            "Telefono": "={{ $('Webhook Formulario').item.json.body.Telefono }}",
+            "Email": "={{ $('Webhook Formulario').item.json.body.Email }}",
+            "Estado": "no_contactado",
+            "Operacion": "={{ $('Webhook Formulario').item.json.body.Operacion }}",
+            "Tipo_Propiedad": "={{ $('Webhook Formulario').item.json.body.Tipo_Propiedad }}",
+            "Presupuesto": "={{ $('Webhook Formulario').item.json.body.Presupuesto }}",
+            "Zona": "={{ $('Webhook Formulario').item.json.body.Emprendimiento }}",
+            "Llego_WhatsApp": false,
+            "Notas_Bot": "={{ 'Urgencia: ' + ($('Webhook Formulario').item.json.body.Urgencia || '-') + ' | ' + ($('Webhook Formulario').item.json.body.Notas_Cliente || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Apellido",
+              "displayName": "Apellido",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Telefono",
+              "displayName": "Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Operacion",
+              "displayName": "Operacion",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "venta",
+                  "value": "venta"
+                },
+                {
+                  "name": "alquiler",
+                  "value": "alquiler"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tipo_Propiedad",
+              "displayName": "Tipo_Propiedad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "casa",
+                  "value": "casa"
+                },
+                {
+                  "name": "departamento",
+                  "value": "departamento"
+                },
+                {
+                  "name": "terreno",
+                  "value": "terreno"
+                },
+                {
+                  "name": "casa_terreno",
+                  "value": "casa_terreno"
+                },
+                {
+                  "name": "otro",
+                  "value": "otro"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Presupuesto",
+              "displayName": "Presupuesto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "hata_50k",
+                  "value": "hata_50k"
+                },
+                {
+                  "name": "50k_100k",
+                  "value": "50k_100k"
+                },
+                {
+                  "name": "100k_200k",
+                  "value": "100k_200k"
+                },
+                {
+                  "name": "mas_200k",
+                  "value": "mas_200k"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Zona",
+              "displayName": "Zona",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Apóstoles",
+                  "value": "Apóstoles"
+                },
+                {
+                  "name": "Gdor Roca",
+                  "value": "Gdor Roca"
+                },
+                {
+                  "name": "San Ignacio",
+                  "value": "San Ignacio"
+                },
+                {
+                  "name": "Otra Zona",
+                  "value": "Otra Zona"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "no_contactado",
+                  "value": "no_contactado"
+                },
+                {
+                  "name": "contactado",
+                  "value": "contactado"
+                },
+                {
+                  "name": "en_negociacion",
+                  "value": "en_negociacion"
+                },
+                {
+                  "name": "cerrado",
+                  "value": "cerrado"
+                },
+                {
+                  "name": "descartado",
+                  "value": "descartado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Llego_WhatsApp",
+              "displayName": "Llego_WhatsApp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "fecha_ultimo_contacto",
+              "displayName": "fecha_ultimo_contacto",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha_WhatsApp",
+              "displayName": "Fecha_WhatsApp",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notas_Bot",
+              "displayName": "Notas_Bot",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c3f4e5a6-b7c8-4d9e-a0b1-c2d3e4f5a6b7",
+      "name": "Airtable - Registrar Lead",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        -96
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dUtlxamOhTxlX2oP",
+          "name": "Airtable Personal Access Token General"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const wb = $('Webhook Formulario').first().json.body;\nconst telRaw = (wb.Telefono || '').toString().trim();\nconst tel = telRaw.startsWith('+') ? telRaw : '+' + telRaw.replace(/\\D/g, '');\n\n// Campos nuevos del formulario de loteos\nconst objetivo = wb.Objetivo || wb.Operacion || 'buscar un lote';\nconst tipoLote = wb.Tipo_Lote || wb.Tipo_Propiedad || '-';\nconst zona = wb.Zona || wb.Emprendimiento || 'Misiones';\nconst presupuesto = wb.Presupuesto || '-';\nconst urgencia = wb.Urgencia || '-';\n\nconst msg = [\n  'Hola ' + (wb.Nombre || '') + '! 👋 Te registraste en el formulario de *Back Urbanizaciones*.',\n  '',\n  '🌿 *Tu búsqueda de lote:*',\n  '• Objetivo: ' + objetivo,\n  '• Tipo de lote: ' + tipoLote,\n  '• Zona: ' + zona,\n  '• Inversión: ' + presupuesto,\n  '• Plazo: ' + urgencia,\n  '',\n  'En breve un asesor se va a comunicar con vos. ¡Gracias! 🏡'\n].join('\\n');\n\nreturn [{ json: { telefono: tel, mensaje: msg } }];"
+      },
+      "id": "code-preparar-wa",
+      "name": "Code - Preparar WA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-API-Key",
+              "value": "f610d0bb4452b378cec5a0eabcb97059"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: '5493764815689', to: $json.telefono, type: 'text', text: { body: $json.mensaje } }) }}",
+        "options": {}
+      },
+      "id": "ycloud-send-wa",
+      "name": "YCloud - Enviar WhatsApp al Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Formulario": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Registrar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — FastAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Registrar Lead": {
+      "main": [
+        [
+          {
+            "node": "Code - Preparar WA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Preparar WA": {
+      "main": [
+        [
+          {
+            "node": "YCloud - Enviar WhatsApp al Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "aaf45bb0-d261-4168-96c8-431425e7f6be",
+  "activeVersionId": "aaf45bb0-d261-4168-96c8-431425e7f6be",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-27T13:09:03.723Z",
+      "createdAt": "2026-03-27T13:09:03.723Z",
+      "role": "workflow:owner",
+      "workflowId": "o4CrjByltFurUWox",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-02T01:03:58.127Z",
+    "createdAt": "2026-04-02T01:03:58.127Z",
+    "versionId": "aaf45bb0-d261-4168-96c8-431425e7f6be",
+    "workflowId": "o4CrjByltFurUWox",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inmobiliaria",
+          "options": {}
+        },
+        "id": "a2c1789e-b83b-47ed-8aea-1f8593690577",
+        "name": "Webhook WhatsApp",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "webhookId": "3b45dad2-d87f-4047-8387-91e3dcd5077f"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inmobiliaria-formulario",
+          "options": {}
+        },
+        "id": "webhook-form",
+        "name": "Webhook Formulario",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          -96
+        ],
+        "webhookId": "3eb67295-5398-48b3-8bf0-ef0909804380",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://system-ia-agentes.onrender.com/clientes/arnaldo/maicol/whatsapp",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.body }}",
+          "options": {}
+        },
+        "id": "eb651ed0-4396-4670-a431-6e17761fb99a",
+        "name": "HTTP Request — FastAPI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          240,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "create",
+          "base": {
+            "mode": "id",
+            "value": "appaDT7uwHnimVZLM"
+          },
+          "table": {
+            "mode": "id",
+            "value": "tblonoyIMAM5kl2ue"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Nombre": "={{ $('Webhook Formulario').item.json.body.Nombre }}",
+              "Apellido": "={{ $('Webhook Formulario').item.json.body.Apellido }}",
+              "Telefono": "={{ $('Webhook Formulario').item.json.body.Telefono }}",
+              "Email": "={{ $('Webhook Formulario').item.json.body.Email }}",
+              "Estado": "no_contactado",
+              "Operacion": "={{ $('Webhook Formulario').item.json.body.Operacion }}",
+              "Tipo_Propiedad": "={{ $('Webhook Formulario').item.json.body.Tipo_Propiedad }}",
+              "Presupuesto": "={{ $('Webhook Formulario').item.json.body.Presupuesto }}",
+              "Zona": "={{ $('Webhook Formulario').item.json.body.Emprendimiento }}",
+              "Llego_WhatsApp": false,
+              "Notas_Bot": "={{ 'Urgencia: ' + ($('Webhook Formulario').item.json.body.Urgencia || '-') + ' | ' + ($('Webhook Formulario').item.json.body.Notas_Cliente || '') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Nombre",
+                "displayName": "Nombre",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Apellido",
+                "displayName": "Apellido",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Telefono",
+                "displayName": "Telefono",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Email",
+                "displayName": "Email",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Operacion",
+                "displayName": "Operacion",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "options",
+                "options": [
+                  {
+                    "name": "Todo",
+                    "value": "Todo"
+                  },
+                  {
+                    "name": "venta",
+                    "value": "venta"
+                  },
+                  {
+                    "name": "alquiler",
+                    "value": "alquiler"
+                  }
+                ],
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Tipo_Propiedad",
+                "displayName": "Tipo_Propiedad",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "options",
+                "options": [
+                  {
+                    "name": "casa",
+                    "value": "casa"
+                  },
+                  {
+                    "name": "departamento",
+                    "value": "departamento"
+                  },
+                  {
+                    "name": "terreno",
+                    "value": "terreno"
+                  },
+                  {
+                    "name": "casa_terreno",
+                    "value": "casa_terreno"
+                  },
+                  {
+                    "name": "otro",
+                    "value": "otro"
+                  }
+                ],
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Presupuesto",
+                "displayName": "Presupuesto",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "options",
+                "options": [
+                  {
+                    "name": "hata_50k",
+                    "value": "hata_50k"
+                  },
+                  {
+                    "name": "50k_100k",
+                    "value": "50k_100k"
+                  },
+                  {
+                    "name": "100k_200k",
+                    "value": "100k_200k"
+                  },
+                  {
+                    "name": "mas_200k",
+                    "value": "mas_200k"
+                  }
+                ],
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Zona",
+                "displayName": "Zona",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "options",
+                "options": [
+                  {
+                    "name": "Apóstoles",
+                    "value": "Apóstoles"
+                  },
+                  {
+                    "name": "Gdor Roca",
+                    "value": "Gdor Roca"
+                  },
+                  {
+                    "name": "San Ignacio",
+                    "value": "San Ignacio"
+                  },
+                  {
+                    "name": "Otra Zona",
+                    "value": "Otra Zona"
+                  }
+                ],
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Estado",
+                "displayName": "Estado",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "options",
+                "options": [
+                  {
+                    "name": "no_contactado",
+                    "value": "no_contactado"
+                  },
+                  {
+                    "name": "contactado",
+                    "value": "contactado"
+                  },
+                  {
+                    "name": "en_negociacion",
+                    "value": "en_negociacion"
+                  },
+                  {
+                    "name": "cerrado",
+                    "value": "cerrado"
+                  },
+                  {
+                    "name": "descartado",
+                    "value": "descartado"
+                  }
+                ],
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Llego_WhatsApp",
+                "displayName": "Llego_WhatsApp",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "boolean",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "fecha_ultimo_contacto",
+                "displayName": "fecha_ultimo_contacto",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": true,
+                "removed": false
+              },
+              {
+                "id": "Fecha_WhatsApp",
+                "displayName": "Fecha_WhatsApp",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "dateTime",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "Notas_Bot",
+                "displayName": "Notas_Bot",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "id": "c3f4e5a6-b7c8-4d9e-a0b1-c2d3e4f5a6b7",
+        "name": "Airtable - Registrar Lead",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.1,
+        "position": [
+          240,
+          -96
+        ],
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "dUtlxamOhTxlX2oP",
+            "name": "Airtable Personal Access Token General"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const wb = $('Webhook Formulario').first().json.body;\nconst telRaw = (wb.Telefono || '').toString().trim();\nconst tel = telRaw.startsWith('+') ? telRaw : '+' + telRaw.replace(/\\D/g, '');\n\n// Campos nuevos del formulario de loteos\nconst objetivo = wb.Objetivo || wb.Operacion || 'buscar un lote';\nconst tipoLote = wb.Tipo_Lote || wb.Tipo_Propiedad || '-';\nconst zona = wb.Zona || wb.Emprendimiento || 'Misiones';\nconst presupuesto = wb.Presupuesto || '-';\nconst urgencia = wb.Urgencia || '-';\n\nconst msg = [\n  'Hola ' + (wb.Nombre || '') + '! 👋 Te registraste en el formulario de *Back Urbanizaciones*.',\n  '',\n  '🌿 *Tu búsqueda de lote:*',\n  '• Objetivo: ' + objetivo,\n  '• Tipo de lote: ' + tipoLote,\n  '• Zona: ' + zona,\n  '• Inversión: ' + presupuesto,\n  '• Plazo: ' + urgencia,\n  '',\n  'En breve un asesor se va a comunicar con vos. ¡Gracias! 🏡'\n].join('\\n');\n\nreturn [{ json: { telefono: tel, mensaje: msg } }];"
+        },
+        "id": "code-preparar-wa",
+        "name": "Code - Preparar WA",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.ycloud.com/v2/whatsapp/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "X-API-Key",
+                "value": "f610d0bb4452b378cec5a0eabcb97059"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ from: '5493764815689', to: $json.telefono, type: 'text', text: { body: $json.mensaje } }) }}",
+          "options": {}
+        },
+        "id": "ycloud-send-wa",
+        "name": "YCloud - Enviar WhatsApp al Lead",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          704,
+          -96
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook Formulario": {
+        "main": [
+          [
+            {
+              "node": "Airtable - Registrar Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request — FastAPI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Airtable - Registrar Lead": {
+        "main": [
+          [
+            {
+              "node": "Code - Preparar WA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code - Preparar WA": {
+        "main": [
+          [
+            {
+              "node": "YCloud - Enviar WhatsApp al Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-03-29T18:48:52.536Z",
+      "createdAt": "2026-03-29T18:48:52.536Z",
+      "id": "WvU1F1oZAz23dkCT",
+      "name": "PRODUCCION"
+    }
+  ]
+}
