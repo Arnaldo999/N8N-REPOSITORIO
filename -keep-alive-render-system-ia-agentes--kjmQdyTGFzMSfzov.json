@@ -1,0 +1,152 @@
+{
+  "updatedAt": "2026-03-29T19:24:50.979Z",
+  "createdAt": "2026-03-29T19:24:50.979Z",
+  "id": "kjmQdyTGFzMSfzov",
+  "name": "🔄 Keep-Alive — Render (system-ia-agentes)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "cron-keepalive",
+      "name": "Cada 14 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 14
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ping-render",
+      "name": "Ping Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://system-ia-agentes.onrender.com/health",
+        "options": {
+          "timeout": 30000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 14 minutos": {
+      "main": [
+        [
+          {
+            "node": "Ping Render",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Cada 14 minutos": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
+  "activeVersionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-29T19:24:50.979Z",
+      "createdAt": "2026-03-29T19:24:50.979Z",
+      "role": "workflow:owner",
+      "workflowId": "kjmQdyTGFzMSfzov",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-29T19:24:50.986Z",
+    "createdAt": "2026-03-29T19:24:50.986Z",
+    "versionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
+    "workflowId": "kjmQdyTGFzMSfzov",
+    "nodes": [
+      {
+        "id": "cron-keepalive",
+        "name": "Cada 14 minutos",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 14
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "ping-render",
+        "name": "Ping Render",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          240,
+          0
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://system-ia-agentes.onrender.com/health",
+          "options": {
+            "timeout": 30000
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Cada 14 minutos": {
+        "main": [
+          [
+            {
+              "node": "Ping Render",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
