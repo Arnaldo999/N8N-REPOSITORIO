@@ -1,0 +1,373 @@
+{
+  "updatedAt": "2026-04-09T01:59:30.540Z",
+  "createdAt": "2026-04-07T02:20:03.202Z",
+  "id": "aJILcfjRoKDFvGWY",
+  "name": "📱 Arnaldo — Publicación Diaria Redes Sociales (IG + FB + LI)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": null
+            }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "⏰ Schedule 9am ARG",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appOUtGnMYHrbLaMa/tblgFvYebZcJaYM07?maxRecords=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "node-airtable",
+      "name": "📋 Obtener Brandbook Arnaldo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "W0e13SZYW0ZJb5XV",
+          "name": "Header Auth Airtable Arnaldo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-publicar",
+      "name": "🚀 Publicar en Redes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        304
+      ]
+    },
+    {
+      "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
+      "name": "¿Falló la publicación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        920,
+        304
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "0c5e04a1-5d1c-4aa6-80bc-d8df0f557280",
+      "name": "🚨 Alerta Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1144,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "chat_id": 863363759,
+          "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
+          "parse_mode": "Markdown"
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "⏰ Schedule 9am ARG": {
+      "main": [
+        [
+          {
+            "node": "📋 Obtener Brandbook Arnaldo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Obtener Brandbook Arnaldo": {
+      "main": [
+        [
+          {
+            "node": "🚀 Publicar en Redes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚀 Publicar en Redes": {
+      "main": [
+        [
+          {
+            "node": "¿Falló la publicación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Falló la publicación?": {
+      "main": [
+        [
+          {
+            "node": "🚨 Alerta Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:⏰ Schedule 9am ARG": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
+  "activeVersionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-07T02:20:03.202Z",
+      "createdAt": "2026-04-07T02:20:03.202Z",
+      "role": "workflow:owner",
+      "workflowId": "aJILcfjRoKDFvGWY",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-09T01:59:30.541Z",
+    "createdAt": "2026-04-09T01:59:30.541Z",
+    "versionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
+    "workflowId": "aJILcfjRoKDFvGWY",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 9,
+                "triggerAtMinute": null
+              }
+            ]
+          }
+        },
+        "id": "node-schedule",
+        "name": "⏰ Schedule 9am ARG",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          240,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.airtable.com/v0/appOUtGnMYHrbLaMa/tblgFvYebZcJaYM07?maxRecords=1",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "node-airtable",
+        "name": "📋 Obtener Brandbook Arnaldo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          464,
+          304
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "W0e13SZYW0ZJb5XV",
+            "name": "Header Auth Airtable Arnaldo"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+          "options": {
+            "timeout": 120000
+          }
+        },
+        "id": "node-publicar",
+        "name": "🚀 Publicar en Redes",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          688,
+          304
+        ]
+      },
+      {
+        "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
+        "name": "¿Falló la publicación?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          920,
+          304
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "error",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        }
+      },
+      {
+        "id": "0c5e04a1-5d1c-4aa6-80bc-d8df0f557280",
+        "name": "🚨 Alerta Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1144,
+          200
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+          "sendBody": true,
+          "contentType": "json",
+          "body": {
+            "chat_id": 863363759,
+            "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
+            "parse_mode": "Markdown"
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "⏰ Schedule 9am ARG": {
+        "main": [
+          [
+            {
+              "node": "📋 Obtener Brandbook Arnaldo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📋 Obtener Brandbook Arnaldo": {
+        "main": [
+          [
+            {
+              "node": "🚀 Publicar en Redes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🚀 Publicar en Redes": {
+        "main": [
+          [
+            {
+              "node": "¿Falló la publicación?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "¿Falló la publicación?": {
+        "main": [
+          [
+            {
+              "node": "🚨 Alerta Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
