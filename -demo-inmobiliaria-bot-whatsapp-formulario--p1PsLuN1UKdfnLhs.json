@@ -1,0 +1,420 @@
+{
+  "updatedAt": "2026-03-31T08:20:09.196Z",
+  "createdAt": "2026-03-29T18:44:29.611Z",
+  "id": "p1PsLuN1UKdfnLhs",
+  "name": "🏘️ [DEMO] Inmobiliaria — Bot WhatsApp + Formulario",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria-demo",
+        "options": {}
+      },
+      "id": "wh-wa-demo",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "webhookId": "demo-wa-001"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inmobiliaria-demo-formulario",
+        "options": {}
+      },
+      "id": "wh-form-demo",
+      "name": "Webhook Formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -96
+      ],
+      "webhookId": "6a9555fa-2dca-4333-9fee-0effc762be07"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://system-ia-agentes.onrender.com/demos/inmobiliaria/whatsapp",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "http-demo",
+      "name": "HTTP Request — FastAPI Demo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "mode": "id",
+          "value": "appXPpRAfb6GH0xzV"
+        },
+        "table": {
+          "mode": "id",
+          "value": "tblonoyIMAM5kl2ue"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $('Webhook Formulario').item.json.body.Nombre }}",
+            "Apellido": "={{ $('Webhook Formulario').item.json.body.Apellido }}",
+            "Telefono": "={{ $('Webhook Formulario').item.json.body.Telefono }}",
+            "Email": "={{ $('Webhook Formulario').item.json.body.Email }}",
+            "Estado": "no_contactado",
+            "Operacion": "={{ $('Webhook Formulario').item.json.body.Operacion }}",
+            "Tipo_Propiedad": "={{ $('Webhook Formulario').item.json.body.Tipo_Propiedad }}",
+            "Presupuesto": "={{ $('Webhook Formulario').item.json.body.Presupuesto }}",
+            "Zona": "={{ $('Webhook Formulario').item.json.body.Emprendimiento }}",
+            "Llego_WhatsApp": false
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "at-demo",
+      "name": "Airtable - Registrar Lead Demo",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        -96
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Xqxq6vy5s2uMmMni",
+          "name": "Airtable Token General"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const wb = $('Webhook Formulario').first().json.body;\nconst telRaw = (wb.Telefono || '').toString().trim();\nconst tel = telRaw.startsWith('+') ? telRaw : '+' + telRaw.replace(/\\D/g, '');\nconst op = wb.Operacion === 'venta' ? 'comprar' : 'alquilar';\nconst msg = [\n  'Hola ' + (wb.Nombre || '') + '! Te registraste en *Inmobiliaria Demo*.',\n  '',\n  '*Tu b\\u00fasqueda:*',\n  '- Operaci\\u00f3n: ' + op,\n  '- Tipo: ' + (wb.Tipo_Propiedad || '-') + ', zona ' + (wb.Emprendimiento || '-'),\n  '- Presupuesto: ' + (wb.Presupuesto || '-')\n].join('\\n');\nreturn [{ json: { telefono: tel, mensaje: msg } }];"
+      },
+      "id": "code-demo",
+      "name": "Code - Preparar WA Demo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ycloud.com/v2/whatsapp/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-API-Key",
+              "value": "f610d0bb4452b378cec5a0eabcb97059"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: '5493764815689', to: $json.telefono, type: 'text', text: { body: $json.mensaje } }) }}",
+        "options": {}
+      },
+      "id": "ycloud-demo",
+      "name": "YCloud - Enviar WhatsApp Lead Demo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — FastAPI Demo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Formulario": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Registrar Lead Demo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Registrar Lead Demo": {
+      "main": [
+        [
+          {
+            "node": "Code - Preparar WA Demo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Preparar WA Demo": {
+      "main": [
+        [
+          {
+            "node": "YCloud - Enviar WhatsApp Lead Demo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "3298c003-018b-4d15-903d-7d51e2206ca8",
+  "activeVersionId": "3298c003-018b-4d15-903d-7d51e2206ca8",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-03-29T18:44:29.611Z",
+      "createdAt": "2026-03-29T18:44:29.611Z",
+      "role": "workflow:owner",
+      "workflowId": "p1PsLuN1UKdfnLhs",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-31T08:20:09.198Z",
+    "createdAt": "2026-03-31T08:20:09.198Z",
+    "versionId": "3298c003-018b-4d15-903d-7d51e2206ca8",
+    "workflowId": "p1PsLuN1UKdfnLhs",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inmobiliaria-demo",
+          "options": {}
+        },
+        "id": "wh-wa-demo",
+        "name": "Webhook WhatsApp",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "webhookId": "demo-wa-001"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "inmobiliaria-demo-formulario",
+          "options": {}
+        },
+        "id": "wh-form-demo",
+        "name": "Webhook Formulario",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          -96
+        ],
+        "webhookId": "6a9555fa-2dca-4333-9fee-0effc762be07"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://system-ia-agentes.onrender.com/demos/inmobiliaria/whatsapp",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.body }}",
+          "options": {}
+        },
+        "id": "http-demo",
+        "name": "HTTP Request — FastAPI Demo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          240,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "create",
+          "base": {
+            "mode": "id",
+            "value": "appXPpRAfb6GH0xzV"
+          },
+          "table": {
+            "mode": "id",
+            "value": "tblonoyIMAM5kl2ue"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Nombre": "={{ $('Webhook Formulario').item.json.body.Nombre }}",
+              "Apellido": "={{ $('Webhook Formulario').item.json.body.Apellido }}",
+              "Telefono": "={{ $('Webhook Formulario').item.json.body.Telefono }}",
+              "Email": "={{ $('Webhook Formulario').item.json.body.Email }}",
+              "Estado": "no_contactado",
+              "Operacion": "={{ $('Webhook Formulario').item.json.body.Operacion }}",
+              "Tipo_Propiedad": "={{ $('Webhook Formulario').item.json.body.Tipo_Propiedad }}",
+              "Presupuesto": "={{ $('Webhook Formulario').item.json.body.Presupuesto }}",
+              "Zona": "={{ $('Webhook Formulario').item.json.body.Emprendimiento }}",
+              "Llego_WhatsApp": false
+            },
+            "matchingColumns": [],
+            "schema": []
+          },
+          "options": {}
+        },
+        "id": "at-demo",
+        "name": "Airtable - Registrar Lead Demo",
+        "type": "n8n-nodes-base.airtable",
+        "typeVersion": 2.1,
+        "position": [
+          240,
+          -96
+        ],
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "Xqxq6vy5s2uMmMni",
+            "name": "Airtable Token General"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const wb = $('Webhook Formulario').first().json.body;\nconst telRaw = (wb.Telefono || '').toString().trim();\nconst tel = telRaw.startsWith('+') ? telRaw : '+' + telRaw.replace(/\\D/g, '');\nconst op = wb.Operacion === 'venta' ? 'comprar' : 'alquilar';\nconst msg = [\n  'Hola ' + (wb.Nombre || '') + '! Te registraste en *Inmobiliaria Demo*.',\n  '',\n  '*Tu b\\u00fasqueda:*',\n  '- Operaci\\u00f3n: ' + op,\n  '- Tipo: ' + (wb.Tipo_Propiedad || '-') + ', zona ' + (wb.Emprendimiento || '-'),\n  '- Presupuesto: ' + (wb.Presupuesto || '-')\n].join('\\n');\nreturn [{ json: { telefono: tel, mensaje: msg } }];"
+        },
+        "id": "code-demo",
+        "name": "Code - Preparar WA Demo",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          480,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.ycloud.com/v2/whatsapp/messages",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "X-API-Key",
+                "value": "f610d0bb4452b378cec5a0eabcb97059"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ from: '5493764815689', to: $json.telefono, type: 'text', text: { body: $json.mensaje } }) }}",
+          "options": {}
+        },
+        "id": "ycloud-demo",
+        "name": "YCloud - Enviar WhatsApp Lead Demo",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          704,
+          -96
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request — FastAPI Demo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Formulario": {
+        "main": [
+          [
+            {
+              "node": "Airtable - Registrar Lead Demo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Airtable - Registrar Lead Demo": {
+        "main": [
+          [
+            {
+              "node": "Code - Preparar WA Demo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code - Preparar WA Demo": {
+        "main": [
+          [
+            {
+              "node": "YCloud - Enviar WhatsApp Lead Demo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-03-29T18:48:36.916Z",
+      "createdAt": "2026-03-29T18:48:36.916Z",
+      "id": "5THVeQQ2u1lZ8nS4",
+      "name": "DEMO"
+    }
+  ]
+}
