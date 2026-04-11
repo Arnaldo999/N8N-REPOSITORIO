@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-09T01:59:30.540Z",
+  "updatedAt": "2026-04-10T17:42:09.282Z",
   "createdAt": "2026-04-07T02:20:03.202Z",
   "id": "aJILcfjRoKDFvGWY",
   "name": "📱 Arnaldo — Publicación Diaria Redes Sociales (IG + FB + LI)",
@@ -56,7 +56,7 @@
         "specifyBody": "json",
         "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
         "options": {
-          "timeout": 120000
+          "timeout": 300000
         }
       },
       "id": "node-publicar",
@@ -112,6 +112,7 @@
         "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
         "sendBody": true,
         "contentType": "json",
+        "specifyBody": "json",
         "body": {
           "chat_id": 863363759,
           "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
@@ -180,8 +181,8 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
-  "activeVersionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
+  "versionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
+  "activeVersionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
   "triggerCount": 1,
   "shared": [
     {
@@ -193,9 +194,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-09T01:59:30.541Z",
-    "createdAt": "2026-04-09T01:59:30.541Z",
-    "versionId": "0b4f02f9-3566-41c3-8707-535c4cbb4032",
+    "updatedAt": "2026-04-10T17:42:09.284Z",
+    "createdAt": "2026-04-10T17:42:09.284Z",
+    "versionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
     "workflowId": "aJILcfjRoKDFvGWY",
     "nodes": [
       {
@@ -248,7 +249,7 @@
           "specifyBody": "json",
           "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
           "options": {
-            "timeout": 120000
+            "timeout": 300000
           }
         },
         "id": "node-publicar",
@@ -304,6 +305,7 @@
           "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
           "sendBody": true,
           "contentType": "json",
+          "specifyBody": "json",
           "body": {
             "chat_id": 863363759,
             "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
