@@ -1,0 +1,373 @@
+{
+  "updatedAt": "2026-04-10T18:12:10.985Z",
+  "createdAt": "2026-04-10T17:49:03.938Z",
+  "id": "5nWay88239sreaj7",
+  "name": "🔍 Monitor YCloud — Maicol (Back Urbanizaciones)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "⏰ Cada 30 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.ycloud.com/v2/whatsapp/phoneNumbers",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-ycloud",
+      "name": "📡 GET YCloud phoneNumbers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "NwB5xq8p8EhBOpR5",
+          "name": "Header Auth Ycloud Maicol"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const NUMERO_MAICOL = '5493764815689';\nconst data = $input.first().json;\n\n// YCloud puede devolver { items: [...] } o array directo\nconst items = data.items || data || [];\n\nif (!Array.isArray(items) || items.length === 0) {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'API_VACIA',\n      mensaje: 'YCloud devolvió respuesta vacía o inesperada. Posible problema de autenticación.',\n      raw: JSON.stringify(data).slice(0, 200)\n    }\n  }];\n}\n\n// Buscar el número de Maicol\nconst entry = items.find(p => {\n  const n = (p.phoneNumber || p.phone_number || p.number || '').replace(/\\D/g, '');\n  return n === NUMERO_MAICOL;\n});\n\nif (!entry) {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'NUMERO_NO_ENCONTRADO',\n      mensaje: `El número ${NUMERO_MAICOL} no aparece en la cuenta YCloud. Puede estar desconectado o eliminado.`,\n      numeros_activos: items.map(p => p.phoneNumber || p.phone_number || p.number || 'desconocido')\n    }\n  }];\n}\n\nconst quality = (entry.qualityRating || entry.quality_rating || 'UNKNOWN').toUpperCase();\nconst status = (entry.status || entry.accountMode || 'UNKNOWN').toUpperCase();\n\nif (quality === 'RED' || status === 'FLAGGED' || status === 'RESTRICTED') {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'CALIDAD_DEGRADADA',\n      mensaje: `Número Maicol con problemas — qualityRating: ${quality}, status: ${status}`,\n      quality,\n      status\n    }\n  }];\n}\n\n// Todo OK\nreturn [{\n  json: {\n    alerta: false,\n    tipo: 'OK',\n    mensaje: `Número ${NUMERO_MAICOL} activo — quality: ${quality}, status: ${status}`,\n    quality,\n    status\n  }\n}];\n"
+      },
+      "id": "node-check",
+      "name": "🔎 Verificar número Maicol",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.alerta.toString() }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "id": "node-if",
+      "name": "¿Hay alerta?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        960,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "options": {}
+      },
+      "id": "node-telegram",
+      "name": "🚨 Alerta Telegram — YCloud Maicol",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        208
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-ok",
+      "name": "✅ Sin alerta — continuar",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        432
+      ]
+    }
+  ],
+  "connections": {
+    "⏰ Cada 30 minutos": {
+      "main": [
+        [
+          {
+            "node": "📡 GET YCloud phoneNumbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📡 GET YCloud phoneNumbers": {
+      "main": [
+        [
+          {
+            "node": "🔎 Verificar número Maicol",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Verificar número Maicol": {
+      "main": [
+        [
+          {
+            "node": "¿Hay alerta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay alerta?": {
+      "main": [
+        [
+          {
+            "node": "🚨 Alerta Telegram — YCloud Maicol",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "✅ Sin alerta — continuar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:⏰ Cada 30 minutos": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "55d4f8ce-1ba7-42f1-829c-d283e8253fe0",
+  "activeVersionId": "55d4f8ce-1ba7-42f1-829c-d283e8253fe0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T17:49:03.938Z",
+      "createdAt": "2026-04-10T17:49:03.938Z",
+      "role": "workflow:owner",
+      "workflowId": "5nWay88239sreaj7",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-10T18:12:10.986Z",
+    "createdAt": "2026-04-10T18:12:10.986Z",
+    "versionId": "55d4f8ce-1ba7-42f1-829c-d283e8253fe0",
+    "workflowId": "5nWay88239sreaj7",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          }
+        },
+        "id": "node-schedule",
+        "name": "⏰ Cada 30 minutos",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          240,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.ycloud.com/v2/whatsapp/phoneNumbers",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {
+            "timeout": 15000
+          }
+        },
+        "id": "node-ycloud",
+        "name": "📡 GET YCloud phoneNumbers",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          480,
+          304
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "NwB5xq8p8EhBOpR5",
+            "name": "Header Auth Ycloud Maicol"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const NUMERO_MAICOL = '5493764815689';\nconst data = $input.first().json;\n\n// YCloud puede devolver { items: [...] } o array directo\nconst items = data.items || data || [];\n\nif (!Array.isArray(items) || items.length === 0) {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'API_VACIA',\n      mensaje: 'YCloud devolvió respuesta vacía o inesperada. Posible problema de autenticación.',\n      raw: JSON.stringify(data).slice(0, 200)\n    }\n  }];\n}\n\n// Buscar el número de Maicol\nconst entry = items.find(p => {\n  const n = (p.phoneNumber || p.phone_number || p.number || '').replace(/\\D/g, '');\n  return n === NUMERO_MAICOL;\n});\n\nif (!entry) {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'NUMERO_NO_ENCONTRADO',\n      mensaje: `El número ${NUMERO_MAICOL} no aparece en la cuenta YCloud. Puede estar desconectado o eliminado.`,\n      numeros_activos: items.map(p => p.phoneNumber || p.phone_number || p.number || 'desconocido')\n    }\n  }];\n}\n\nconst quality = (entry.qualityRating || entry.quality_rating || 'UNKNOWN').toUpperCase();\nconst status = (entry.status || entry.accountMode || 'UNKNOWN').toUpperCase();\n\nif (quality === 'RED' || status === 'FLAGGED' || status === 'RESTRICTED') {\n  return [{\n    json: {\n      alerta: true,\n      tipo: 'CALIDAD_DEGRADADA',\n      mensaje: `Número Maicol con problemas — qualityRating: ${quality}, status: ${status}`,\n      quality,\n      status\n    }\n  }];\n}\n\n// Todo OK\nreturn [{\n  json: {\n    alerta: false,\n    tipo: 'OK',\n    mensaje: `Número ${NUMERO_MAICOL} activo — quality: ${quality}, status: ${status}`,\n    quality,\n    status\n  }\n}];\n"
+        },
+        "id": "node-check",
+        "name": "🔎 Verificar número Maicol",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.alerta.toString() }}",
+                "operation": "equal",
+                "value2": "true"
+              }
+            ]
+          }
+        },
+        "id": "node-if",
+        "name": "¿Hay alerta?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          960,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "options": {}
+        },
+        "id": "node-telegram",
+        "name": "🚨 Alerta Telegram — YCloud Maicol",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1200,
+          208
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "node-ok",
+        "name": "✅ Sin alerta — continuar",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1200,
+          432
+        ]
+      }
+    ],
+    "connections": {
+      "⏰ Cada 30 minutos": {
+        "main": [
+          [
+            {
+              "node": "📡 GET YCloud phoneNumbers",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📡 GET YCloud phoneNumbers": {
+        "main": [
+          [
+            {
+              "node": "🔎 Verificar número Maicol",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🔎 Verificar número Maicol": {
+        "main": [
+          [
+            {
+              "node": "¿Hay alerta?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "¿Hay alerta?": {
+        "main": [
+          [
+            {
+              "node": "🚨 Alerta Telegram — YCloud Maicol",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "✅ Sin alerta — continuar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
