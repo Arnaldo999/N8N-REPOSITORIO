@@ -1,0 +1,517 @@
+{
+  "updatedAt": "2026-04-10T18:43:21.978Z",
+  "createdAt": "2026-04-10T18:34:52.066Z",
+  "id": "IuHJLy2hQhOIDlYK",
+  "name": "🔍 Auditoría Diaria — Ecosistema Agencia (Fase 2)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "schedule-node",
+      "name": "⏰ Schedule 8am ARG",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "infra-check-node",
+      "name": "🏗️ Check Infraestructura Cross-Proyecto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Chequea n8n Mica y n8n Lovbot\n// FastAPI + n8n Arnaldo los cubre la guardia_critica.py (script independiente)\n// Variables de entorno: N8N_MICA_URL, N8N_LOVBOT_URL\n\nconst N8N_MICA_URL = process.env.N8N_MICA_URL || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_LOVBOT_URL = process.env.N8N_LOVBOT_URL || 'https://n8n.lovbot.ai';\n\nasync function checkHealth(nombre, url) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${url}/healthz`,\n      timeout: 10000,\n    });\n    if (response && (response.status === 200 || response.status === 'ok')) {\n      return { servicio: nombre, ok: true, detalle: 'responde' };\n    }\n    return { servicio: nombre, ok: false, tipo: 'infraestructura_caida', detalle: `HTTP inesperado` };\n  } catch (e) {\n    return { servicio: nombre, ok: false, tipo: 'infraestructura_caida', detalle: `no responde: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all([\n  checkHealth('n8n Mica', N8N_MICA_URL),\n  checkHealth('n8n Lovbot', N8N_LOVBOT_URL),\n]);\n\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+      }
+    },
+    {
+      "id": "workflows-check-node",
+      "name": "📋 Check Workflows Críticos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        500
+      ],
+      "parameters": {
+        "jsCode": "// Chequea estado activo de workflows críticos en las 3 instancias\n// Usa las APIs de n8n via HTTP con credenciales en env vars\n// Variables: N8N_ARNALDO_URL, N8N_ARNALDO_KEY, N8N_MICA_URL, N8N_MICA_KEY, N8N_LOVBOT_URL, N8N_LOVBOT_KEY\n\nconst N8N_ARNALDO_URL = process.env.N8N_ARNALDO_URL || 'https://n8n.arnaldoayalaestratega.cloud';\nconst N8N_ARNALDO_KEY = process.env.N8N_ARNALDO_KEY || '';\nconst N8N_MICA_URL    = process.env.N8N_MICA_URL    || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_MICA_KEY    = process.env.N8N_MICA_KEY    || '';\nconst N8N_LOVBOT_URL  = process.env.N8N_LOVBOT_URL  || 'https://n8n.lovbot.ai';\nconst N8N_LOVBOT_KEY  = process.env.N8N_LOVBOT_KEY  || '';\n\nconst WORKFLOWS_CRITICOS = [\n  { id: 'o4CrjByltFurUWox', nombre: 'Bot Maicol',        instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aJILcfjRoKDFvGWY', nombre: 'Redes Arnaldo',     instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'yE7fwesbdjxIxoDn', nombre: 'Alerta Cuotas Maicol', instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aOiZFbmvMoPSE0vB', nombre: 'Redes Mica',        instancia: 'mica',    url: N8N_MICA_URL,    key: N8N_MICA_KEY },\n  { id: 'OyTCUWbtnigfu5Oh', nombre: 'Lovbot Eventos',    instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n  { id: 'vF3bMbCzFz3D2W9z', nombre: 'Lovbot Onboarding', instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n  { id: 'zEyLpnNJeapT9auj', nombre: 'Lovbot Login Code', instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n];\n\nasync function checkWorkflow(wf) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${wf.url}/api/v1/workflows/${wf.id}`,\n      headers: { 'X-N8N-API-KEY': wf.key },\n      timeout: 10000,\n    });\n    const data = response;\n    if (!data || data.id === undefined) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inexistente', detalle: 'no encontrado en la instancia' };\n    }\n    if (data.active === false) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inactivo', detalle: 'active=false' };\n    }\n    return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: true, detalle: 'activo' };\n  } catch (e) {\n    const status = e.response?.status;\n    if (status === 404) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inexistente', detalle: 'HTTP 404' };\n    }\n    return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inactivo', detalle: `error: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all(WORKFLOWS_CRITICOS.map(checkWorkflow));\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+      }
+    },
+    {
+      "id": "ejecuciones-check-node",
+      "name": "🔄 Check Últimas Ejecuciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        700
+      ],
+      "parameters": {
+        "jsCode": "// Chequea si las últimas ejecuciones de workflows con schedule automático fallaron\n// Ventana: últimas 26 horas\n// Workflows: Redes Arnaldo, Redes Mica, Backup N8N\n\nconst N8N_ARNALDO_URL = process.env.N8N_ARNALDO_URL || 'https://n8n.arnaldoayalaestratega.cloud';\nconst N8N_ARNALDO_KEY = process.env.N8N_ARNALDO_KEY || '';\nconst N8N_MICA_URL    = process.env.N8N_MICA_URL    || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_MICA_KEY    = process.env.N8N_MICA_KEY    || '';\n\nconst WORKFLOWS_SCHEDULE = [\n  { id: 'aJILcfjRoKDFvGWY', nombre: 'Redes Arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aOiZFbmvMoPSE0vB', nombre: 'Redes Mica',    url: N8N_MICA_URL,    key: N8N_MICA_KEY },\n  { id: 'fbGdj63Ry7QIw9eL', nombre: 'Backup N8N',    url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n];\n\nconst VENTANA_MS = 26 * 60 * 60 * 1000; // 26 horas\nconst ahora = Date.now();\n\nasync function checkEjecuciones(wf) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${wf.url}/api/v1/executions?workflowId=${wf.id}&limit=5`,\n      headers: { 'X-N8N-API-KEY': wf.key },\n      timeout: 10000,\n    });\n    const execuciones = response?.data || [];\n    if (execuciones.length === 0) {\n      return { nombre: wf.nombre, ok: true, detalle: 'sin ejecuciones recientes' };\n    }\n    // Filtrar las últimas 26h\n    const recientes = execuciones.filter(e => {\n      const t = new Date(e.startedAt || e.createdAt).getTime();\n      return (ahora - t) < VENTANA_MS;\n    });\n    if (recientes.length === 0) {\n      return { nombre: wf.nombre, ok: true, detalle: 'sin ejecuciones en 26h' };\n    }\n    // Si la última ejecución reciente tiene error\n    const ultima = recientes[0];\n    if (ultima.status === 'error' || ultima.status === 'crashed') {\n      return {\n        nombre: wf.nombre, ok: false,\n        tipo: 'ejecucion_con_error',\n        detalle: `última ejecución: ${ultima.status} a las ${new Date(ultima.startedAt).toLocaleString('es-AR', {timeZone: 'America/Argentina/Buenos_Aires'})}`\n      };\n    }\n    return { nombre: wf.nombre, ok: true, detalle: `última ejecución: ${ultima.status}` };\n  } catch (e) {\n    return { nombre: wf.nombre, ok: false, tipo: 'ejecucion_con_error', detalle: `error consultando ejecuciones: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all(WORKFLOWS_SCHEDULE.map(checkEjecuciones));\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+      }
+    },
+    {
+      "id": "merge-node",
+      "name": "🧮 Merge Resultados",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        500,
+        500
+      ],
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex"
+      }
+    },
+    {
+      "id": "evaluar-node",
+      "name": "📊 Evaluar y Armar Reporte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        750,
+        500
+      ],
+      "parameters": {
+        "jsCode": "// Recibe los 3 resultados y construye el reporte\n// Separa alertas por tipo: infraestructura_caida, workflow_inactivo, workflow_inexistente, ejecucion_con_error\n\nconst items = $input.all();\n\n// Los items vienen en orden: infra [0], workflows [1], ejecuciones [2]\n// Pero con multiplex pueden llegar combinados — los buscamos por contenido\nlet alertas_infra = [];\nlet alertas_workflows = [];\nlet alertas_ejecuciones = [];\n\nfor (const item of items) {\n  const d = item.json;\n  if (d.resultados) {\n    for (const r of d.resultados) {\n      if (!r.ok) {\n        if (r.tipo === 'infraestructura_caida') alertas_infra.push(r);\n        else if (r.tipo === 'workflow_inactivo') alertas_workflows.push(r);\n        else if (r.tipo === 'workflow_inexistente') alertas_workflows.push(r);\n        else if (r.tipo === 'ejecucion_con_error') alertas_ejecuciones.push(r);\n        else alertas_infra.push(r); // fallback\n      }\n    }\n  }\n}\n\nconst total = alertas_infra.length + alertas_workflows.length + alertas_ejecuciones.length;\nconst fecha = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });\n\nif (total === 0) {\n  return [{ json: { hay_alertas: false, total: 0, mensaje: null, fecha } }];\n}\n\n// Construir mensaje Telegram\nlet lineas = [`🔍 <b>AUDITORÍA DIARIA</b> — ${fecha}`, ''];\n\nif (alertas_infra.length > 0) {\n  lineas.push('🏗️ <b>INFRAESTRUCTURA:</b>');\n  for (const a of alertas_infra) {\n    lineas.push(`  ❌ ${a.servicio || a.nombre} — ${a.detalle}`);\n  }\n  lineas.push('');\n}\n\nif (alertas_workflows.length > 0) {\n  // Separar inactivos de inexistentes\n  const inactivos = alertas_workflows.filter(a => a.tipo === 'workflow_inactivo');\n  const inexistentes = alertas_workflows.filter(a => a.tipo === 'workflow_inexistente');\n  \n  if (inactivos.length > 0) {\n    lineas.push('📋 <b>WORKFLOWS INACTIVOS:</b>');\n    for (const a of inactivos) {\n      lineas.push(`  ⏸ ${a.nombre} [${a.instancia}]`);\n    }\n    lineas.push('');\n  }\n  if (inexistentes.length > 0) {\n    lineas.push('❓ <b>WORKFLOWS NO ENCONTRADOS:</b>');\n    for (const a of inexistentes) {\n      lineas.push(`  ❓ ${a.nombre} [${a.instancia}] — ${a.detalle}`);\n    }\n    lineas.push('');\n  }\n}\n\nif (alertas_ejecuciones.length > 0) {\n  lineas.push('🔄 <b>EJECUCIONES CON ERROR:</b>');\n  for (const a of alertas_ejecuciones) {\n    lineas.push(`  ❌ ${a.nombre} — ${a.detalle}`);\n  }\n  lineas.push('');\n}\n\nlineas.push(`⚠️ <b>${total} alerta${total > 1 ? 's' : ''} detectada${total > 1 ? 's' : ''}</b> — revisá el panel`);\n\nconst mensaje = lineas.join('\\n');\nreturn [{ json: { hay_alertas: true, total, mensaje, fecha } }];"
+      }
+    },
+    {
+      "id": "if-alertas-node",
+      "name": "❓ ¿Hay alertas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        500
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.hay_alertas }}",
+              "operation": "equal",
+              "value2": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "telegram-node",
+      "name": "📨 Alerta Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1250,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\",\n  \"text\": \"{{ $json.mensaje }}\",\n  \"parse_mode\": \"HTML\"\n}"
+      }
+    },
+    {
+      "id": "noop-node",
+      "name": "🔇 Sin alertas — OK",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1250,
+        600
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "⏰ Schedule 8am ARG": {
+      "main": [
+        [
+          {
+            "node": "🏗️ Check Infraestructura Cross-Proyecto",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📋 Check Workflows Críticos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔄 Check Últimas Ejecuciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🏗️ Check Infraestructura Cross-Proyecto": {
+      "main": [
+        [
+          {
+            "node": "🧮 Merge Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Check Workflows Críticos": {
+      "main": [
+        [
+          {
+            "node": "🧮 Merge Resultados",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🔄 Check Últimas Ejecuciones": {
+      "main": [
+        [
+          {
+            "node": "🧮 Merge Resultados",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "🧮 Merge Resultados": {
+      "main": [
+        [
+          {
+            "node": "📊 Evaluar y Armar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📊 Evaluar y Armar Reporte": {
+      "main": [
+        [
+          {
+            "node": "❓ ¿Hay alertas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ ¿Hay alertas?": {
+      "main": [
+        [
+          {
+            "node": "📨 Alerta Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🔇 Sin alertas — OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:⏰ Schedule 8am ARG": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "3c6a613a-af0f-48cc-99e0-20520e2e90a0",
+  "activeVersionId": "3c6a613a-af0f-48cc-99e0-20520e2e90a0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-10T18:34:52.066Z",
+      "createdAt": "2026-04-10T18:34:52.066Z",
+      "role": "workflow:owner",
+      "workflowId": "IuHJLy2hQhOIDlYK",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-10T18:34:52.080Z",
+    "createdAt": "2026-04-10T18:34:52.080Z",
+    "versionId": "3c6a613a-af0f-48cc-99e0-20520e2e90a0",
+    "workflowId": "IuHJLy2hQhOIDlYK",
+    "nodes": [
+      {
+        "id": "schedule-node",
+        "name": "⏰ Schedule 8am ARG",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 11 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "infra-check-node",
+        "name": "🏗️ Check Infraestructura Cross-Proyecto",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          250,
+          300
+        ],
+        "parameters": {
+          "jsCode": "// Chequea n8n Mica y n8n Lovbot\n// FastAPI + n8n Arnaldo los cubre la guardia_critica.py (script independiente)\n// Variables de entorno: N8N_MICA_URL, N8N_LOVBOT_URL\n\nconst N8N_MICA_URL = process.env.N8N_MICA_URL || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_LOVBOT_URL = process.env.N8N_LOVBOT_URL || 'https://n8n.lovbot.ai';\n\nasync function checkHealth(nombre, url) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${url}/healthz`,\n      timeout: 10000,\n    });\n    if (response && (response.status === 200 || response.status === 'ok')) {\n      return { servicio: nombre, ok: true, detalle: 'responde' };\n    }\n    return { servicio: nombre, ok: false, tipo: 'infraestructura_caida', detalle: `HTTP inesperado` };\n  } catch (e) {\n    return { servicio: nombre, ok: false, tipo: 'infraestructura_caida', detalle: `no responde: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all([\n  checkHealth('n8n Mica', N8N_MICA_URL),\n  checkHealth('n8n Lovbot', N8N_LOVBOT_URL),\n]);\n\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+        }
+      },
+      {
+        "id": "workflows-check-node",
+        "name": "📋 Check Workflows Críticos",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          250,
+          500
+        ],
+        "parameters": {
+          "jsCode": "// Chequea estado activo de workflows críticos en las 3 instancias\n// Usa las APIs de n8n via HTTP con credenciales en env vars\n// Variables: N8N_ARNALDO_URL, N8N_ARNALDO_KEY, N8N_MICA_URL, N8N_MICA_KEY, N8N_LOVBOT_URL, N8N_LOVBOT_KEY\n\nconst N8N_ARNALDO_URL = process.env.N8N_ARNALDO_URL || 'https://n8n.arnaldoayalaestratega.cloud';\nconst N8N_ARNALDO_KEY = process.env.N8N_ARNALDO_KEY || '';\nconst N8N_MICA_URL    = process.env.N8N_MICA_URL    || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_MICA_KEY    = process.env.N8N_MICA_KEY    || '';\nconst N8N_LOVBOT_URL  = process.env.N8N_LOVBOT_URL  || 'https://n8n.lovbot.ai';\nconst N8N_LOVBOT_KEY  = process.env.N8N_LOVBOT_KEY  || '';\n\nconst WORKFLOWS_CRITICOS = [\n  { id: 'o4CrjByltFurUWox', nombre: 'Bot Maicol',        instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aJILcfjRoKDFvGWY', nombre: 'Redes Arnaldo',     instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'yE7fwesbdjxIxoDn', nombre: 'Alerta Cuotas Maicol', instancia: 'arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aOiZFbmvMoPSE0vB', nombre: 'Redes Mica',        instancia: 'mica',    url: N8N_MICA_URL,    key: N8N_MICA_KEY },\n  { id: 'OyTCUWbtnigfu5Oh', nombre: 'Lovbot Eventos',    instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n  { id: 'vF3bMbCzFz3D2W9z', nombre: 'Lovbot Onboarding', instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n  { id: 'zEyLpnNJeapT9auj', nombre: 'Lovbot Login Code', instancia: 'lovbot',  url: N8N_LOVBOT_URL,  key: N8N_LOVBOT_KEY },\n];\n\nasync function checkWorkflow(wf) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${wf.url}/api/v1/workflows/${wf.id}`,\n      headers: { 'X-N8N-API-KEY': wf.key },\n      timeout: 10000,\n    });\n    const data = response;\n    if (!data || data.id === undefined) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inexistente', detalle: 'no encontrado en la instancia' };\n    }\n    if (data.active === false) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inactivo', detalle: 'active=false' };\n    }\n    return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: true, detalle: 'activo' };\n  } catch (e) {\n    const status = e.response?.status;\n    if (status === 404) {\n      return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inexistente', detalle: 'HTTP 404' };\n    }\n    return { id: wf.id, nombre: wf.nombre, instancia: wf.instancia, ok: false, tipo: 'workflow_inactivo', detalle: `error: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all(WORKFLOWS_CRITICOS.map(checkWorkflow));\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+        }
+      },
+      {
+        "id": "ejecuciones-check-node",
+        "name": "🔄 Check Últimas Ejecuciones",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          250,
+          700
+        ],
+        "parameters": {
+          "jsCode": "// Chequea si las últimas ejecuciones de workflows con schedule automático fallaron\n// Ventana: últimas 26 horas\n// Workflows: Redes Arnaldo, Redes Mica, Backup N8N\n\nconst N8N_ARNALDO_URL = process.env.N8N_ARNALDO_URL || 'https://n8n.arnaldoayalaestratega.cloud';\nconst N8N_ARNALDO_KEY = process.env.N8N_ARNALDO_KEY || '';\nconst N8N_MICA_URL    = process.env.N8N_MICA_URL    || 'https://sytem-ia-pruebas-n8n.6g0gdj.easypanel.host';\nconst N8N_MICA_KEY    = process.env.N8N_MICA_KEY    || '';\n\nconst WORKFLOWS_SCHEDULE = [\n  { id: 'aJILcfjRoKDFvGWY', nombre: 'Redes Arnaldo', url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n  { id: 'aOiZFbmvMoPSE0vB', nombre: 'Redes Mica',    url: N8N_MICA_URL,    key: N8N_MICA_KEY },\n  { id: 'fbGdj63Ry7QIw9eL', nombre: 'Backup N8N',    url: N8N_ARNALDO_URL, key: N8N_ARNALDO_KEY },\n];\n\nconst VENTANA_MS = 26 * 60 * 60 * 1000; // 26 horas\nconst ahora = Date.now();\n\nasync function checkEjecuciones(wf) {\n  try {\n    const response = await $http.request({\n      method: 'GET',\n      url: `${wf.url}/api/v1/executions?workflowId=${wf.id}&limit=5`,\n      headers: { 'X-N8N-API-KEY': wf.key },\n      timeout: 10000,\n    });\n    const execuciones = response?.data || [];\n    if (execuciones.length === 0) {\n      return { nombre: wf.nombre, ok: true, detalle: 'sin ejecuciones recientes' };\n    }\n    // Filtrar las últimas 26h\n    const recientes = execuciones.filter(e => {\n      const t = new Date(e.startedAt || e.createdAt).getTime();\n      return (ahora - t) < VENTANA_MS;\n    });\n    if (recientes.length === 0) {\n      return { nombre: wf.nombre, ok: true, detalle: 'sin ejecuciones en 26h' };\n    }\n    // Si la última ejecución reciente tiene error\n    const ultima = recientes[0];\n    if (ultima.status === 'error' || ultima.status === 'crashed') {\n      return {\n        nombre: wf.nombre, ok: false,\n        tipo: 'ejecucion_con_error',\n        detalle: `última ejecución: ${ultima.status} a las ${new Date(ultima.startedAt).toLocaleString('es-AR', {timeZone: 'America/Argentina/Buenos_Aires'})}`\n      };\n    }\n    return { nombre: wf.nombre, ok: true, detalle: `última ejecución: ${ultima.status}` };\n  } catch (e) {\n    return { nombre: wf.nombre, ok: false, tipo: 'ejecucion_con_error', detalle: `error consultando ejecuciones: ${e.message}` };\n  }\n}\n\nconst resultados = await Promise.all(WORKFLOWS_SCHEDULE.map(checkEjecuciones));\nconst alertas = resultados.filter(r => !r.ok);\n\nreturn [{ json: { resultados, alertas, total_alertas: alertas.length } }];"
+        }
+      },
+      {
+        "id": "merge-node",
+        "name": "🧮 Merge Resultados",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          500,
+          500
+        ],
+        "parameters": {
+          "mode": "combine",
+          "combinationMode": "multiplex"
+        }
+      },
+      {
+        "id": "evaluar-node",
+        "name": "📊 Evaluar y Armar Reporte",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          750,
+          500
+        ],
+        "parameters": {
+          "jsCode": "// Recibe los 3 resultados y construye el reporte\n// Separa alertas por tipo: infraestructura_caida, workflow_inactivo, workflow_inexistente, ejecucion_con_error\n\nconst items = $input.all();\n\n// Los items vienen en orden: infra [0], workflows [1], ejecuciones [2]\n// Pero con multiplex pueden llegar combinados — los buscamos por contenido\nlet alertas_infra = [];\nlet alertas_workflows = [];\nlet alertas_ejecuciones = [];\n\nfor (const item of items) {\n  const d = item.json;\n  if (d.resultados) {\n    for (const r of d.resultados) {\n      if (!r.ok) {\n        if (r.tipo === 'infraestructura_caida') alertas_infra.push(r);\n        else if (r.tipo === 'workflow_inactivo') alertas_workflows.push(r);\n        else if (r.tipo === 'workflow_inexistente') alertas_workflows.push(r);\n        else if (r.tipo === 'ejecucion_con_error') alertas_ejecuciones.push(r);\n        else alertas_infra.push(r); // fallback\n      }\n    }\n  }\n}\n\nconst total = alertas_infra.length + alertas_workflows.length + alertas_ejecuciones.length;\nconst fecha = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' });\n\nif (total === 0) {\n  return [{ json: { hay_alertas: false, total: 0, mensaje: null, fecha } }];\n}\n\n// Construir mensaje Telegram\nlet lineas = [`🔍 <b>AUDITORÍA DIARIA</b> — ${fecha}`, ''];\n\nif (alertas_infra.length > 0) {\n  lineas.push('🏗️ <b>INFRAESTRUCTURA:</b>');\n  for (const a of alertas_infra) {\n    lineas.push(`  ❌ ${a.servicio || a.nombre} — ${a.detalle}`);\n  }\n  lineas.push('');\n}\n\nif (alertas_workflows.length > 0) {\n  // Separar inactivos de inexistentes\n  const inactivos = alertas_workflows.filter(a => a.tipo === 'workflow_inactivo');\n  const inexistentes = alertas_workflows.filter(a => a.tipo === 'workflow_inexistente');\n  \n  if (inactivos.length > 0) {\n    lineas.push('📋 <b>WORKFLOWS INACTIVOS:</b>');\n    for (const a of inactivos) {\n      lineas.push(`  ⏸ ${a.nombre} [${a.instancia}]`);\n    }\n    lineas.push('');\n  }\n  if (inexistentes.length > 0) {\n    lineas.push('❓ <b>WORKFLOWS NO ENCONTRADOS:</b>');\n    for (const a of inexistentes) {\n      lineas.push(`  ❓ ${a.nombre} [${a.instancia}] — ${a.detalle}`);\n    }\n    lineas.push('');\n  }\n}\n\nif (alertas_ejecuciones.length > 0) {\n  lineas.push('🔄 <b>EJECUCIONES CON ERROR:</b>');\n  for (const a of alertas_ejecuciones) {\n    lineas.push(`  ❌ ${a.nombre} — ${a.detalle}`);\n  }\n  lineas.push('');\n}\n\nlineas.push(`⚠️ <b>${total} alerta${total > 1 ? 's' : ''} detectada${total > 1 ? 's' : ''}</b> — revisá el panel`);\n\nconst mensaje = lineas.join('\\n');\nreturn [{ json: { hay_alertas: true, total, mensaje, fecha } }];"
+        }
+      },
+      {
+        "id": "if-alertas-node",
+        "name": "❓ ¿Hay alertas?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          1000,
+          500
+        ],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.hay_alertas }}",
+                "operation": "equal",
+                "value2": "true"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "telegram-node",
+        "name": "📨 Alerta Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1250,
+          400
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\",\n  \"text\": \"{{ $json.mensaje }}\",\n  \"parse_mode\": \"HTML\"\n}"
+        }
+      },
+      {
+        "id": "noop-node",
+        "name": "🔇 Sin alertas — OK",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          1250,
+          600
+        ],
+        "parameters": {}
+      }
+    ],
+    "connections": {
+      "⏰ Schedule 8am ARG": {
+        "main": [
+          [
+            {
+              "node": "🏗️ Check Infraestructura Cross-Proyecto",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "📋 Check Workflows Críticos",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "🔄 Check Últimas Ejecuciones",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🏗️ Check Infraestructura Cross-Proyecto": {
+        "main": [
+          [
+            {
+              "node": "🧮 Merge Resultados",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📋 Check Workflows Críticos": {
+        "main": [
+          [
+            {
+              "node": "🧮 Merge Resultados",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "🔄 Check Últimas Ejecuciones": {
+        "main": [
+          [
+            {
+              "node": "🧮 Merge Resultados",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "🧮 Merge Resultados": {
+        "main": [
+          [
+            {
+              "node": "📊 Evaluar y Armar Reporte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📊 Evaluar y Armar Reporte": {
+        "main": [
+          [
+            {
+              "node": "❓ ¿Hay alertas?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "❓ ¿Hay alertas?": {
+        "main": [
+          [
+            {
+              "node": "📨 Alerta Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "🔇 Sin alertas — OK",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
