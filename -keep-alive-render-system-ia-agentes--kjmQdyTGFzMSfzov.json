@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-03-29T19:24:50.979Z",
+  "updatedAt": "2026-04-10T18:23:51.429Z",
   "createdAt": "2026-03-29T19:24:50.979Z",
   "id": "kjmQdyTGFzMSfzov",
   "name": "🔄 Keep-Alive — Render (system-ia-agentes)",
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -70,7 +70,7 @@
   "meta": null,
   "pinData": null,
   "versionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
-  "activeVersionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
+  "activeVersionId": null,
   "triggerCount": 1,
   "shared": [
     {
@@ -81,68 +81,7 @@
       "projectId": "0BrGO8NkGfCDSRsb"
     }
   ],
-  "activeVersion": {
-    "updatedAt": "2026-03-29T19:24:50.986Z",
-    "createdAt": "2026-03-29T19:24:50.986Z",
-    "versionId": "efca6a88-496c-4a5b-b49f-727fd2106f6e",
-    "workflowId": "kjmQdyTGFzMSfzov",
-    "nodes": [
-      {
-        "id": "cron-keepalive",
-        "name": "Cada 14 minutos",
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.2,
-        "position": [
-          0,
-          0
-        ],
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "field": "minutes",
-                "minutesInterval": 14
-              }
-            ]
-          }
-        }
-      },
-      {
-        "id": "ping-render",
-        "name": "Ping Render",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
-        "position": [
-          240,
-          0
-        ],
-        "parameters": {
-          "method": "GET",
-          "url": "https://system-ia-agentes.onrender.com/health",
-          "options": {
-            "timeout": 30000
-          }
-        }
-      }
-    ],
-    "connections": {
-      "Cada 14 minutos": {
-        "main": [
-          [
-            {
-              "node": "Ping Render",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "authors": "Arnaldo Ayala",
-    "name": null,
-    "description": null,
-    "autosaved": false
-  },
+  "activeVersion": null,
   "tags": [
     {
       "id": "sin-tag",
