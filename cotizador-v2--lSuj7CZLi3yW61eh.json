@@ -1,0 +1,1330 @@
+{
+  "updatedAt": "2026-04-12T22:54:09.532Z",
+  "createdAt": "2026-04-12T21:32:56.881Z",
+  "id": "lSuj7CZLi3yW61eh",
+  "name": "Cotizador v2",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Cotización Automatizada",
+        "formDescription": "Genera una cotización profesional en PDF a partir de una transcripción de sesión de diagnóstico con tu cliente.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Transcripción",
+              "placeholder": "Pega aquí la transcripción completa de la sesión de diagnóstico",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Datos del cliente",
+              "placeholder": "Nombre, empresa, ubicación, teléfono, correo del cliente",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Datos del proveedor (tú)",
+              "placeholder": "Tu nombre, empresa, ubicación, teléfono, correo",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Colores de cotización",
+              "placeholder": "Ej: dorado y negro, azul y blanco",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Logo de tu agencia",
+              "fieldType": "file",
+              "acceptFileTypes": ".png,.jpg,.jpeg,.svg,.webp",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Estilo de cotización",
+              "placeholder": "Ej: moderna, elegante, profesional",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Detalles adicionales",
+              "placeholder": "Precio, número de cotización, observaciones, moneda, etc.",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "be531c42-eb6a-4c47-905b-4967f7a6576c",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        0
+      ],
+      "webhookId": "c1b89ec0-328f-4cde-9c1b-86523190d20f"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst apiSecret = 'TRx41hms7_kweGh61FMy5SZhgLs';\nconst timestamp = Math.floor(Date.now() / 1000);\nconst folder = 'cotizaciones';\nconst paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;\nconst signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');\n\nconst binaryKeys = Object.keys($input.first().binary);\nconst logoKey = binaryKeys.find(k => k.toLowerCase().includes('logo')) || binaryKeys[0];\n\nconst binary = {};\nbinary['file'] = $input.first().binary[logoKey];\n\nreturn [{\n  json: {\n    ...($input.first().json),\n    api_key: '238313899787824',\n    timestamp: timestamp.toString(),\n    signature: signature,\n    folder: folder\n  },\n  binary: binary\n}];"
+      },
+      "id": "prep-upload",
+      "name": "Preparar Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudinary.com/v1_1/dmqkqcreo/image/upload",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            },
+            {
+              "name": "api_key",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "signature",
+              "value": "={{ $json.signature }}"
+            },
+            {
+              "name": "folder",
+              "value": "={{ $json.folder }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "upload-cloudinary",
+      "name": "Upload a Cloudinary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cloudinaryResponse = $input.first().json;\nconst prevData = $('On form submission').first().json;\n\nreturn [{\n  json: {\n    ...prevData,\n    logo_url: cloudinaryResponse.secure_url || cloudinaryResponse.url\n  }\n}];"
+      },
+      "id": "extract-url",
+      "name": "Extraer URL Logo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "transcripcion",
+              "value": "={{ $json['Transcripción'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "datos_cliente",
+              "value": "={{ $json['Datos del cliente'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "datos_proveedor",
+              "value": "={{ $json['Datos del proveedor (tú)'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "colores",
+              "value": "={{ $json['Colores de cotización'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "url_logo",
+              "value": "={{ $json.logo_url }}",
+              "type": "string"
+            },
+            {
+              "id": "a6",
+              "name": "estilo_cotizacion",
+              "value": "={{ $json['Estilo de cotización'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a7",
+              "name": "detalles_adicionales",
+              "value": "={{ $json['Detalles adicionales'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1b82abeb-5d76-46d3-bbde-b069b61ebbd5",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cc29f11f-6c9a-4c99-a891-e2f2a6810a88",
+      "name": "Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        320
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WtjBOwDe17e9xhe1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Crea una cotización en formato markdown con los siguientes datos\n\n- {{ $json.transcripcion }}\n- {{ $json.datos_cliente }}\n- {{ $json.datos_proveedor }}\n- {{ $json.detalles_adicionales }}",
+        "options": {
+          "systemMessage": "# Rol\n\nEres un vendedor experto en TI, especializado en cotizar proyectos de soluciones con IA.\n\n# Misión\n\nAnaliza la transcripción de sesión de diagnóstico y crea una cotización profesional. Adaptándote a los estándares de precio según ubicación del cliente.\n\nLa transcripción puede contener errores, muletillas y términos equivocados.\n\nIncluye costos actualizados de plataformas externas. Fecha actual: {{ $now }}\n\n# Campos de la cotización (markdown):\n1. Objetivo\n2. Alcance\n3. Entregables\n4. Cronograma de Implementación\n5. Inversión\n6. Costos de Terceros\n7. Flujos Clave\n8. Tecnologías Propuestas\n9. Supuestos & Condiciones\n10. Infraestructura\n11. Resultados Esperados\n12. Próximos Pasos\n13. Términos y Condiciones\n\nResponde únicamente con la cotización en markdown."
+        }
+      },
+      "id": "71aaf1a7-3e28-4762-aac9-47f44175fdd7",
+      "name": "Agente Cotizador",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Crea una cotización en formato HTML. Solo responde con el HTML.\n\nDatos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\nDatos proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\nColores: {{ $('Edit Fields').item.json.colores }}\nURL del logo: {{ $('Edit Fields').item.json.url_logo }}\nEstilo: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\nCotización Markdown:\n{{ $json.output }}",
+        "options": {
+          "systemMessage": "# Rol\nDiseñador Senior UI/UX y Frontend experto.\n\n# REGLAS OBLIGATORIAS:\n\n## Colores\n- OBLIGATORIO usar los colores del usuario.\n- \"dorado y negro\": header #1A1A1A, acentos #D4AF37, body blanco, texto #333.\n- \"azul y blanco\": header #1E3A5F, acentos #2E86C1.\n- Variables CSS `:root`: --color-primary, --color-secondary, --color-accent.\n- Títulos H2 con borde inferior del color primario.\n- Inversión en recuadro con fondo primario y texto claro.\n\n## Logo\n- URL HTTPS de Cloudinary. Usar DIRECTAMENTE en `<img src=\"URL\">`.\n- max-width: 150px, height: auto.\n- NO ignorar. SIEMPRE incluir.\n\n## Tipografía\n- Google Fonts: Montserrat (400,600,700) + Playfair Display (700).\n- Título: Playfair Display 28px. H2: Montserrat 700 20px. Cuerpo: Montserrat 400 14px.\n\n## Estructura\n- Header: fondo color primario, logo izquierda, datos cliente derecha.\n- Secciones con padding 20px. Sin bullets antes de H2.\n- Firmas: dos columnas con línea, nombre y cargo.\n\n# Técnico:\n1. HTML crudo. Sin `\\n` ni `\\\"`.\n2. `<meta charset=\"UTF-8\">`\n3. CSS en `<style>`. `@page { size: A4; margin: 15mm; }`. `break-inside: avoid;`. `-webkit-print-color-adjust: exact;`.\n\nSalida: `<!DOCTYPE html>` hasta `</html>`."
+        }
+      },
+      "id": "3ae46ac1-92ca-46fb-ba2a-f604c86a875b",
+      "name": "Agente Generador HTML",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let htmlContent = $input.first().json.output;\n\n// Limpiar backticks de markdown que Gemini puede agregar\nhtmlContent = htmlContent.replace(/^```html\\s*/i, '').replace(/^```\\s*/i, '').replace(/\\s*```$/i, '').trim();\n\nreturn [{\n  json: { html: htmlContent },\n  binary: {\n    'index.html': {\n      data: Buffer.from(htmlContent, 'utf-8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n}];"
+      },
+      "id": "html-to-binary-1",
+      "name": "HTML to File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg-fl3d98h92norx84xv88h0wek:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "index.html"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "9a935212-f3d8-4e82-b217-951b31219198",
+      "name": "HTML a PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1728,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = $input.first().binary.data;\nreturn [{\n  json: {\n    url: `data:${binaryData.mimeType || 'application/pdf'};base64,${binaryData.data}`,\n    fileName: `cotizacion_${new Date().toISOString().slice(0,10)}.pdf`\n  },\n  binary: $input.first().binary\n}];"
+      },
+      "id": "conv-pdf-to-url",
+      "name": "Preparar PDF Link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Necesitas cambios?",
+              "placeholder": "Describe los cambios",
+              "requiredField": true
+            },
+            {
+              "fieldType": "html",
+              "elementName": "Enlace",
+              "html": "Tu cotización PDF. <a href=\"{{ $json.url }}\" target=\"_blank\">Descargar PDF</a>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a803edb4-1122-46e9-a66f-a25919f38a31",
+      "name": "Form",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        2128,
+        0
+      ],
+      "webhookId": "b096387b-26f0-4cad-9911-f71ef5b332d9"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Cambios:\n{{ $json['Necesitas cambios?'] }}\n\nHTML original:\n{{ $('Agente Generador HTML').item.json.output }}",
+        "options": {
+          "systemMessage": "Diseñador Senior UI/UX. Aplica los cambios al HTML manteniendo logo, colores y estilo. Salida: solo `<!DOCTYPE html>` hasta `</html>`. CSS en `<style>`. Google Fonts. `@page { size: A4; margin: 15mm; }`."
+        }
+      },
+      "id": "0c852be5-1a92-499f-883b-b49a8f5d1a09",
+      "name": "Agente de cambios",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2352,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let htmlContent = $input.first().json.output;\n\n// Limpiar backticks de markdown que Gemini puede agregar\nhtmlContent = htmlContent.replace(/^```html\\s*/i, '').replace(/^```\\s*/i, '').replace(/\\s*```$/i, '').trim();\n\nreturn [{\n  json: { html: htmlContent },\n  binary: {\n    'index.html': {\n      data: Buffer.from(htmlContent, 'utf-8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n}];"
+      },
+      "id": "html-to-binary-2",
+      "name": "HTML to File 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg-fl3d98h92norx84xv88h0wek:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "index.html"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "28ba9e83-03da-429b-a387-6e1466b303b0",
+      "name": "HTML a PDF 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2784,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = $input.first().binary.data;\nreturn [{\n  json: {\n    url: `data:${binaryData.mimeType || 'application/pdf'};base64,${binaryData.data}`,\n    fileName: `cotizacion_v2_${new Date().toISOString().slice(0,10)}.pdf`\n  },\n  binary: $input.first().binary\n}];"
+      },
+      "id": "conv-pdf-to-url-2",
+      "name": "Preparar PDF Link 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2976,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Necesitas mas cambios?",
+              "placeholder": "Describe cambios adicionales",
+              "requiredField": true
+            },
+            {
+              "fieldType": "html",
+              "elementName": "Enlace",
+              "html": "PDF actualizado. <a href=\"{{ $json.url }}\" target=\"_blank\">Descargar PDF</a>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9aef20db-5aac-4f04-b881-2591239981dc",
+      "name": "Form2",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        3184,
+        0
+      ],
+      "webhookId": "836394d8-40bb-4a0c-b17a-68987aa88e8c"
+    },
+    {
+      "parameters": {
+        "content": "# Cotizador v2\n\nGenera cotizaciones PDF profesionales a partir de sesiones de diagnóstico.\n\n## Stack\n- **LLM**: Gemini (3 agentes)\n- **PDF**: Gotenberg (self-hosted, gratis)\n- **Logo**: Cloudinary (upload automático)\n- **Formulario**: n8n Form multi-página",
+        "height": 300,
+        "width": 500,
+        "color": 7
+      },
+      "id": "d362b557-6c42-413f-9071-443ec791c112",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -128
+      ]
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Preparar Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Upload": {
+      "main": [
+        [
+          {
+            "node": "Upload a Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Extraer URL Logo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer URL Logo": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Agente Cotizador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Cotizador",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente Generador HTML",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente de cambios",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Cotizador": {
+      "main": [
+        [
+          {
+            "node": "Agente Generador HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Generador HTML": {
+      "main": [
+        [
+          {
+            "node": "HTML to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML to File": {
+      "main": [
+        [
+          {
+            "node": "HTML a PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML a PDF": {
+      "main": [
+        [
+          {
+            "node": "Preparar PDF Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar PDF Link": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Agente de cambios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente de cambios": {
+      "main": [
+        [
+          {
+            "node": "HTML to File 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML to File 2": {
+      "main": [
+        [
+          {
+            "node": "HTML a PDF 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML a PDF 2": {
+      "main": [
+        [
+          {
+            "node": "Preparar PDF Link 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar PDF Link 2": {
+      "main": [
+        [
+          {
+            "node": "Form2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form2": {
+      "main": [
+        [
+          {
+            "node": "Agente de cambios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
+  "activeVersionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-12T21:32:56.881Z",
+      "createdAt": "2026-04-12T21:32:56.881Z",
+      "role": "workflow:owner",
+      "workflowId": "lSuj7CZLi3yW61eh",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-12T22:54:09.534Z",
+    "createdAt": "2026-04-12T22:54:09.534Z",
+    "versionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
+    "workflowId": "lSuj7CZLi3yW61eh",
+    "nodes": [
+      {
+        "parameters": {
+          "formTitle": "Cotización Automatizada",
+          "formDescription": "Genera una cotización profesional en PDF a partir de una transcripción de sesión de diagnóstico con tu cliente.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Transcripción",
+                "placeholder": "Pega aquí la transcripción completa de la sesión de diagnóstico",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Datos del cliente",
+                "placeholder": "Nombre, empresa, ubicación, teléfono, correo del cliente",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Datos del proveedor (tú)",
+                "placeholder": "Tu nombre, empresa, ubicación, teléfono, correo",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Colores de cotización",
+                "placeholder": "Ej: dorado y negro, azul y blanco",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Logo de tu agencia",
+                "fieldType": "file",
+                "acceptFileTypes": ".png,.jpg,.jpeg,.svg,.webp",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Estilo de cotización",
+                "placeholder": "Ej: moderna, elegante, profesional",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "Detalles adicionales",
+                "placeholder": "Precio, número de cotización, observaciones, moneda, etc.",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "be531c42-eb6a-4c47-905b-4967f7a6576c",
+        "name": "On form submission",
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.3,
+        "position": [
+          64,
+          0
+        ],
+        "webhookId": "c1b89ec0-328f-4cde-9c1b-86523190d20f"
+      },
+      {
+        "parameters": {
+          "jsCode": "const crypto = require('crypto');\n\nconst apiSecret = 'TRx41hms7_kweGh61FMy5SZhgLs';\nconst timestamp = Math.floor(Date.now() / 1000);\nconst folder = 'cotizaciones';\nconst paramsToSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;\nconst signature = crypto.createHash('sha1').update(paramsToSign).digest('hex');\n\nconst binaryKeys = Object.keys($input.first().binary);\nconst logoKey = binaryKeys.find(k => k.toLowerCase().includes('logo')) || binaryKeys[0];\n\nconst binary = {};\nbinary['file'] = $input.first().binary[logoKey];\n\nreturn [{\n  json: {\n    ...($input.first().json),\n    api_key: '238313899787824',\n    timestamp: timestamp.toString(),\n    signature: signature,\n    folder: folder\n  },\n  binary: binary\n}];"
+        },
+        "id": "prep-upload",
+        "name": "Preparar Upload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.cloudinary.com/v1_1/dmqkqcreo/image/upload",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "file",
+                "inputDataFieldName": "file"
+              },
+              {
+                "name": "api_key",
+                "value": "={{ $json.api_key }}"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $json.timestamp }}"
+              },
+              {
+                "name": "signature",
+                "value": "={{ $json.signature }}"
+              },
+              {
+                "name": "folder",
+                "value": "={{ $json.folder }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "upload-cloudinary",
+        "name": "Upload a Cloudinary",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          432,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const cloudinaryResponse = $input.first().json;\nconst prevData = $('On form submission').first().json;\n\nreturn [{\n  json: {\n    ...prevData,\n    logo_url: cloudinaryResponse.secure_url || cloudinaryResponse.url\n  }\n}];"
+        },
+        "id": "extract-url",
+        "name": "Extraer URL Logo",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          608,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "transcripcion",
+                "value": "={{ $json['Transcripción'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a2",
+                "name": "datos_cliente",
+                "value": "={{ $json['Datos del cliente'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a3",
+                "name": "datos_proveedor",
+                "value": "={{ $json['Datos del proveedor (tú)'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a4",
+                "name": "colores",
+                "value": "={{ $json['Colores de cotización'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a5",
+                "name": "url_logo",
+                "value": "={{ $json.logo_url }}",
+                "type": "string"
+              },
+              {
+                "id": "a6",
+                "name": "estilo_cotizacion",
+                "value": "={{ $json['Estilo de cotización'] }}",
+                "type": "string"
+              },
+              {
+                "id": "a7",
+                "name": "detalles_adicionales",
+                "value": "={{ $json['Detalles adicionales'] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "1b82abeb-5d76-46d3-bbde-b069b61ebbd5",
+        "name": "Edit Fields",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          784,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "cc29f11f-6c9a-4c99-a891-e2f2a6810a88",
+        "name": "Gemini",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          1200,
+          320
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "WtjBOwDe17e9xhe1",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Crea una cotización en formato markdown con los siguientes datos\n\n- {{ $json.transcripcion }}\n- {{ $json.datos_cliente }}\n- {{ $json.datos_proveedor }}\n- {{ $json.detalles_adicionales }}",
+          "options": {
+            "systemMessage": "# Rol\n\nEres un vendedor experto en TI, especializado en cotizar proyectos de soluciones con IA.\n\n# Misión\n\nAnaliza la transcripción de sesión de diagnóstico y crea una cotización profesional. Adaptándote a los estándares de precio según ubicación del cliente.\n\nLa transcripción puede contener errores, muletillas y términos equivocados.\n\nIncluye costos actualizados de plataformas externas. Fecha actual: {{ $now }}\n\n# Campos de la cotización (markdown):\n1. Objetivo\n2. Alcance\n3. Entregables\n4. Cronograma de Implementación\n5. Inversión\n6. Costos de Terceros\n7. Flujos Clave\n8. Tecnologías Propuestas\n9. Supuestos & Condiciones\n10. Infraestructura\n11. Resultados Esperados\n12. Próximos Pasos\n13. Términos y Condiciones\n\nResponde únicamente con la cotización en markdown."
+          }
+        },
+        "id": "71aaf1a7-3e28-4762-aac9-47f44175fdd7",
+        "name": "Agente Cotizador",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1008,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Crea una cotización en formato HTML. Solo responde con el HTML.\n\nDatos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\nDatos proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\nColores: {{ $('Edit Fields').item.json.colores }}\nURL del logo: {{ $('Edit Fields').item.json.url_logo }}\nEstilo: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\nCotización Markdown:\n{{ $json.output }}",
+          "options": {
+            "systemMessage": "# Rol\nDiseñador Senior UI/UX y Frontend experto.\n\n# REGLAS OBLIGATORIAS:\n\n## Colores\n- OBLIGATORIO usar los colores del usuario.\n- \"dorado y negro\": header #1A1A1A, acentos #D4AF37, body blanco, texto #333.\n- \"azul y blanco\": header #1E3A5F, acentos #2E86C1.\n- Variables CSS `:root`: --color-primary, --color-secondary, --color-accent.\n- Títulos H2 con borde inferior del color primario.\n- Inversión en recuadro con fondo primario y texto claro.\n\n## Logo\n- URL HTTPS de Cloudinary. Usar DIRECTAMENTE en `<img src=\"URL\">`.\n- max-width: 150px, height: auto.\n- NO ignorar. SIEMPRE incluir.\n\n## Tipografía\n- Google Fonts: Montserrat (400,600,700) + Playfair Display (700).\n- Título: Playfair Display 28px. H2: Montserrat 700 20px. Cuerpo: Montserrat 400 14px.\n\n## Estructura\n- Header: fondo color primario, logo izquierda, datos cliente derecha.\n- Secciones con padding 20px. Sin bullets antes de H2.\n- Firmas: dos columnas con línea, nombre y cargo.\n\n# Técnico:\n1. HTML crudo. Sin `\\n` ni `\\\"`.\n2. `<meta charset=\"UTF-8\">`\n3. CSS en `<style>`. `@page { size: A4; margin: 15mm; }`. `break-inside: avoid;`. `-webkit-print-color-adjust: exact;`.\n\nSalida: `<!DOCTYPE html>` hasta `</html>`."
+          }
+        },
+        "id": "3ae46ac1-92ca-46fb-ba2a-f604c86a875b",
+        "name": "Agente Generador HTML",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1280,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "let htmlContent = $input.first().json.output;\n\n// Limpiar backticks de markdown que Gemini puede agregar\nhtmlContent = htmlContent.replace(/^```html\\s*/i, '').replace(/^```\\s*/i, '').replace(/\\s*```$/i, '').trim();\n\nreturn [{\n  json: { html: htmlContent },\n  binary: {\n    'index.html': {\n      data: Buffer.from(htmlContent, 'utf-8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n}];"
+        },
+        "id": "html-to-binary-1",
+        "name": "HTML to File",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1552,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://gotenberg-fl3d98h92norx84xv88h0wek:3000/forms/chromium/convert/html",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "files",
+                "inputDataFieldName": "index.html"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "9a935212-f3d8-4e82-b217-951b31219198",
+        "name": "HTML a PDF",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1728,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const binaryData = $input.first().binary.data;\nreturn [{\n  json: {\n    url: `data:${binaryData.mimeType || 'application/pdf'};base64,${binaryData.data}`,\n    fileName: `cotizacion_${new Date().toISOString().slice(0,10)}.pdf`\n  },\n  binary: $input.first().binary\n}];"
+        },
+        "id": "conv-pdf-to-url",
+        "name": "Preparar PDF Link",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1920,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Necesitas cambios?",
+                "placeholder": "Describe los cambios",
+                "requiredField": true
+              },
+              {
+                "fieldType": "html",
+                "elementName": "Enlace",
+                "html": "Tu cotización PDF. <a href=\"{{ $json.url }}\" target=\"_blank\">Descargar PDF</a>"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a803edb4-1122-46e9-a66f-a25919f38a31",
+        "name": "Form",
+        "type": "n8n-nodes-base.form",
+        "typeVersion": 2.3,
+        "position": [
+          2128,
+          0
+        ],
+        "webhookId": "b096387b-26f0-4cad-9911-f71ef5b332d9"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Cambios:\n{{ $json['Necesitas cambios?'] }}\n\nHTML original:\n{{ $('Agente Generador HTML').item.json.output }}",
+          "options": {
+            "systemMessage": "Diseñador Senior UI/UX. Aplica los cambios al HTML manteniendo logo, colores y estilo. Salida: solo `<!DOCTYPE html>` hasta `</html>`. CSS en `<style>`. Google Fonts. `@page { size: A4; margin: 15mm; }`."
+          }
+        },
+        "id": "0c852be5-1a92-499f-883b-b49a8f5d1a09",
+        "name": "Agente de cambios",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          2352,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "let htmlContent = $input.first().json.output;\n\n// Limpiar backticks de markdown que Gemini puede agregar\nhtmlContent = htmlContent.replace(/^```html\\s*/i, '').replace(/^```\\s*/i, '').replace(/\\s*```$/i, '').trim();\n\nreturn [{\n  json: { html: htmlContent },\n  binary: {\n    'index.html': {\n      data: Buffer.from(htmlContent, 'utf-8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n}];"
+        },
+        "id": "html-to-binary-2",
+        "name": "HTML to File 2",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2640,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://gotenberg-fl3d98h92norx84xv88h0wek:3000/forms/chromium/convert/html",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "files",
+                "inputDataFieldName": "index.html"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "28ba9e83-03da-429b-a387-6e1466b303b0",
+        "name": "HTML a PDF 2",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2784,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const binaryData = $input.first().binary.data;\nreturn [{\n  json: {\n    url: `data:${binaryData.mimeType || 'application/pdf'};base64,${binaryData.data}`,\n    fileName: `cotizacion_v2_${new Date().toISOString().slice(0,10)}.pdf`\n  },\n  binary: $input.first().binary\n}];"
+        },
+        "id": "conv-pdf-to-url-2",
+        "name": "Preparar PDF Link 2",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2976,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "Necesitas mas cambios?",
+                "placeholder": "Describe cambios adicionales",
+                "requiredField": true
+              },
+              {
+                "fieldType": "html",
+                "elementName": "Enlace",
+                "html": "PDF actualizado. <a href=\"{{ $json.url }}\" target=\"_blank\">Descargar PDF</a>"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "9aef20db-5aac-4f04-b881-2591239981dc",
+        "name": "Form2",
+        "type": "n8n-nodes-base.form",
+        "typeVersion": 2.3,
+        "position": [
+          3184,
+          0
+        ],
+        "webhookId": "836394d8-40bb-4a0c-b17a-68987aa88e8c"
+      },
+      {
+        "parameters": {
+          "content": "# Cotizador v2\n\nGenera cotizaciones PDF profesionales a partir de sesiones de diagnóstico.\n\n## Stack\n- **LLM**: Gemini (3 agentes)\n- **PDF**: Gotenberg (self-hosted, gratis)\n- **Logo**: Cloudinary (upload automático)\n- **Formulario**: n8n Form multi-página",
+          "height": 300,
+          "width": 500,
+          "color": 7
+        },
+        "id": "d362b557-6c42-413f-9071-443ec791c112",
+        "name": "Sticky Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -720,
+          -128
+        ]
+      }
+    ],
+    "connections": {
+      "On form submission": {
+        "main": [
+          [
+            {
+              "node": "Preparar Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar Upload": {
+        "main": [
+          [
+            {
+              "node": "Upload a Cloudinary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload a Cloudinary": {
+        "main": [
+          [
+            {
+              "node": "Extraer URL Logo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extraer URL Logo": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Agente Cotizador",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agente Cotizador",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Agente Generador HTML",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Agente de cambios",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agente Cotizador": {
+        "main": [
+          [
+            {
+              "node": "Agente Generador HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agente Generador HTML": {
+        "main": [
+          [
+            {
+              "node": "HTML to File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTML to File": {
+        "main": [
+          [
+            {
+              "node": "HTML a PDF",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTML a PDF": {
+        "main": [
+          [
+            {
+              "node": "Preparar PDF Link",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar PDF Link": {
+        "main": [
+          [
+            {
+              "node": "Form",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Form": {
+        "main": [
+          [
+            {
+              "node": "Agente de cambios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agente de cambios": {
+        "main": [
+          [
+            {
+              "node": "HTML to File 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTML to File 2": {
+        "main": [
+          [
+            {
+              "node": "HTML a PDF 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTML a PDF 2": {
+        "main": [
+          [
+            {
+              "node": "Preparar PDF Link 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Preparar PDF Link 2": {
+        "main": [
+          [
+            {
+              "node": "Form2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Form2": {
+        "main": [
+          [
+            {
+              "node": "Agente de cambios",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
