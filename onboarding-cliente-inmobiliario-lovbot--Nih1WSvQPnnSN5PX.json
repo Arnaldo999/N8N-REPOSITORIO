@@ -1,0 +1,162 @@
+{
+  "updatedAt": "2026-04-13T21:12:17.377Z",
+  "createdAt": "2026-04-13T21:12:17.377Z",
+  "id": "Nih1WSvQPnnSN5PX",
+  "name": "Onboarding Cliente Inmobiliario — Lovbot",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "form-trigger",
+      "name": "Formulario Onboarding",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        0
+      ],
+      "parameters": {
+        "formTitle": "Onboarding Cliente Inmobiliario — Lovbot",
+        "formDescription": "Alta de nuevo cliente inmobiliario. Solo uso interno.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre de la empresa",
+              "placeholder": "Ej: Inmobiliaria López",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nombre del asesor",
+              "placeholder": "Ej: Carlos López",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email del asesor",
+              "placeholder": "asesor@empresa.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "WhatsApp del negocio",
+              "placeholder": "+5491234567890",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ciudad",
+              "placeholder": "Ej: Posadas",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Zonas",
+              "placeholder": "Norte,Sur,Centro (separadas por coma)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Moneda",
+              "placeholder": "USD / ARS / MXN",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Chatwoot Account ID",
+              "placeholder": "Dejar vacío si no tiene (se crea después)",
+              "requiredField": false
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "call-onboard",
+      "name": "Crear Cliente (FastAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        350,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://agentes.arnaldoayalaestratega.cloud/admin/onboard",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ nombre_empresa: $json['Nombre de la empresa'], nombre_asesor: $json['Nombre del asesor'], email_asesor: $json['Email del asesor'], telefono_whatsapp: $json['WhatsApp del negocio'], ciudad: $json['Ciudad'], zonas: $json['Zonas'], moneda: $json['Moneda'], chatwoot_account_id: $json['Chatwoot Account ID'] ? parseInt($json['Chatwoot Account ID']) : null }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      }
+    },
+    {
+      "id": "form-resultado",
+      "name": "Resultado",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        650,
+        0
+      ],
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "html",
+              "elementName": "Resultado",
+              "html": "=<h2>Cliente creado exitosamente</h2><p><strong>CRM:</strong> {{ $json.resumen?.accesos?.crm_url }}</p><p><strong>PIN:</strong> {{ $json.resumen?.accesos?.pin }}</p><p><strong>Email asesor:</strong> {{ $json.resumen?.accesos?.email_asesor }}</p><p><strong>Completados:</strong> {{ $json.resumen?.completados }}</p>"
+            }
+          ]
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Formulario Onboarding": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente (FastAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Cliente (FastAPI)": {
+      "main": [
+        [
+          {
+            "node": "Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "54379c9e-43d4-4492-8d49-064ce4071c87",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-13T21:12:17.377Z",
+      "createdAt": "2026-04-13T21:12:17.377Z",
+      "role": "workflow:owner",
+      "workflowId": "Nih1WSvQPnnSN5PX",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
