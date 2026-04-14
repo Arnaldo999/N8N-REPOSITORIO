@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-12T22:54:09.532Z",
+  "updatedAt": "2026-04-13T15:11:05.429Z",
   "createdAt": "2026-04-12T21:32:56.881Z",
   "id": "lSuj7CZLi3yW61eh",
   "name": "Cotizador v2",
@@ -198,8 +198,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        1200,
-        320
+        1936,
+        416
       ],
       "credentials": {
         "googlePalmApi": {
@@ -211,9 +211,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Crea una cotización en formato markdown con los siguientes datos\n\n- {{ $json.transcripcion }}\n- {{ $json.datos_cliente }}\n- {{ $json.datos_proveedor }}\n- {{ $json.detalles_adicionales }}",
+        "text": "=Genera la cotizacion profesional en formato markdown con TODA la informacion disponible.\n\n## DATOS DE ENTRADA:\n\n### Transcripcion de sesion de diagnostico:\n{{ $json.transcripcion }}\n\n### Datos del cliente:\n{{ $json.datos_cliente }}\n\n### Datos del proveedor:\n{{ $json.datos_proveedor }}\n\n### Detalles adicionales (precio, moneda, numero de cotizacion, observaciones):\n{{ $json.detalles_adicionales }}",
         "options": {
-          "systemMessage": "# Rol\n\nEres un vendedor experto en TI, especializado en cotizar proyectos de soluciones con IA.\n\n# Misión\n\nAnaliza la transcripción de sesión de diagnóstico y crea una cotización profesional. Adaptándote a los estándares de precio según ubicación del cliente.\n\nLa transcripción puede contener errores, muletillas y términos equivocados.\n\nIncluye costos actualizados de plataformas externas. Fecha actual: {{ $now }}\n\n# Campos de la cotización (markdown):\n1. Objetivo\n2. Alcance\n3. Entregables\n4. Cronograma de Implementación\n5. Inversión\n6. Costos de Terceros\n7. Flujos Clave\n8. Tecnologías Propuestas\n9. Supuestos & Condiciones\n10. Infraestructura\n11. Resultados Esperados\n12. Próximos Pasos\n13. Términos y Condiciones\n\nResponde únicamente con la cotización en markdown."
+          "systemMessage": "# Rol\n\nEres un consultor senior de ventas de soluciones tecnologicas con IA, especializado en cotizar proyectos de automatizacion para agencias en LATAM. Tienes experiencia cerrando proyectos con clientes de Mexico, Argentina, Colombia, Espana y USA.\n\n# Mision\n\nAnaliza la transcripcion de la sesion de diagnostico y genera una cotizacion profesional, detallada y persuasiva que:\n- Proteja legalmente al proveedor definiendo alcance exacto\n- Justifique el precio con desglose claro\n- Transmita profesionalismo de agencia (no de freelancer)\n- Se adapte al pais, moneda y poder adquisitivo del cliente\n\n# Contexto importante\n\n- La transcripcion puede contener errores de dictado, muletillas, terminos tecnicos mal pronunciados (ej: Samarma = Synthflow/Vapi, levels = ElevenLabs). Corrige silenciosamente.\n- Si el usuario menciona un precio en los detalles adicionales, respetalo. Si no, estima basandote en complejidad + ubicacion del cliente.\n- Fecha actual: {{ $now }}\n- Si no se proporciona ID de cotizacion, genera uno con formato: C-{{ $now.format('yyyy') }}-001\n\n# Estructura OBLIGATORIA de la cotizacion (markdown)\n\nGenera TODAS estas secciones, en este orden:\n\n## 1. ENCABEZADO\n- Titulo: Cotizacion - [nombre descriptivo del proyecto]\n- ID de cotizacion (formato C-YYYY-NNN)\n- Fecha de emision\n- Datos del cliente: nombre, empresa, ubicacion, contacto\n- Datos del proveedor: nombre, agencia, ubicacion, contacto\n\n## 2. OBJETIVO DEL PROYECTO\n- Resumen ejecutivo de 2-3 lineas de que se va a construir y para que\n- Debe ser entendible por alguien NO tecnico\n\n## 3. ALCANCE DETALLADO\n- Desglose por fases (Fase 1, Fase 2, etc.)\n- Cada fase con: nombre, descripcion, tecnologias involucradas\n- Ser ESPECIFICO: que funcionalidades exactas incluye cada fase\n- Esto PROTEGE al proveedor: si no esta aqui, no esta incluido\n\n## 4. ENTREGABLES\n- Lista numerada de todo lo TANGIBLE que recibira el cliente:\n  - Sistema/bot/agente funcionando\n  - Flujos de automatizacion (n8n, Make, etc.)\n  - Integraciones configuradas (listar cada una)\n  - Plantillas de WhatsApp aprobadas (si aplica)\n  - Manual de uso / documentacion\n  - Capacitacion (especificar: X sesiones de Y minutos)\n  - Soporte post-entrega (especificar: X dias, maximo Y sesiones de Z duracion por semana)\n\n## 5. CRONOGRAMA DE IMPLEMENTACION (estimado)\n- Tabla con: Semana | Fase | Actividades | Responsable\n- Aclarar que es ESTIMADO y depende de la entrega oportuna de informacion por parte del cliente\n- Incluir fase de pruebas/ajustes finos DESPUES del desarrollo\n- Incluir periodo de soporte post-entrega\n\n## 6. INVERSION\n- Monto total en la moneda del cliente\n- Desglose de que incluye (resumir las fases)\n- Forma de pago: 50% anticipo al inicio + 50% contraentrega del desarrollo\n- ACLARAR: el segundo pago es al terminar el desarrollo, ANTES del periodo de soporte\n- Si hay IVA/impuestos, aclarar que NO estan incluidos\n- Si el precio fue negociado, respetar el monto exacto\n\n## 7. COSTOS DE TERCEROS (estimados y variables)\n- Tabla: Plataforma | Concepto | Costo mensual estimado\n- Incluir TODOS los servicios externos que el cliente debera pagar\n- ACLARAR: Estos costos son responsabilidad del cliente. Se recomienda que las cuentas esten a nombre del cliente.\n- Dar un rango estimado mensual total\n\n## 8. FLUJOS CLAVE\n- Descripcion paso a paso del flujo principal del sistema\n- Usar formato: Paso 1 -> Paso 2 -> Paso 3\n- Incluir que pasa en casos especiales (handoff a humano, error, etc.)\n\n## 9. TECNOLOGIAS PROPUESTAS\n- Tabla: Categoria | Tecnologia | Funcion\n\n## 10. SUPUESTOS Y CONDICIONES\n- Que debe proveer el cliente ANTES de iniciar:\n  - Base de datos de clientes/productos\n  - Reglas del negocio (tono, comportamiento, palabras prohibidas)\n  - Accesos a plataformas existentes\n  - Ejemplos reales (llamadas, tickets, conversaciones)\n  - Logo e identidad visual\n- El cliente es responsable de abrir cuentas en plataformas de terceros\n\n## 11. INFRAESTRUCTURA\n- Que NO incluye esta cotizacion (renta VPS, costos de APIs, telefonia, etc.)\n- Aclarar quien es dueno de la infraestructura (el cliente)\n\n## 12. RESULTADOS ESPERADOS (primer mes)\n- Metricas realistas (NUNCA prometer 100 por ciento)\n- Ejemplo: 90 por ciento de consultas atendidas sin intervencion humana\n\n## 13. PROXIMOS PASOS\n1. Aprobacion de la propuesta y pago del 50% de anticipo\n2. Kickoff tecnico: accesos, documentacion y reglas del negocio\n3. Desarrollo e integraciones\n4. Pruebas en entorno controlado + ajustes finos\n5. Salida a produccion\n6. Soporte post-entrega\n\n## 14. TERMINOS Y CONDICIONES\n- Vigencia: 15 dias naturales\n- Precios NO incluyen IVA/impuestos\n- Forma de pago: 50% anticipo + 50% contraentrega\n- Soporte incluido post-entrega\n- Funcionalidades fuera del alcance requieren recotizacion\n- Retrasos del cliente pueden aplazar cronograma\n- Confidencialidad mutua\n\n## 15. FIRMAS\n- Dos columnas: proveedor (izquierda) | cliente (derecha)\n- Linea para firma, nombre completo y cargo\n\n# Reglas de redaccion\n- Tono profesional pero cercano, como agencia premium\n- Usar nosotros y nuestro equipo\n- Adaptar moneda y referencias culturales al pais del cliente\n- No inventar datos, si falta algo poner [POR DEFINIR]\n- Ser especifico en tecnologias\n\nResponde UNICAMENTE con la cotizacion completa en markdown."
         }
       },
       "id": "71aaf1a7-3e28-4762-aac9-47f44175fdd7",
@@ -228,9 +228,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Crea una cotización en formato HTML. Solo responde con el HTML.\n\nDatos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\nDatos proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\nColores: {{ $('Edit Fields').item.json.colores }}\nURL del logo: {{ $('Edit Fields').item.json.url_logo }}\nEstilo: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\nCotización Markdown:\n{{ $json.output }}",
+        "text": "=Convierte esta cotizacion markdown a HTML profesional listo para imprimir en PDF.\n\nSolo responde con el HTML completo, nada mas.\n\n## DATOS DE DISENO:\n- Datos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\n- Datos del proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\n- Colores: {{ $('Edit Fields').item.json.colores }}\n- URL del logo: {{ $('Edit Fields').item.json.url_logo }}\n- Estilo visual: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\n## COTIZACION EN MARKDOWN:\n{{ $json.output }}",
         "options": {
-          "systemMessage": "# Rol\nDiseñador Senior UI/UX y Frontend experto.\n\n# REGLAS OBLIGATORIAS:\n\n## Colores\n- OBLIGATORIO usar los colores del usuario.\n- \"dorado y negro\": header #1A1A1A, acentos #D4AF37, body blanco, texto #333.\n- \"azul y blanco\": header #1E3A5F, acentos #2E86C1.\n- Variables CSS `:root`: --color-primary, --color-secondary, --color-accent.\n- Títulos H2 con borde inferior del color primario.\n- Inversión en recuadro con fondo primario y texto claro.\n\n## Logo\n- URL HTTPS de Cloudinary. Usar DIRECTAMENTE en `<img src=\"URL\">`.\n- max-width: 150px, height: auto.\n- NO ignorar. SIEMPRE incluir.\n\n## Tipografía\n- Google Fonts: Montserrat (400,600,700) + Playfair Display (700).\n- Título: Playfair Display 28px. H2: Montserrat 700 20px. Cuerpo: Montserrat 400 14px.\n\n## Estructura\n- Header: fondo color primario, logo izquierda, datos cliente derecha.\n- Secciones con padding 20px. Sin bullets antes de H2.\n- Firmas: dos columnas con línea, nombre y cargo.\n\n# Técnico:\n1. HTML crudo. Sin `\\n` ni `\\\"`.\n2. `<meta charset=\"UTF-8\">`\n3. CSS en `<style>`. `@page { size: A4; margin: 15mm; }`. `break-inside: avoid;`. `-webkit-print-color-adjust: exact;`.\n\nSalida: `<!DOCTYPE html>` hasta `</html>`."
+          "systemMessage": "# Rol\nEres un Disenador Senior UI/UX y Frontend experto en crear documentos corporativos de alta gama para impresion en PDF. Tu trabajo debe verse como si lo hubiera disenado una agencia de branding premium.\n\n# OBJETIVO\nConvertir la cotizacion markdown en un HTML multipagina profesional que, al convertirse a PDF via Gotenberg, se vea como un documento de Canva premium, no como una factura ni como un simple documento de texto.\n\n# REGLAS IRROMPIBLES\n\n## 1. COLORES - Respetar SIEMPRE los del usuario\n- Interpretar la paleta del usuario y crear un sistema de colores coherente.\n- Definir variables CSS en :root:\n  - --color-primary: color principal (headers, fondos destacados)\n  - --color-secondary: color secundario (acentos, bordes)\n  - --color-accent: variacion para highlights\n  - --color-bg: fondo general (blanco o muy claro)\n  - --color-text: texto principal (#333 o similar oscuro)\n  - --color-text-light: texto secundario (#666)\n- Ejemplos de interpretacion:\n  - dorado y negro: primary=#1A1A1A, secondary=#D4AF37, accent=#F5E6B8, bg=#FFFFFF\n  - azul y blanco: primary=#1E3A5F, secondary=#2E86C1, accent=#EBF5FB, bg=#FFFFFF\n  - rojo y gris: primary=#C0392B, secondary=#2C3E50, accent=#FADBD8, bg=#FAFAFA\n\n## 2. LOGO - OBLIGATORIO, NUNCA omitir\n- Usar la URL de Cloudinary DIRECTAMENTE: <img src=URL_EXACTA alt=Logo>\n- Tamano: max-width: 160px, height: auto\n- Posicion: esquina superior izquierda del header en la primera pagina\n- Si la URL esta vacia, dejar placeholder con nombre de la agencia estilizado\n\n## 3. TIPOGRAFIA - Google Fonts\n- Importar: Montserrat (400,500,600,700) + Playfair Display (700)\n- Jerarquia:\n  - Titulo principal: Playfair Display, 32px, bold\n  - Subtitulo/ID cotizacion: Montserrat, 14px, 500, color secundario\n  - H2 (secciones): Montserrat, 20px, 700, con borde inferior 3px del color primario\n  - H3 (subsecciones): Montserrat, 16px, 600\n  - Cuerpo: Montserrat, 13px, 400, line-height 1.6\n  - Tablas: Montserrat, 12px\n\n## 4. ESTRUCTURA DEL DOCUMENTO (multi-pagina A4)\n\n### Pagina 1 - Portada\n- Header con fondo color primario (full width)\n- Logo a la izquierda\n- Titulo de la cotizacion centrado, color blanco/claro\n- Debajo: datos del cliente (izquierda) | datos del proveedor (derecha) | fecha e ID\n- Seccion Objetivo del Proyecto con fondo accent suave\n- Terminos y condiciones resumidos al pie (font-size: 10px)\n\n### Paginas 2-3 - Alcance detallado\n- Cada fase en un recuadro con borde izquierdo del color secundario (4px)\n- Tecnologias en badges/pills con fondo accent\n- Usar iconos Unicode si es apropiado\n\n### Pagina 4 - Entregables\n- Lista con checkmarks en color secundario\n- Cada entregable como card con padding\n\n### Pagina 5 - Cronograma\n- Tabla estilizada con header en color primario, filas alternadas\n- Nota de estimado en texto italizado\n\n### Pagina 6 - Inversion + Costos de terceros\n- INVERSION en recuadro destacado: fondo primario, texto blanco/claro, tipografia grande\n- Forma de pago en sub-recuadro\n- Costos de terceros en tabla limpia debajo\n- Nota: Costos a cargo del cliente en texto pequeno\n\n### Pagina 7 - Flujos + Tecnologias\n- Flujo como diagrama visual (cajas conectadas con flechas ->)\n- Tecnologias en tabla con categoria | nombre | funcion\n\n### Pagina 8 - Supuestos, Infraestructura, Resultados, Proximos pasos\n- Supuestos como checklist de lo que el cliente debe proveer\n- Resultados esperados con porcentajes visuales (barras de progreso CSS simples)\n- Proximos pasos como timeline vertical con numeros\n\n### Ultima seccion - Firmas\n- Dos columnas con:\n  - Linea horizontal para firma (border-bottom)\n  - Nombre completo debajo\n  - Cargo / Empresa\n- Espacio generoso para firmar\n\n### Footer en todas las paginas\n- (c) [ano] [Nombre Agencia] centrado, font-size 10px, color gris\n\n## 5. REGLAS CSS PARA PDF (Gotenberg)\n- @page { size: A4; margin: 15mm 20mm; }\n- body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n- .page-break { page-break-before: always; }\n- section, table { break-inside: avoid; }\n\n## 6. REGLAS TECNICAS\n- HTML crudo completo: desde <!DOCTYPE html> hasta </html>\n- NO usar \\n literales ni comillas escapadas - HTML limpio\n- <meta charset=UTF-8>\n- Todo el CSS en <style> dentro del <head>\n- Google Fonts via <link> en el <head>\n- NO usar JavaScript\n- Tablas con border-collapse: collapse, padding en celdas\n- Imagenes con max-width para no desbordar\n- HTML puro, sin frameworks\n\n## 7. CALIDAD VISUAL\n- Debe verse como una cotizacion de Canva premium\n- Espaciado generoso entre secciones (margin-bottom: 24px minimo)\n- Sombras sutiles en cards: box-shadow: 0 2px 8px rgba(0,0,0,0.08)\n- Border-radius: 8px en recuadros\n- El color primario domina headers y acentos, NO inunda todo\n- Mucho espacio en blanco, no saturar\n\nSalida: SOLO el HTML completo. Sin explicaciones, sin markdown, sin backticks."
         }
       },
       "id": "3ae46ac1-92ca-46fb-ba2a-f604c86a875b",
@@ -331,9 +331,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Cambios:\n{{ $json['Necesitas cambios?'] }}\n\nHTML original:\n{{ $('Agente Generador HTML').item.json.output }}",
+        "text": "=## CAMBIOS SOLICITADOS POR EL USUARIO:\n{{ $json['Necesitas cambios?'] }}\n\n## HTML ORIGINAL COMPLETO:\n{{ $('Agente Generador HTML').item.json.output }}",
         "options": {
-          "systemMessage": "Diseñador Senior UI/UX. Aplica los cambios al HTML manteniendo logo, colores y estilo. Salida: solo `<!DOCTYPE html>` hasta `</html>`. CSS en `<style>`. Google Fonts. `@page { size: A4; margin: 15mm; }`."
+          "systemMessage": "# Rol\nEres un Disenador Senior UI/UX experto en documentos corporativos para PDF.\n\n# Mision\nAplica los cambios solicitados por el usuario al HTML de la cotizacion, manteniendo la calidad visual premium.\n\n# REGLAS IRROMPIBLES:\n\n1. PRESERVAR SIEMPRE: logo (URL Cloudinary en img src), colores del usuario (variables CSS :root), tipografia Google Fonts (Montserrat + Playfair Display), estructura de secciones, seccion de firmas\n2. NO eliminar secciones a menos que el usuario lo pida explicitamente\n3. NO cambiar colores a menos que el usuario lo pida explicitamente\n4. NO cambiar ni quitar el logo a menos que el usuario lo pida explicitamente\n5. Si el usuario pide cambiar texto/contenido, cambiarlo manteniendo el formato HTML y estilos exactos\n6. Si el usuario pide cambios de diseno, aplicarlos respetando la coherencia visual del documento completo\n7. Si el usuario pide agregar secciones, insertarlas con el mismo estilo CSS que las secciones existentes\n8. Si el usuario dice esta bien, perfecto, ok o similar, devolver el HTML original SIN cambios\n9. Si el usuario pide cambiar precios o montos, actualizar SOLO los numeros manteniendo el formato\n10. Si el usuario pide cambiar datos del cliente o proveedor, actualizar SOLO esos campos\n\n# Reglas CSS para PDF (mantener SIEMPRE en el output):\n- @page { size: A4; margin: 15mm 20mm; }\n- -webkit-print-color-adjust: exact; print-color-adjust: exact;\n- break-inside: avoid; en secciones y tablas\n- Google Fonts via <link> en <head>\n- Variables CSS :root con la paleta de colores original\n- .page-break { page-break-before: always; }\n\n# Calidad\n- El documento debe mantener la calidad visual premium despues de los cambios\n- Verificar que los page-breaks sigan funcionando correctamente\n- Mantener espaciado, sombras, border-radius consistentes\n\n# Salida\nHTML completo desde <!DOCTYPE html> hasta </html>. Sin explicaciones, sin markdown, sin backticks. Solo HTML puro."
         }
       },
       "id": "0c852be5-1a92-499f-883b-b49a8f5d1a09",
@@ -446,6 +446,32 @@
         -720,
         -128
       ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        416
+      ],
+      "id": "3f93e27b-1cb7-4351-a611-a1b9c510b112",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "zrA8o6Rx6jQIRHlC",
+          "name": "OpenAi PROPUESTA"
+        }
+      }
     }
   ],
   "connections": {
@@ -506,23 +532,7 @@
     },
     "Gemini": {
       "ai_languageModel": [
-        [
-          {
-            "node": "Agente Cotizador",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "Agente Generador HTML",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "Agente de cambios",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Agente Cotizador": {
@@ -645,6 +655,27 @@
           }
         ]
       ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Cotizador",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente Generador HTML",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agente de cambios",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -657,8 +688,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
-  "activeVersionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
+  "versionId": "ec13c7bf-0d90-4f42-9f11-e1889c2a234e",
+  "activeVersionId": "ec13c7bf-0d90-4f42-9f11-e1889c2a234e",
   "triggerCount": 1,
   "shared": [
     {
@@ -670,9 +701,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-12T22:54:09.534Z",
-    "createdAt": "2026-04-12T22:54:09.534Z",
-    "versionId": "2f1f8b59-1d22-4116-9206-a5296ce64e88",
+    "updatedAt": "2026-04-13T15:11:05.431Z",
+    "createdAt": "2026-04-13T15:11:05.431Z",
+    "versionId": "ec13c7bf-0d90-4f42-9f11-e1889c2a234e",
     "workflowId": "lSuj7CZLi3yW61eh",
     "nodes": [
       {
@@ -867,8 +898,8 @@
         "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
         "typeVersion": 1,
         "position": [
-          1200,
-          320
+          1936,
+          416
         ],
         "credentials": {
           "googlePalmApi": {
@@ -880,9 +911,9 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=Crea una cotización en formato markdown con los siguientes datos\n\n- {{ $json.transcripcion }}\n- {{ $json.datos_cliente }}\n- {{ $json.datos_proveedor }}\n- {{ $json.detalles_adicionales }}",
+          "text": "=Genera la cotizacion profesional en formato markdown con TODA la informacion disponible.\n\n## DATOS DE ENTRADA:\n\n### Transcripcion de sesion de diagnostico:\n{{ $json.transcripcion }}\n\n### Datos del cliente:\n{{ $json.datos_cliente }}\n\n### Datos del proveedor:\n{{ $json.datos_proveedor }}\n\n### Detalles adicionales (precio, moneda, numero de cotizacion, observaciones):\n{{ $json.detalles_adicionales }}",
           "options": {
-            "systemMessage": "# Rol\n\nEres un vendedor experto en TI, especializado en cotizar proyectos de soluciones con IA.\n\n# Misión\n\nAnaliza la transcripción de sesión de diagnóstico y crea una cotización profesional. Adaptándote a los estándares de precio según ubicación del cliente.\n\nLa transcripción puede contener errores, muletillas y términos equivocados.\n\nIncluye costos actualizados de plataformas externas. Fecha actual: {{ $now }}\n\n# Campos de la cotización (markdown):\n1. Objetivo\n2. Alcance\n3. Entregables\n4. Cronograma de Implementación\n5. Inversión\n6. Costos de Terceros\n7. Flujos Clave\n8. Tecnologías Propuestas\n9. Supuestos & Condiciones\n10. Infraestructura\n11. Resultados Esperados\n12. Próximos Pasos\n13. Términos y Condiciones\n\nResponde únicamente con la cotización en markdown."
+            "systemMessage": "# Rol\n\nEres un consultor senior de ventas de soluciones tecnologicas con IA, especializado en cotizar proyectos de automatizacion para agencias en LATAM. Tienes experiencia cerrando proyectos con clientes de Mexico, Argentina, Colombia, Espana y USA.\n\n# Mision\n\nAnaliza la transcripcion de la sesion de diagnostico y genera una cotizacion profesional, detallada y persuasiva que:\n- Proteja legalmente al proveedor definiendo alcance exacto\n- Justifique el precio con desglose claro\n- Transmita profesionalismo de agencia (no de freelancer)\n- Se adapte al pais, moneda y poder adquisitivo del cliente\n\n# Contexto importante\n\n- La transcripcion puede contener errores de dictado, muletillas, terminos tecnicos mal pronunciados (ej: Samarma = Synthflow/Vapi, levels = ElevenLabs). Corrige silenciosamente.\n- Si el usuario menciona un precio en los detalles adicionales, respetalo. Si no, estima basandote en complejidad + ubicacion del cliente.\n- Fecha actual: {{ $now }}\n- Si no se proporciona ID de cotizacion, genera uno con formato: C-{{ $now.format('yyyy') }}-001\n\n# Estructura OBLIGATORIA de la cotizacion (markdown)\n\nGenera TODAS estas secciones, en este orden:\n\n## 1. ENCABEZADO\n- Titulo: Cotizacion - [nombre descriptivo del proyecto]\n- ID de cotizacion (formato C-YYYY-NNN)\n- Fecha de emision\n- Datos del cliente: nombre, empresa, ubicacion, contacto\n- Datos del proveedor: nombre, agencia, ubicacion, contacto\n\n## 2. OBJETIVO DEL PROYECTO\n- Resumen ejecutivo de 2-3 lineas de que se va a construir y para que\n- Debe ser entendible por alguien NO tecnico\n\n## 3. ALCANCE DETALLADO\n- Desglose por fases (Fase 1, Fase 2, etc.)\n- Cada fase con: nombre, descripcion, tecnologias involucradas\n- Ser ESPECIFICO: que funcionalidades exactas incluye cada fase\n- Esto PROTEGE al proveedor: si no esta aqui, no esta incluido\n\n## 4. ENTREGABLES\n- Lista numerada de todo lo TANGIBLE que recibira el cliente:\n  - Sistema/bot/agente funcionando\n  - Flujos de automatizacion (n8n, Make, etc.)\n  - Integraciones configuradas (listar cada una)\n  - Plantillas de WhatsApp aprobadas (si aplica)\n  - Manual de uso / documentacion\n  - Capacitacion (especificar: X sesiones de Y minutos)\n  - Soporte post-entrega (especificar: X dias, maximo Y sesiones de Z duracion por semana)\n\n## 5. CRONOGRAMA DE IMPLEMENTACION (estimado)\n- Tabla con: Semana | Fase | Actividades | Responsable\n- Aclarar que es ESTIMADO y depende de la entrega oportuna de informacion por parte del cliente\n- Incluir fase de pruebas/ajustes finos DESPUES del desarrollo\n- Incluir periodo de soporte post-entrega\n\n## 6. INVERSION\n- Monto total en la moneda del cliente\n- Desglose de que incluye (resumir las fases)\n- Forma de pago: 50% anticipo al inicio + 50% contraentrega del desarrollo\n- ACLARAR: el segundo pago es al terminar el desarrollo, ANTES del periodo de soporte\n- Si hay IVA/impuestos, aclarar que NO estan incluidos\n- Si el precio fue negociado, respetar el monto exacto\n\n## 7. COSTOS DE TERCEROS (estimados y variables)\n- Tabla: Plataforma | Concepto | Costo mensual estimado\n- Incluir TODOS los servicios externos que el cliente debera pagar\n- ACLARAR: Estos costos son responsabilidad del cliente. Se recomienda que las cuentas esten a nombre del cliente.\n- Dar un rango estimado mensual total\n\n## 8. FLUJOS CLAVE\n- Descripcion paso a paso del flujo principal del sistema\n- Usar formato: Paso 1 -> Paso 2 -> Paso 3\n- Incluir que pasa en casos especiales (handoff a humano, error, etc.)\n\n## 9. TECNOLOGIAS PROPUESTAS\n- Tabla: Categoria | Tecnologia | Funcion\n\n## 10. SUPUESTOS Y CONDICIONES\n- Que debe proveer el cliente ANTES de iniciar:\n  - Base de datos de clientes/productos\n  - Reglas del negocio (tono, comportamiento, palabras prohibidas)\n  - Accesos a plataformas existentes\n  - Ejemplos reales (llamadas, tickets, conversaciones)\n  - Logo e identidad visual\n- El cliente es responsable de abrir cuentas en plataformas de terceros\n\n## 11. INFRAESTRUCTURA\n- Que NO incluye esta cotizacion (renta VPS, costos de APIs, telefonia, etc.)\n- Aclarar quien es dueno de la infraestructura (el cliente)\n\n## 12. RESULTADOS ESPERADOS (primer mes)\n- Metricas realistas (NUNCA prometer 100 por ciento)\n- Ejemplo: 90 por ciento de consultas atendidas sin intervencion humana\n\n## 13. PROXIMOS PASOS\n1. Aprobacion de la propuesta y pago del 50% de anticipo\n2. Kickoff tecnico: accesos, documentacion y reglas del negocio\n3. Desarrollo e integraciones\n4. Pruebas en entorno controlado + ajustes finos\n5. Salida a produccion\n6. Soporte post-entrega\n\n## 14. TERMINOS Y CONDICIONES\n- Vigencia: 15 dias naturales\n- Precios NO incluyen IVA/impuestos\n- Forma de pago: 50% anticipo + 50% contraentrega\n- Soporte incluido post-entrega\n- Funcionalidades fuera del alcance requieren recotizacion\n- Retrasos del cliente pueden aplazar cronograma\n- Confidencialidad mutua\n\n## 15. FIRMAS\n- Dos columnas: proveedor (izquierda) | cliente (derecha)\n- Linea para firma, nombre completo y cargo\n\n# Reglas de redaccion\n- Tono profesional pero cercano, como agencia premium\n- Usar nosotros y nuestro equipo\n- Adaptar moneda y referencias culturales al pais del cliente\n- No inventar datos, si falta algo poner [POR DEFINIR]\n- Ser especifico en tecnologias\n\nResponde UNICAMENTE con la cotizacion completa en markdown."
           }
         },
         "id": "71aaf1a7-3e28-4762-aac9-47f44175fdd7",
@@ -897,9 +928,9 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=Crea una cotización en formato HTML. Solo responde con el HTML.\n\nDatos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\nDatos proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\nColores: {{ $('Edit Fields').item.json.colores }}\nURL del logo: {{ $('Edit Fields').item.json.url_logo }}\nEstilo: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\nCotización Markdown:\n{{ $json.output }}",
+          "text": "=Convierte esta cotizacion markdown a HTML profesional listo para imprimir en PDF.\n\nSolo responde con el HTML completo, nada mas.\n\n## DATOS DE DISENO:\n- Datos del cliente: {{ $('Edit Fields').item.json.datos_cliente }}\n- Datos del proveedor: {{ $('Edit Fields').item.json.datos_proveedor }}\n- Colores: {{ $('Edit Fields').item.json.colores }}\n- URL del logo: {{ $('Edit Fields').item.json.url_logo }}\n- Estilo visual: {{ $('Edit Fields').item.json.estilo_cotizacion }}\n\n## COTIZACION EN MARKDOWN:\n{{ $json.output }}",
           "options": {
-            "systemMessage": "# Rol\nDiseñador Senior UI/UX y Frontend experto.\n\n# REGLAS OBLIGATORIAS:\n\n## Colores\n- OBLIGATORIO usar los colores del usuario.\n- \"dorado y negro\": header #1A1A1A, acentos #D4AF37, body blanco, texto #333.\n- \"azul y blanco\": header #1E3A5F, acentos #2E86C1.\n- Variables CSS `:root`: --color-primary, --color-secondary, --color-accent.\n- Títulos H2 con borde inferior del color primario.\n- Inversión en recuadro con fondo primario y texto claro.\n\n## Logo\n- URL HTTPS de Cloudinary. Usar DIRECTAMENTE en `<img src=\"URL\">`.\n- max-width: 150px, height: auto.\n- NO ignorar. SIEMPRE incluir.\n\n## Tipografía\n- Google Fonts: Montserrat (400,600,700) + Playfair Display (700).\n- Título: Playfair Display 28px. H2: Montserrat 700 20px. Cuerpo: Montserrat 400 14px.\n\n## Estructura\n- Header: fondo color primario, logo izquierda, datos cliente derecha.\n- Secciones con padding 20px. Sin bullets antes de H2.\n- Firmas: dos columnas con línea, nombre y cargo.\n\n# Técnico:\n1. HTML crudo. Sin `\\n` ni `\\\"`.\n2. `<meta charset=\"UTF-8\">`\n3. CSS en `<style>`. `@page { size: A4; margin: 15mm; }`. `break-inside: avoid;`. `-webkit-print-color-adjust: exact;`.\n\nSalida: `<!DOCTYPE html>` hasta `</html>`."
+            "systemMessage": "# Rol\nEres un Disenador Senior UI/UX y Frontend experto en crear documentos corporativos de alta gama para impresion en PDF. Tu trabajo debe verse como si lo hubiera disenado una agencia de branding premium.\n\n# OBJETIVO\nConvertir la cotizacion markdown en un HTML multipagina profesional que, al convertirse a PDF via Gotenberg, se vea como un documento de Canva premium, no como una factura ni como un simple documento de texto.\n\n# REGLAS IRROMPIBLES\n\n## 1. COLORES - Respetar SIEMPRE los del usuario\n- Interpretar la paleta del usuario y crear un sistema de colores coherente.\n- Definir variables CSS en :root:\n  - --color-primary: color principal (headers, fondos destacados)\n  - --color-secondary: color secundario (acentos, bordes)\n  - --color-accent: variacion para highlights\n  - --color-bg: fondo general (blanco o muy claro)\n  - --color-text: texto principal (#333 o similar oscuro)\n  - --color-text-light: texto secundario (#666)\n- Ejemplos de interpretacion:\n  - dorado y negro: primary=#1A1A1A, secondary=#D4AF37, accent=#F5E6B8, bg=#FFFFFF\n  - azul y blanco: primary=#1E3A5F, secondary=#2E86C1, accent=#EBF5FB, bg=#FFFFFF\n  - rojo y gris: primary=#C0392B, secondary=#2C3E50, accent=#FADBD8, bg=#FAFAFA\n\n## 2. LOGO - OBLIGATORIO, NUNCA omitir\n- Usar la URL de Cloudinary DIRECTAMENTE: <img src=URL_EXACTA alt=Logo>\n- Tamano: max-width: 160px, height: auto\n- Posicion: esquina superior izquierda del header en la primera pagina\n- Si la URL esta vacia, dejar placeholder con nombre de la agencia estilizado\n\n## 3. TIPOGRAFIA - Google Fonts\n- Importar: Montserrat (400,500,600,700) + Playfair Display (700)\n- Jerarquia:\n  - Titulo principal: Playfair Display, 32px, bold\n  - Subtitulo/ID cotizacion: Montserrat, 14px, 500, color secundario\n  - H2 (secciones): Montserrat, 20px, 700, con borde inferior 3px del color primario\n  - H3 (subsecciones): Montserrat, 16px, 600\n  - Cuerpo: Montserrat, 13px, 400, line-height 1.6\n  - Tablas: Montserrat, 12px\n\n## 4. ESTRUCTURA DEL DOCUMENTO (multi-pagina A4)\n\n### Pagina 1 - Portada\n- Header con fondo color primario (full width)\n- Logo a la izquierda\n- Titulo de la cotizacion centrado, color blanco/claro\n- Debajo: datos del cliente (izquierda) | datos del proveedor (derecha) | fecha e ID\n- Seccion Objetivo del Proyecto con fondo accent suave\n- Terminos y condiciones resumidos al pie (font-size: 10px)\n\n### Paginas 2-3 - Alcance detallado\n- Cada fase en un recuadro con borde izquierdo del color secundario (4px)\n- Tecnologias en badges/pills con fondo accent\n- Usar iconos Unicode si es apropiado\n\n### Pagina 4 - Entregables\n- Lista con checkmarks en color secundario\n- Cada entregable como card con padding\n\n### Pagina 5 - Cronograma\n- Tabla estilizada con header en color primario, filas alternadas\n- Nota de estimado en texto italizado\n\n### Pagina 6 - Inversion + Costos de terceros\n- INVERSION en recuadro destacado: fondo primario, texto blanco/claro, tipografia grande\n- Forma de pago en sub-recuadro\n- Costos de terceros en tabla limpia debajo\n- Nota: Costos a cargo del cliente en texto pequeno\n\n### Pagina 7 - Flujos + Tecnologias\n- Flujo como diagrama visual (cajas conectadas con flechas ->)\n- Tecnologias en tabla con categoria | nombre | funcion\n\n### Pagina 8 - Supuestos, Infraestructura, Resultados, Proximos pasos\n- Supuestos como checklist de lo que el cliente debe proveer\n- Resultados esperados con porcentajes visuales (barras de progreso CSS simples)\n- Proximos pasos como timeline vertical con numeros\n\n### Ultima seccion - Firmas\n- Dos columnas con:\n  - Linea horizontal para firma (border-bottom)\n  - Nombre completo debajo\n  - Cargo / Empresa\n- Espacio generoso para firmar\n\n### Footer en todas las paginas\n- (c) [ano] [Nombre Agencia] centrado, font-size 10px, color gris\n\n## 5. REGLAS CSS PARA PDF (Gotenberg)\n- @page { size: A4; margin: 15mm 20mm; }\n- body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n- .page-break { page-break-before: always; }\n- section, table { break-inside: avoid; }\n\n## 6. REGLAS TECNICAS\n- HTML crudo completo: desde <!DOCTYPE html> hasta </html>\n- NO usar \\n literales ni comillas escapadas - HTML limpio\n- <meta charset=UTF-8>\n- Todo el CSS en <style> dentro del <head>\n- Google Fonts via <link> en el <head>\n- NO usar JavaScript\n- Tablas con border-collapse: collapse, padding en celdas\n- Imagenes con max-width para no desbordar\n- HTML puro, sin frameworks\n\n## 7. CALIDAD VISUAL\n- Debe verse como una cotizacion de Canva premium\n- Espaciado generoso entre secciones (margin-bottom: 24px minimo)\n- Sombras sutiles en cards: box-shadow: 0 2px 8px rgba(0,0,0,0.08)\n- Border-radius: 8px en recuadros\n- El color primario domina headers y acentos, NO inunda todo\n- Mucho espacio en blanco, no saturar\n\nSalida: SOLO el HTML completo. Sin explicaciones, sin markdown, sin backticks."
           }
         },
         "id": "3ae46ac1-92ca-46fb-ba2a-f604c86a875b",
@@ -1000,9 +1031,9 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=Cambios:\n{{ $json['Necesitas cambios?'] }}\n\nHTML original:\n{{ $('Agente Generador HTML').item.json.output }}",
+          "text": "=## CAMBIOS SOLICITADOS POR EL USUARIO:\n{{ $json['Necesitas cambios?'] }}\n\n## HTML ORIGINAL COMPLETO:\n{{ $('Agente Generador HTML').item.json.output }}",
           "options": {
-            "systemMessage": "Diseñador Senior UI/UX. Aplica los cambios al HTML manteniendo logo, colores y estilo. Salida: solo `<!DOCTYPE html>` hasta `</html>`. CSS en `<style>`. Google Fonts. `@page { size: A4; margin: 15mm; }`."
+            "systemMessage": "# Rol\nEres un Disenador Senior UI/UX experto en documentos corporativos para PDF.\n\n# Mision\nAplica los cambios solicitados por el usuario al HTML de la cotizacion, manteniendo la calidad visual premium.\n\n# REGLAS IRROMPIBLES:\n\n1. PRESERVAR SIEMPRE: logo (URL Cloudinary en img src), colores del usuario (variables CSS :root), tipografia Google Fonts (Montserrat + Playfair Display), estructura de secciones, seccion de firmas\n2. NO eliminar secciones a menos que el usuario lo pida explicitamente\n3. NO cambiar colores a menos que el usuario lo pida explicitamente\n4. NO cambiar ni quitar el logo a menos que el usuario lo pida explicitamente\n5. Si el usuario pide cambiar texto/contenido, cambiarlo manteniendo el formato HTML y estilos exactos\n6. Si el usuario pide cambios de diseno, aplicarlos respetando la coherencia visual del documento completo\n7. Si el usuario pide agregar secciones, insertarlas con el mismo estilo CSS que las secciones existentes\n8. Si el usuario dice esta bien, perfecto, ok o similar, devolver el HTML original SIN cambios\n9. Si el usuario pide cambiar precios o montos, actualizar SOLO los numeros manteniendo el formato\n10. Si el usuario pide cambiar datos del cliente o proveedor, actualizar SOLO esos campos\n\n# Reglas CSS para PDF (mantener SIEMPRE en el output):\n- @page { size: A4; margin: 15mm 20mm; }\n- -webkit-print-color-adjust: exact; print-color-adjust: exact;\n- break-inside: avoid; en secciones y tablas\n- Google Fonts via <link> en <head>\n- Variables CSS :root con la paleta de colores original\n- .page-break { page-break-before: always; }\n\n# Calidad\n- El documento debe mantener la calidad visual premium despues de los cambios\n- Verificar que los page-breaks sigan funcionando correctamente\n- Mantener espaciado, sombras, border-radius consistentes\n\n# Salida\nHTML completo desde <!DOCTYPE html> hasta </html>. Sin explicaciones, sin markdown, sin backticks. Solo HTML puro."
           }
         },
         "id": "0c852be5-1a92-499f-883b-b49a8f5d1a09",
@@ -1115,6 +1146,32 @@
           -720,
           -128
         ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-5-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1712,
+          416
+        ],
+        "id": "3f93e27b-1cb7-4351-a611-a1b9c510b112",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "zrA8o6Rx6jQIRHlC",
+            "name": "OpenAi PROPUESTA"
+          }
+        }
       }
     ],
     "connections": {
@@ -1175,23 +1232,7 @@
       },
       "Gemini": {
         "ai_languageModel": [
-          [
-            {
-              "node": "Agente Cotizador",
-              "type": "ai_languageModel",
-              "index": 0
-            },
-            {
-              "node": "Agente Generador HTML",
-              "type": "ai_languageModel",
-              "index": 0
-            },
-            {
-              "node": "Agente de cambios",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
+          []
         ]
       },
       "Agente Cotizador": {
@@ -1310,6 +1351,27 @@
             {
               "node": "Agente de cambios",
               "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agente Cotizador",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Agente Generador HTML",
+              "type": "ai_languageModel",
+              "index": 0
+            },
+            {
+              "node": "Agente de cambios",
+              "type": "ai_languageModel",
               "index": 0
             }
           ]
