@@ -1,0 +1,214 @@
+{
+  "updatedAt": "2026-04-16T12:40:18.451Z",
+  "createdAt": "2026-04-16T12:40:18.451Z",
+  "id": "odRLe6Pzpljv14zi",
+  "name": "CRM IA - Buscar en Web Mica",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "id": "trigger-busqueda",
+      "name": "Trigger Busqueda",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{{ $json.query }} inmobiliaria\",\n  \"search_depth\": \"basic\",\n  \"include_answer\": true,\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "id": "tavily-search",
+      "name": "Tavily Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst answer = data.answer || 'Sin respuesta directa.';\nconst sources = (data.results || []).slice(0, 3).map(r => `- ${r.title}: ${r.content.slice(0, 200)}...`).join('\\n');\n\nreturn [{ json: {\n  resultado: `${answer}\\n\\nFuentes:\\n${sources}`\n}}];"
+      },
+      "id": "format-result",
+      "name": "Formatear Resultado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger Busqueda": {
+      "main": [
+        [
+          {
+            "node": "Tavily Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Search": {
+      "main": [
+        [
+          {
+            "node": "Formatear Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "81eff195-0fcc-4a33-a128-af9824361bc1",
+  "activeVersionId": "81eff195-0fcc-4a33-a128-af9824361bc1",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-16T12:40:18.451Z",
+      "createdAt": "2026-04-16T12:40:18.451Z",
+      "role": "workflow:owner",
+      "workflowId": "odRLe6Pzpljv14zi",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-16T12:49:17.506Z",
+    "createdAt": "2026-04-16T12:40:18.470Z",
+    "versionId": "81eff195-0fcc-4a33-a128-af9824361bc1",
+    "workflowId": "odRLe6Pzpljv14zi",
+    "nodes": [
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "query"
+              }
+            ]
+          }
+        },
+        "id": "trigger-busqueda",
+        "name": "Trigger Busqueda",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          240,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.tavily.com/search",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{{ $json.query }} inmobiliaria\",\n  \"search_depth\": \"basic\",\n  \"include_answer\": true,\n  \"max_results\": 5\n}",
+          "options": {}
+        },
+        "id": "tavily-search",
+        "name": "Tavily Search",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          480,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst answer = data.answer || 'Sin respuesta directa.';\nconst sources = (data.results || []).slice(0, 3).map(r => `- ${r.title}: ${r.content.slice(0, 200)}...`).join('\\n');\n\nreturn [{ json: {\n  resultado: `${answer}\\n\\nFuentes:\\n${sources}`\n}}];"
+        },
+        "id": "format-result",
+        "name": "Formatear Resultado",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          304
+        ]
+      }
+    ],
+    "connections": {
+      "Trigger Busqueda": {
+        "main": [
+          [
+            {
+              "node": "Tavily Search",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tavily Search": {
+        "main": [
+          [
+            {
+              "node": "Formatear Resultado",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 81eff195",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
