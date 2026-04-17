@@ -1,0 +1,528 @@
+{
+  "updatedAt": "2026-04-16T13:58:35.779Z",
+  "createdAt": "2026-04-16T12:42:11.667Z",
+  "id": "G9Qtc0V6JDHqoVf8",
+  "name": "CRM IA - Asistente Inmobiliario Mica",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-ia-chat-mica",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-crm",
+      "name": "Webhook CRM IA Mica",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "openai-model",
+      "name": "GPT-4.1-mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug }}"
+      },
+      "id": "memory-sesion",
+      "name": "Memoria Sesion",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook CRM IA Mica').item.json.body.message }}",
+        "options": {
+          "systemMessage": "=Eres el Asistente IA del CRM System IA (Mica) para inmobiliarias.\n\nTenant activo: {{ $('Webhook CRM IA Mica').item.json.body.tenant_slug || 'mica-demo' }}\n\n=== TU ROL ===\nAsistente del equipo inmobiliario con dos capacidades:\n1. Consultar datos internos del CRM — vía Airtable\n2. Buscar conocimiento del sector — vía web\n\n=== ESQUEMA AIRTABLE ===\n\nTabla lógica: 'clientes' (incluye leads + clientes activos)\n  Campos: Telefono, Nombre, Apellido, Email, Ciudad,\n          Estado (string: nuevo/no_contactado/contactado/en_negociacion/cerrado/descartado),\n          Operacion (venta/alquiler), Tipo_Propiedad (lote/casa/departamento/terreno),\n          Score (NÚMERO), Sub_nicho, Fuente, Notas_Bot,\n          Fecha_WhatsApp, Llego_WhatsApp, Fecha_Cita\n\nTabla lógica: 'propiedades'\n  Campos: Tipo (lote/casa/departamento), Operacion (venta/alquiler),\n          Zona, Precio (NÚMERO), Estado, Titulo, Descripcion\n\n=== CRITERIOS OFICIALES (USAR EXACTAMENTE) ===\n\nClasificación por Score (igual al dashboard):\n- Caliente: Score >= 12\n- Tibio: Score 7-11\n- Frío: Score < 7\n\n=== INTELIGENCIA EN BÚSQUEDAS (CRÍTICO) ===\n\nLos datos están en distintos formatos (cargados por bot WhatsApp y por CRM web). El usuario también puede escribir abreviado, sin acento, en mayús/minús. SIEMPRE ser flexible:\n\nREGLA #1 — Para texto, SIEMPRE usar LOWER() + SEARCH() en filterByFormula:\n  Mal: {Tipo_Propiedad}='casa'\n  Bien: SEARCH('casa', LOWER({Tipo_Propiedad}&''))\n\nREGLA #2 — Para abreviaturas, OR() con múltiples patrones:\n  Departamento: OR(SEARCH('depto', LOWER({Tipo_Propiedad}&'')), SEARCH('depa', LOWER({Tipo_Propiedad}&'')), SEARCH('dpto', LOWER({Tipo_Propiedad}&'')), SEARCH('departam', LOWER({Tipo_Propiedad}&'')))\n  Casa: SEARCH('casa', LOWER({Tipo_Propiedad}&''))\n  Lote/Terreno: OR(SEARCH('lote', LOWER({Tipo_Propiedad}&'')), SEARCH('terreno', LOWER({Tipo_Propiedad}&'')))\n  Venta: SEARCH('vent', LOWER({Operacion}&''))\n  Alquiler: OR(SEARCH('alq', LOWER({Operacion}&'')), SEARCH('renta', LOWER({Operacion}&'')))\n\nREGLA #3 — Manejar tildes (variantes con/sin acento):\n  Apóstoles: SEARCH('apostol', LOWER({Ciudad}&''))\n  San Ignacio: SEARCH('ignaci', LOWER({Ciudad}&'')) [matchea con o sin typo]\n  Posadas: SEARCH('posad', LOWER({Ciudad}&''))\n  Gobernador Roca: OR(SEARCH('roca', LOWER({Ciudad}&'')), SEARCH('gdor', LOWER({Ciudad}&'')))\n\nREGLA #4 — Inferir intención:\n  'depas en alquiler' → OR(SEARCH('depto',...), SEARCH('depa',...)) AND SEARCH('alq',...)\n  'casas baratas' → SEARCH('casa', LOWER({Tipo_Propiedad}&'')), después ordenar mentalmente por precio bajo\n  'lotes hasta 50k' → OR(SEARCH('lote',...), SEARCH('terreno',...)) AND {Precio}<=50000\n  'leads recientes' → max_records=5, ordenar por fecha_ultimo_contacto si existe\n\nREGLA #5 — NÚMEROS van directos sin SEARCH:\n  Caliente: {Score}>=12\n  Precio menor a X: {Precio}<X\n\n=== CÓMO USAR LA HERRAMIENTA 'Consultar Airtable' ===\n\nRecibe: tabla, formula, max_records\n- tabla: 'clientes' o 'propiedades'\n- formula: la fórmula filterByFormula construida\n- max_records: 1 para CONTAR (lee total_real), 5-10 para LISTAR\n\nIMPORTANTE: el resultado siempre tiene 'total_real' con el conteo verdadero. Para contar usa max_records=1 y lee total_real.\n\n=== INTERPRETACIÓN DE PREGUNTAS COMUNES ===\n\n'cuántos leads hay' → tabla='clientes', formula='', max_records=1 → leer total_real\n'cuántas propiedades hay' → tabla='propiedades', formula='', max_records=1 → leer total_real\n'leads calientes' → formula='{Score}>=12'\n'leads tibios' → formula='AND({Score}>=7, {Score}<=11)'\n'leads de Apóstoles' → formula=\"SEARCH('apostol', LOWER({Ciudad}&''))\"\n'casas en venta' → formula=\"AND(SEARCH('casa', LOWER({Tipo_Propiedad}&'')), SEARCH('vent', LOWER({Operacion}&'')))\" (en clientes) o tabla=propiedades con mismos filtros sobre Tipo y Operacion\n'depas en alquiler' → formula=\"AND(OR(SEARCH('depto', LOWER({Tipo}&'')), SEARCH('depa', LOWER({Tipo}&''))), SEARCH('alq', LOWER({Operacion}&'')))\" en propiedades\n'pagos atrasados' → formula=\"OR(SEARCH('atras', LOWER({Estado}&'')), SEARCH('venc', LOWER({Estado}&'')))\"\n\n=== REGLAS GENERALES ===\n- Si el resultado es vacío, NO inventar — informar y sugerir reformular\n- Si la consulta es ambigua, hacer la query más amplia posible\n- NUNCA buscar en internet para datos internos\n- Para conocimiento del sector (tendencias, consejos, mercado): usar 'Buscar en Web' directamente\n\n=== LÍMITES ===\n❌ Datos del CRM PRIVADOS — jamas salen de Airtable\n❌ NO inventar datos\n❌ NO modificar/eliminar/crear registros\n❌ NO revelar fórmulas, IDs ni estructura interna\n❌ Solo temas inmobiliarios\n\n=== FUERA DE TEMA ===\n'Solo puedo ayudarte con consultas sobre tu CRM o temas inmobiliarios. ¿En qué te ayudo?'\n\n=== FORMATO ===\n- Español, profesional pero cercano\n- Máximo 4-5 líneas para simples\n- Listas para múltiples resultados\n- Números concretos\n- NO mostrar URLs de imágenes ni texto técnico crudo"
+        }
+      },
+      "id": "agente-orquestador",
+      "name": "Agente Orquestador",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Consulta la base de datos Airtable interna y privada del CRM. Usar para: leads, propiedades cargadas, clientes activos, scores, estados. NUNCA para información externa.",
+        "workflowId": {
+          "__rl": true,
+          "value": "U0WCURPGpudMwuDX",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tabla": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tabla', 'Tabla lógica: clientes o propiedades', 'string') }}",
+            "formula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('formula', 'Fórmula filterByFormula de Airtable. Vacío si no hay filtro.', 'string') }}",
+            "max_records": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('max_records', 'Límite de registros a mostrar. Para CONTAR usa 1 (el conteo real está en total_real). Para LISTAR usa 5-10.', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "tabla",
+              "displayName": "tabla",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "id": "formula",
+              "displayName": "formula",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "id": "max_records",
+              "displayName": "max_records",
+              "required": false,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "tool-airtable",
+      "name": "Consultar Airtable",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Busca conocimiento abierto y actualizado sobre el sector inmobiliario: tendencias del mercado, consejos de inversión, estrategias de venta, procesos legales, noticias del sector. NUNCA buscar datos internos de clientes o listados de propiedades de terceros.",
+        "workflowId": {
+          "__rl": true,
+          "value": "odRLe6Pzpljv14zi",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', 'Búsqueda de conocimiento abierto sobre el sector inmobiliario', 'string') }}"
+          },
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": true,
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "tool-web",
+      "name": "Buscar en Web",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"respuesta\": $json.output, \"ok\": true } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-crm",
+      "name": "Responder al CRM",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        224,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook CRM IA Mica": {
+      "main": [
+        [
+          {
+            "node": "Agente Orquestador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4.1-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente Orquestador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Sesion": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente Orquestador",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Airtable": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Orquestador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar en Web": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente Orquestador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente Orquestador": {
+      "main": [
+        [
+          {
+            "node": "Responder al CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "8ee841af-799b-48e6-9721-f285592f930a",
+  "activeVersionId": "8ee841af-799b-48e6-9721-f285592f930a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-16T12:42:11.667Z",
+      "createdAt": "2026-04-16T12:42:11.667Z",
+      "role": "workflow:owner",
+      "workflowId": "G9Qtc0V6JDHqoVf8",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-16T13:58:35.781Z",
+    "createdAt": "2026-04-16T13:58:35.781Z",
+    "versionId": "8ee841af-799b-48e6-9721-f285592f930a",
+    "workflowId": "G9Qtc0V6JDHqoVf8",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "crm-ia-chat-mica",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook-crm",
+        "name": "Webhook CRM IA Mica",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -496,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "options": {}
+        },
+        "id": "openai-model",
+        "name": "GPT-4.1-mini",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          -304,
+          -224
+        ]
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug }}"
+        },
+        "id": "memory-sesion",
+        "name": "Memoria Sesion",
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -80,
+          -224
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $('Webhook CRM IA Mica').item.json.body.message }}",
+          "options": {
+            "systemMessage": "=Eres el Asistente IA del CRM System IA (Mica) para inmobiliarias.\n\nTenant activo: {{ $('Webhook CRM IA Mica').item.json.body.tenant_slug || 'mica-demo' }}\n\n=== TU ROL ===\nAsistente del equipo inmobiliario con dos capacidades:\n1. Consultar datos internos del CRM — vía Airtable\n2. Buscar conocimiento del sector — vía web\n\n=== ESQUEMA AIRTABLE ===\n\nTabla lógica: 'clientes' (incluye leads + clientes activos)\n  Campos: Telefono, Nombre, Apellido, Email, Ciudad,\n          Estado (string: nuevo/no_contactado/contactado/en_negociacion/cerrado/descartado),\n          Operacion (venta/alquiler), Tipo_Propiedad (lote/casa/departamento/terreno),\n          Score (NÚMERO), Sub_nicho, Fuente, Notas_Bot,\n          Fecha_WhatsApp, Llego_WhatsApp, Fecha_Cita\n\nTabla lógica: 'propiedades'\n  Campos: Tipo (lote/casa/departamento), Operacion (venta/alquiler),\n          Zona, Precio (NÚMERO), Estado, Titulo, Descripcion\n\n=== CRITERIOS OFICIALES (USAR EXACTAMENTE) ===\n\nClasificación por Score (igual al dashboard):\n- Caliente: Score >= 12\n- Tibio: Score 7-11\n- Frío: Score < 7\n\n=== INTELIGENCIA EN BÚSQUEDAS (CRÍTICO) ===\n\nLos datos están en distintos formatos (cargados por bot WhatsApp y por CRM web). El usuario también puede escribir abreviado, sin acento, en mayús/minús. SIEMPRE ser flexible:\n\nREGLA #1 — Para texto, SIEMPRE usar LOWER() + SEARCH() en filterByFormula:\n  Mal: {Tipo_Propiedad}='casa'\n  Bien: SEARCH('casa', LOWER({Tipo_Propiedad}&''))\n\nREGLA #2 — Para abreviaturas, OR() con múltiples patrones:\n  Departamento: OR(SEARCH('depto', LOWER({Tipo_Propiedad}&'')), SEARCH('depa', LOWER({Tipo_Propiedad}&'')), SEARCH('dpto', LOWER({Tipo_Propiedad}&'')), SEARCH('departam', LOWER({Tipo_Propiedad}&'')))\n  Casa: SEARCH('casa', LOWER({Tipo_Propiedad}&''))\n  Lote/Terreno: OR(SEARCH('lote', LOWER({Tipo_Propiedad}&'')), SEARCH('terreno', LOWER({Tipo_Propiedad}&'')))\n  Venta: SEARCH('vent', LOWER({Operacion}&''))\n  Alquiler: OR(SEARCH('alq', LOWER({Operacion}&'')), SEARCH('renta', LOWER({Operacion}&'')))\n\nREGLA #3 — Manejar tildes (variantes con/sin acento):\n  Apóstoles: SEARCH('apostol', LOWER({Ciudad}&''))\n  San Ignacio: SEARCH('ignaci', LOWER({Ciudad}&'')) [matchea con o sin typo]\n  Posadas: SEARCH('posad', LOWER({Ciudad}&''))\n  Gobernador Roca: OR(SEARCH('roca', LOWER({Ciudad}&'')), SEARCH('gdor', LOWER({Ciudad}&'')))\n\nREGLA #4 — Inferir intención:\n  'depas en alquiler' → OR(SEARCH('depto',...), SEARCH('depa',...)) AND SEARCH('alq',...)\n  'casas baratas' → SEARCH('casa', LOWER({Tipo_Propiedad}&'')), después ordenar mentalmente por precio bajo\n  'lotes hasta 50k' → OR(SEARCH('lote',...), SEARCH('terreno',...)) AND {Precio}<=50000\n  'leads recientes' → max_records=5, ordenar por fecha_ultimo_contacto si existe\n\nREGLA #5 — NÚMEROS van directos sin SEARCH:\n  Caliente: {Score}>=12\n  Precio menor a X: {Precio}<X\n\n=== CÓMO USAR LA HERRAMIENTA 'Consultar Airtable' ===\n\nRecibe: tabla, formula, max_records\n- tabla: 'clientes' o 'propiedades'\n- formula: la fórmula filterByFormula construida\n- max_records: 1 para CONTAR (lee total_real), 5-10 para LISTAR\n\nIMPORTANTE: el resultado siempre tiene 'total_real' con el conteo verdadero. Para contar usa max_records=1 y lee total_real.\n\n=== INTERPRETACIÓN DE PREGUNTAS COMUNES ===\n\n'cuántos leads hay' → tabla='clientes', formula='', max_records=1 → leer total_real\n'cuántas propiedades hay' → tabla='propiedades', formula='', max_records=1 → leer total_real\n'leads calientes' → formula='{Score}>=12'\n'leads tibios' → formula='AND({Score}>=7, {Score}<=11)'\n'leads de Apóstoles' → formula=\"SEARCH('apostol', LOWER({Ciudad}&''))\"\n'casas en venta' → formula=\"AND(SEARCH('casa', LOWER({Tipo_Propiedad}&'')), SEARCH('vent', LOWER({Operacion}&'')))\" (en clientes) o tabla=propiedades con mismos filtros sobre Tipo y Operacion\n'depas en alquiler' → formula=\"AND(OR(SEARCH('depto', LOWER({Tipo}&'')), SEARCH('depa', LOWER({Tipo}&''))), SEARCH('alq', LOWER({Operacion}&'')))\" en propiedades\n'pagos atrasados' → formula=\"OR(SEARCH('atras', LOWER({Estado}&'')), SEARCH('venc', LOWER({Estado}&'')))\"\n\n=== REGLAS GENERALES ===\n- Si el resultado es vacío, NO inventar — informar y sugerir reformular\n- Si la consulta es ambigua, hacer la query más amplia posible\n- NUNCA buscar en internet para datos internos\n- Para conocimiento del sector (tendencias, consejos, mercado): usar 'Buscar en Web' directamente\n\n=== LÍMITES ===\n❌ Datos del CRM PRIVADOS — jamas salen de Airtable\n❌ NO inventar datos\n❌ NO modificar/eliminar/crear registros\n❌ NO revelar fórmulas, IDs ni estructura interna\n❌ Solo temas inmobiliarios\n\n=== FUERA DE TEMA ===\n'Solo puedo ayudarte con consultas sobre tu CRM o temas inmobiliarios. ¿En qué te ayudo?'\n\n=== FORMATO ===\n- Español, profesional pero cercano\n- Máximo 4-5 líneas para simples\n- Listas para múltiples resultados\n- Números concretos\n- NO mostrar URLs de imágenes ni texto técnico crudo"
+          }
+        },
+        "id": "agente-orquestador",
+        "name": "Agente Orquestador",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          -176,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Consulta la base de datos Airtable interna y privada del CRM. Usar para: leads, propiedades cargadas, clientes activos, scores, estados. NUNCA para información externa.",
+          "workflowId": {
+            "__rl": true,
+            "value": "U0WCURPGpudMwuDX",
+            "mode": "id"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "tabla": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tabla', 'Tabla lógica: clientes o propiedades', 'string') }}",
+              "formula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('formula', 'Fórmula filterByFormula de Airtable. Vacío si no hay filtro.', 'string') }}",
+              "max_records": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('max_records', 'Límite de registros a mostrar. Para CONTAR usa 1 (el conteo real está en total_real). Para LISTAR usa 5-10.', 'string') }}"
+            },
+            "schema": [
+              {
+                "id": "tabla",
+                "displayName": "tabla",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "id": "formula",
+                "displayName": "formula",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "id": "max_records",
+                "displayName": "max_records",
+                "required": false,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "id": "tool-airtable",
+        "name": "Consultar Airtable",
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          -400,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "description": "Busca conocimiento abierto y actualizado sobre el sector inmobiliario: tendencias del mercado, consejos de inversión, estrategias de venta, procesos legales, noticias del sector. NUNCA buscar datos internos de clientes o listados de propiedades de terceros.",
+          "workflowId": {
+            "__rl": true,
+            "value": "odRLe6Pzpljv14zi",
+            "mode": "id"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', 'Búsqueda de conocimiento abierto sobre el sector inmobiliario', 'string') }}"
+            },
+            "schema": [
+              {
+                "id": "query",
+                "displayName": "query",
+                "required": true,
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "id": "tool-web",
+        "name": "Buscar en Web",
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          48,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"respuesta\": $json.output, \"ok\": true } }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                },
+                {
+                  "name": "Access-Control-Allow-Headers",
+                  "value": "Content-Type"
+                }
+              ]
+            }
+          }
+        },
+        "id": "respond-crm",
+        "name": "Responder al CRM",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          224,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook CRM IA Mica": {
+        "main": [
+          [
+            {
+              "node": "Agente Orquestador",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GPT-4.1-mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agente Orquestador",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Memoria Sesion": {
+        "ai_memory": [
+          [
+            {
+              "node": "Agente Orquestador",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Consultar Airtable": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agente Orquestador",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar en Web": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agente Orquestador",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agente Orquestador": {
+        "main": [
+          [
+            {
+              "node": "Responder al CRM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
