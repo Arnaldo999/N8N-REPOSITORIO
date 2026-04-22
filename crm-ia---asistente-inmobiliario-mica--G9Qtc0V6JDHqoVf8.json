@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-20T14:23:32.590Z",
+  "updatedAt": "2026-04-21T20:46:59.964Z",
   "createdAt": "2026-04-16T12:42:11.667Z",
   "id": "G9Qtc0V6JDHqoVf8",
   "name": "CRM IA - Asistente Inmobiliario Mica",
@@ -51,7 +51,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug }}"
+        "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug || 'mica-demo' }}"
       },
       "id": "memory-sesion",
       "name": "Memoria Sesion",
@@ -264,8 +264,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "529adcda-dc4a-4ff3-964b-b7a0b6df63da",
-  "activeVersionId": "529adcda-dc4a-4ff3-964b-b7a0b6df63da",
+  "versionId": "bf85b54d-22b3-408b-8a69-186a23b0e734",
+  "activeVersionId": "bf85b54d-22b3-408b-8a69-186a23b0e734",
   "triggerCount": 1,
   "shared": [
     {
@@ -277,9 +277,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-20T14:23:42.153Z",
-    "createdAt": "2026-04-20T14:23:32.592Z",
-    "versionId": "529adcda-dc4a-4ff3-964b-b7a0b6df63da",
+    "updatedAt": "2026-04-21T20:46:59.967Z",
+    "createdAt": "2026-04-21T20:46:59.967Z",
+    "versionId": "bf85b54d-22b3-408b-8a69-186a23b0e734",
     "workflowId": "G9Qtc0V6JDHqoVf8",
     "nodes": [
       {
@@ -327,7 +327,7 @@
       {
         "parameters": {
           "sessionIdType": "customKey",
-          "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug }}"
+          "sessionKey": "={{ $('Webhook CRM IA Mica').item.json.body.session_id || $('Webhook CRM IA Mica').item.json.body.tenant_slug || 'mica-demo' }}"
         },
         "id": "memory-sesion",
         "name": "Memoria Sesion",
@@ -531,9 +531,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 529adcda",
-    "description": "",
-    "autosaved": true
+    "name": null,
+    "description": null,
+    "autosaved": false
   },
   "tags": [
     {
