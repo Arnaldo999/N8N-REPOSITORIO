@@ -1,0 +1,366 @@
+{
+  "updatedAt": "2026-04-24T01:06:00.428Z",
+  "createdAt": "2026-04-24T01:04:02.279Z",
+  "id": "xp49TY9WSjMtPvZK",
+  "name": "📱 Maicol — Publicación Diaria Redes Sociales (Back Urbanizaciones)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "⏰ Schedule 10am ARG",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/appaDT7uwHnimVZLM/tbl0QeaY3oO2P5WaU?maxRecords=1&filterByFormula={ID%20Cliente}%3D%27Back_Urbanizaciones%27",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "node-airtable",
+      "name": "📋 Obtener Brandbook Back Urbanizaciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "W0e13SZYW0ZJb5XV",
+          "name": "Header Auth Airtable Arnaldo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "node-publicar",
+      "name": "🚀 Publicar en Redes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-error",
+      "name": "¿Falló la publicación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        928,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "options": {}
+      },
+      "id": "node-telegram",
+      "name": "🚨 Alerta Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        208
+      ]
+    }
+  ],
+  "connections": {
+    "⏰ Schedule 10am ARG": {
+      "main": [
+        [
+          {
+            "node": "📋 Obtener Brandbook Back Urbanizaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📋 Obtener Brandbook Back Urbanizaciones": {
+      "main": [
+        [
+          {
+            "node": "🚀 Publicar en Redes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🚀 Publicar en Redes": {
+      "main": [
+        [
+          {
+            "node": "¿Falló la publicación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Falló la publicación?": {
+      "main": [
+        [
+          {
+            "node": "🚨 Alerta Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:⏰ Schedule 10am ARG": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
+  "activeVersionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-24T01:04:02.279Z",
+      "createdAt": "2026-04-24T01:04:02.279Z",
+      "role": "workflow:owner",
+      "workflowId": "xp49TY9WSjMtPvZK",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-24T01:06:04.834Z",
+    "createdAt": "2026-04-24T01:06:00.429Z",
+    "versionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
+    "workflowId": "xp49TY9WSjMtPvZK",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 10
+              }
+            ]
+          }
+        },
+        "id": "node-schedule",
+        "name": "⏰ Schedule 10am ARG",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          240,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.airtable.com/v0/appaDT7uwHnimVZLM/tbl0QeaY3oO2P5WaU?maxRecords=1&filterByFormula={ID%20Cliente}%3D%27Back_Urbanizaciones%27",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "node-airtable",
+        "name": "📋 Obtener Brandbook Back Urbanizaciones",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          464,
+          304
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "W0e13SZYW0ZJb5XV",
+            "name": "Header Auth Airtable Arnaldo"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+          "options": {
+            "timeout": 300000
+          }
+        },
+        "id": "node-publicar",
+        "name": "🚀 Publicar en Redes",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          688,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "error",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "node-if-error",
+        "name": "¿Falló la publicación?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          928,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "options": {}
+        },
+        "id": "node-telegram",
+        "name": "🚨 Alerta Telegram",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1152,
+          208
+        ]
+      }
+    ],
+    "connections": {
+      "⏰ Schedule 10am ARG": {
+        "main": [
+          [
+            {
+              "node": "📋 Obtener Brandbook Back Urbanizaciones",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📋 Obtener Brandbook Back Urbanizaciones": {
+        "main": [
+          [
+            {
+              "node": "🚀 Publicar en Redes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🚀 Publicar en Redes": {
+        "main": [
+          [
+            {
+              "node": "¿Falló la publicación?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "¿Falló la publicación?": {
+        "main": [
+          [
+            {
+              "node": "🚨 Alerta Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Arnaldo Ayala",
+    "name": "Version 4d3bce21",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
