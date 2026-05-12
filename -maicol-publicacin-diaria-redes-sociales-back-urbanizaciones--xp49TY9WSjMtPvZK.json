@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-24T01:06:00.428Z",
+  "updatedAt": "2026-05-11T14:02:28.288Z",
   "createdAt": "2026-04-24T01:04:02.279Z",
   "id": "xp49TY9WSjMtPvZK",
   "name": "📱 Maicol — Publicación Diaria Redes Sociales (Back Urbanizaciones)",
@@ -27,9 +27,7 @@
     },
     {
       "parameters": {
-        "url": "https://api.airtable.com/v0/appaDT7uwHnimVZLM/tbl0QeaY3oO2P5WaU?maxRecords=1&filterByFormula={ID%20Cliente}%3D%27Back_Urbanizaciones%27",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "https://agentes.arnaldoayalaestratega.cloud/clientes/arnaldo/maicol/crm/pg/branding/Back_Urbanizaciones",
         "options": {}
       },
       "id": "node-airtable",
@@ -39,13 +37,7 @@
       "position": [
         464,
         304
-      ],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "W0e13SZYW0ZJb5XV",
-          "name": "Header Auth Airtable Arnaldo"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -53,7 +45,7 @@
         "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+        "jsonBody": "={\n  \"cliente_id\": \"{{ $json['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json) }}\n}",
         "options": {
           "timeout": 300000
         }
@@ -71,9 +63,10 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -82,7 +75,8 @@
               "operator": {
                 "type": "string",
                 "operation": "equals"
-              }
+              },
+              "id": "efd676a2-cb66-402f-9a6d-41702db4d929"
             }
           ],
           "combinator": "and"
@@ -178,8 +172,8 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
-  "activeVersionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
+  "versionId": "068b3df3-bc83-406f-8646-b1d1fddd76e4",
+  "activeVersionId": "2abfc94c-c039-42eb-9acc-d935a6e498fd",
   "triggerCount": 1,
   "shared": [
     {
@@ -191,9 +185,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-24T01:06:04.834Z",
-    "createdAt": "2026-04-24T01:06:00.429Z",
-    "versionId": "4d3bce21-8780-406b-b3ec-63524f40bf3d",
+    "updatedAt": "2026-05-11T13:01:20.302Z",
+    "createdAt": "2026-05-11T13:01:20.302Z",
+    "versionId": "2abfc94c-c039-42eb-9acc-d935a6e498fd",
     "workflowId": "xp49TY9WSjMtPvZK",
     "nodes": [
       {
@@ -217,9 +211,7 @@
       },
       {
         "parameters": {
-          "url": "https://api.airtable.com/v0/appaDT7uwHnimVZLM/tbl0QeaY3oO2P5WaU?maxRecords=1&filterByFormula={ID%20Cliente}%3D%27Back_Urbanizaciones%27",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
+          "url": "https://agentes.arnaldoayalaestratega.cloud/clientes/arnaldo/maicol/crm/pg/branding/Back_Urbanizaciones",
           "options": {}
         },
         "id": "node-airtable",
@@ -229,13 +221,7 @@
         "position": [
           464,
           304
-        ],
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "W0e13SZYW0ZJb5XV",
-            "name": "Header Auth Airtable Arnaldo"
-          }
-        }
+        ]
       },
       {
         "parameters": {
@@ -243,7 +229,7 @@
           "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+          "jsonBody": "={\n  \"cliente_id\": \"{{ $json['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json) }}\n}",
           "options": {
             "timeout": 300000
           }
@@ -353,9 +339,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": "Version 4d3bce21",
-    "description": "",
-    "autosaved": true
+    "name": null,
+    "description": null,
+    "autosaved": false
   },
   "tags": [
     {
