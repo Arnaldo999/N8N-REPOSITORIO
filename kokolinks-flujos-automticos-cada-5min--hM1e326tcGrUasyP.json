@@ -1,0 +1,86 @@
+{
+  "updatedAt": "2026-05-18T22:01:45.483Z",
+  "createdAt": "2026-05-18T22:01:45.483Z",
+  "id": "hM1e326tcGrUasyP",
+  "name": "KokoLinks — Flujos automáticos cada 5min",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "cron-node",
+      "name": "Cada 5 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "http-node",
+      "name": "Procesar flujos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://worker.kokolinksmedia.com/cron/process",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Cada 5 minutos": {
+      "main": [
+        [
+          {
+            "node": "Procesar flujos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "262bc519-bf1c-49a0-890e-71f637f1f4f2",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-18T22:01:45.483Z",
+      "createdAt": "2026-05-18T22:01:45.483Z",
+      "role": "workflow:owner",
+      "workflowId": "hM1e326tcGrUasyP",
+      "projectId": "0BrGO8NkGfCDSRsb"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "id": "sin-tag",
+      "name": "sin-tag"
+    }
+  ]
+}
