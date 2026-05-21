@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T17:42:09.282Z",
+  "updatedAt": "2026-05-20T11:10:46.025Z",
   "createdAt": "2026-04-07T02:20:03.202Z",
   "id": "aJILcfjRoKDFvGWY",
   "name": "📱 Arnaldo — Publicación Diaria Redes Sociales (IG + FB + LI)",
@@ -28,9 +28,7 @@
     },
     {
       "parameters": {
-        "url": "https://api.airtable.com/v0/appOUtGnMYHrbLaMa/tblgFvYebZcJaYM07?maxRecords=1",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "https://agentes.arnaldoayalaestratega.cloud/clientes/arnaldo/agencia/crm/pg/branding/Arnaldo_Ayala",
         "options": {}
       },
       "id": "node-airtable",
@@ -40,13 +38,7 @@
       "position": [
         464,
         304
-      ],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "W0e13SZYW0ZJb5XV",
-          "name": "Header Auth Airtable Arnaldo"
-        }
-      }
+      ]
     },
     {
       "parameters": {
@@ -54,7 +46,7 @@
         "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+        "jsonBody": "={\n  \"cliente_id\": \"{{ $json['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json) }}\n}",
         "options": {
           "timeout": 300000
         }
@@ -69,20 +61,13 @@
       ]
     },
     {
-      "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
-      "name": "¿Falló la publicación?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [
-        920,
-        304
-      ],
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -91,35 +76,39 @@
               "operator": {
                 "type": "string",
                 "operation": "equals"
-              }
+              },
+              "id": "d6f0a02e-bb2f-42a5-a935-8033aab601ab"
             }
           ],
           "combinator": "and"
-        }
-      }
+        },
+        "options": {}
+      },
+      "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
+      "name": "¿Falló la publicación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        928,
+        304
+      ]
     },
     {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "options": {}
+      },
       "id": "0c5e04a1-5d1c-4aa6-80bc-d8df0f557280",
       "name": "🚨 Alerta Telegram",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1144,
-        200
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
-        "sendBody": true,
-        "contentType": "json",
-        "specifyBody": "json",
-        "body": {
-          "chat_id": 863363759,
-          "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
-          "parse_mode": "Markdown"
-        },
-        "options": {}
-      }
+        1152,
+        208
+      ]
     }
   ],
   "connections": {
@@ -181,8 +170,8 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
-  "activeVersionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
+  "versionId": "09414d9c-31a0-40f3-ace4-603752dea865",
+  "activeVersionId": "09414d9c-31a0-40f3-ace4-603752dea865",
   "triggerCount": 1,
   "shared": [
     {
@@ -194,9 +183,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-10T17:42:09.284Z",
-    "createdAt": "2026-04-10T17:42:09.284Z",
-    "versionId": "c5c31a99-ed3c-4315-b660-dfc68a1556b7",
+    "updatedAt": "2026-05-20T11:13:20.290Z",
+    "createdAt": "2026-05-20T11:10:46.026Z",
+    "versionId": "09414d9c-31a0-40f3-ace4-603752dea865",
     "workflowId": "aJILcfjRoKDFvGWY",
     "nodes": [
       {
@@ -221,9 +210,7 @@
       },
       {
         "parameters": {
-          "url": "https://api.airtable.com/v0/appOUtGnMYHrbLaMa/tblgFvYebZcJaYM07?maxRecords=1",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
+          "url": "https://agentes.arnaldoayalaestratega.cloud/clientes/arnaldo/agencia/crm/pg/branding/Arnaldo_Ayala",
           "options": {}
         },
         "id": "node-airtable",
@@ -233,13 +220,7 @@
         "position": [
           464,
           304
-        ],
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "W0e13SZYW0ZJb5XV",
-            "name": "Header Auth Airtable Arnaldo"
-          }
-        }
+        ]
       },
       {
         "parameters": {
@@ -247,7 +228,7 @@
           "url": "https://agentes.arnaldoayalaestratega.cloud/social/publicar-completo",
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"cliente_id\": \"{{ $json.records[0].fields['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json.records[0].fields) }}\n}",
+          "jsonBody": "={\n  \"cliente_id\": \"{{ $json['ID Cliente'] }}\",\n  \"datos_marca\": {{ JSON.stringify($json) }}\n}",
           "options": {
             "timeout": 300000
           }
@@ -262,20 +243,13 @@
         ]
       },
       {
-        "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
-        "name": "¿Falló la publicación?",
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2,
-        "position": [
-          920,
-          304
-        ],
         "parameters": {
           "conditions": {
             "options": {
-              "caseSensitive": false,
+              "caseSensitive": true,
               "leftValue": "",
-              "typeValidation": "loose"
+              "typeValidation": "strict",
+              "version": 1
             },
             "conditions": [
               {
@@ -284,35 +258,39 @@
                 "operator": {
                   "type": "string",
                   "operation": "equals"
-                }
+                },
+                "id": "d6f0a02e-bb2f-42a5-a935-8033aab601ab"
               }
             ],
             "combinator": "and"
-          }
-        }
+          },
+          "options": {}
+        },
+        "id": "95e1356e-60a8-478e-807f-c43fc81d6c0d",
+        "name": "¿Falló la publicación?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          928,
+          304
+        ]
       },
       {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "options": {}
+        },
         "id": "0c5e04a1-5d1c-4aa6-80bc-d8df0f557280",
         "name": "🚨 Alerta Telegram",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1144,
-          200
-        ],
-        "parameters": {
-          "method": "POST",
-          "url": "https://api.telegram.org/bot8798196715:AAGKgd-FZxEQoAiclETNt3_b_6cdX6ufPLU/sendMessage",
-          "sendBody": true,
-          "contentType": "json",
-          "specifyBody": "json",
-          "body": {
-            "chat_id": 863363759,
-            "text": "={{ '❌ *Publicación fallida — Arnaldo*\\n\\n📋 *Paso:* ' + ($('🚀 Publicar en Redes').first().json.paso || 'desconocido') + '\\n💬 *Error:* ' + ($('🚀 Publicar en Redes').first().json.mensaje || 'sin detalle') + '\\n\\n🕐 ' + $now.setZone('America/Argentina/Buenos_Aires').toFormat('dd/MM/yyyy HH:mm') + ' ARG\\n\\n_Revisá logs en Coolify_' }}",
-            "parse_mode": "Markdown"
-          },
-          "options": {}
-        }
+          1152,
+          208
+        ]
       }
     ],
     "connections": {
@@ -362,9 +340,9 @@
       }
     },
     "authors": "Arnaldo Ayala",
-    "name": null,
-    "description": null,
-    "autosaved": false
+    "name": "Version 09414d9c",
+    "description": "",
+    "autosaved": true
   },
   "tags": [
     {
